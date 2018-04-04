@@ -37,6 +37,10 @@ variable "ec2_keyname" {
   type = "string"
 }
 
+variable "ec2_private_keyfile" {
+  type = "string"
+}
+
 locals {
   common_tags = {
     "Owner" = "${var.stack_name}"

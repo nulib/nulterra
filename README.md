@@ -11,6 +11,7 @@
     project_name = "infrastructure"
     hosted_zone_name = "nulterra.rdc-staging.library.northwestern.edu"
     ec2_keyname = "my_keypair"
+    ec2_private_keyfile = "/path/to/private/key/for/my_keypair"
     ```
   * Note: You can have more than one variable file and pass the name on the command line to manage more than one stack.
 1. Execute `terraform init`.
@@ -20,18 +21,14 @@
 
 ## Bringing up the stack
 
-If you are bringing up the stack for the first time, you need to let it create the database before it can plan
-out the rest of the process. This is due to how Terraform handles provider dependencies. If the stack already has
-an RDS instance under its control, you can skip the targeted step.
-
 To see the changes Terraform will make:
 
-    terraform plan -target aws_db_instance.db
+    terraform plan
 
 To actually make those changes:
 
-    terraform apply -target aws_db_instance.db
+    terraform apply
 
-Once the database is created, you can proceed with `terraform plan` and `terraform apply` to see and apply changes to
-the stack. Changes you make to the `*.tf` files in the root directory will automatically be reflected in the resources
+You can proceed with `terraform plan` and `terraform apply` as often as you want to see and apply changes to the
+stack. Changes you make to the `*.tf` files in the root directory will automatically be reflected in the resources
 under Terraform's control.

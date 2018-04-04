@@ -1,7 +1,3 @@
-data "external" "execution_ip" {
-  program = ["curl", "https://api.ipify.org?format=json"]
-}
-
 resource "aws_db_subnet_group" "db_subnet_group" {
   depends_on = ["aws_internet_gateway.InternetGateway", "aws_route.PublicRoute"]
   subnet_ids = ["${aws_subnet.PublicSubnetA.id}", "${aws_subnet.PublicSubnetB.id}", "${aws_subnet.PublicSubnetC.id}"]
@@ -20,7 +16,6 @@ resource "aws_db_instance" "db" {
   engine = "postgres"
   instance_class = "db.t2.medium"
   allocated_storage = 5
-  publicly_accessible = true
   db_subnet_group_name = "${aws_db_subnet_group.db_subnet_group.name}"
   username = "${var.db_master_username}"
   password = "${module.db_master_password.result}"
@@ -43,13 +38,6 @@ resource "aws_security_group" "db" {
     to_port = 5432
     protocol = "tcp"
     security_groups = ["${aws_security_group.db_client.id}"]
-  }
-
-  ingress {
-    from_port = 5432
-    to_port = 5432
-    protocol = "tcp"
-    cidr_blocks = ["${data.external.execution_ip.result.ip}/32"]
   }
 }
 

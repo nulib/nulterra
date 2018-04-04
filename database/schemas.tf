@@ -22,28 +22,19 @@ module "role_password" {
   source = "../password"
 }
 
-provider "postgresql" {
-  alias = "rds"
-  host = "${var.host}"
-  port = "${var.port}"
-  username = "${var.master_username}"
-  password = "${var.master_password}"
-  sslmode = "require"
-}
-
-resource "postgresql_role" "role" {
-  provider = "postgresql.rds"
-  name = "${var.schema}"
-  login = true
-  password = "${module.role_password.result}"
-}
-
-resource "postgresql_database" "db" {
-  provider = "postgresql.rds"
-  name = "${var.schema}"
-  owner = "${postgresql_role.role.name}"
+locals {
+  db_script = <<EOF
+CREATE ROLE ${var.schema} WITH LOGIN ENCRYPTED PASSWORD '${module.role_password.result}';
+GRANT ${var.schema} TO ${var.master_username};
+CREATE DATABASE ${var.schema} OWNER ${var.schema};
+EOF
+  exec_script = "echo \"${local.db_script}\" | PGPASSWORD='${var.master_password}' psql -U ${var.master_username} -h ${var.host} -p ${var.port} postgres"
 }
 
 output "password" {
   value = "${module.role_password.result}"
+}
+
+output "exec_script" {
+  value = "${local.exec_script}"
 }
