@@ -44,7 +44,11 @@ resource "aws_instance" "bastion" {
   ami = "${data.aws_ami.amzn.id}"
   instance_type = "t2.nano"
   key_name = "${var.ec2_keyname}"
-  vpc_security_group_ids = ["${aws_security_group.bastion.id}", "${aws_security_group.db_client.id}"]
+  vpc_security_group_ids = [
+    "${aws_security_group.bastion.id}",
+    "${aws_security_group.db_client.id}",
+    "${module.fcrepo_container.client_security_group}"
+  ]
   subnet_id = "${module.vpc.public_subnets[0]}"
   associate_public_ip_address = true
   tags = "${merge(local.common_tags, map("Name", "${var.stack_name}-bastion"))}"
@@ -61,6 +65,15 @@ resource "aws_instance" "bastion" {
       "sudo yum install -y postgresql96"
     ]
   }
+}
+
+resource "aws_security_group_rule" "bastion_fedora_ssh_access" {
+  type      = "ingress"
+  from_port = 22
+  to_port   = 22
+  protocol  = "tcp"
+  security_group_id        = "${module.fcrepo_container.security_group}"
+  source_security_group_id = "${aws_security_group.bastion.id}"
 }
 
 resource "aws_route53_record" "bastion" {
