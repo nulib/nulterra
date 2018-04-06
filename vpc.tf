@@ -9,8 +9,8 @@ module "vpc" {
   private_subnets = "${var.subnet_config["private_subnets"]}"
   public_subnets  = "${var.subnet_config["public_subnets"]}"
 
-  enable_nat_gateway = true
-  create_database_subnet_group = true
+  enable_nat_gateway           = true
+  create_database_subnet_group = false
 
   tags = "${local.common_tags}"
 }
