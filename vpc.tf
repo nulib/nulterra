@@ -1,151 +1,40 @@
-resource "aws_vpc" "vpc" {
-  cidr_block           = "${var.subnet_config["vpc"]}"
-  enable_dns_support   = true
-  enable_dns_hostnames = true
-  tags                 = "${merge(local.common_tags, map("Name", var.stack_name))}"
-}
+module "vpc" {
+  source = "terraform-aws-modules/vpc/aws"
+  version = "1.29.0"
 
-resource "aws_subnet" "public_subnet_a" {
-  vpc_id = "${aws_vpc.vpc.id}"
-  cidr_block = "${var.subnet_config["public_subnet_a"]}"
-  availability_zone = "${var.azs[0]}"
+  name = "${var.stack_name}-vpc"
 
-  tags = "${merge(local.common_tags, map("Name", "${var.stack_name}-public-a"))}"
-}
+  azs             = "${var.azs}"
+  cidr            = "${var.vpc_cidr_block}"
+  private_subnets = "${var.subnet_config["private_subnets"]}"
+  public_subnets  = "${var.subnet_config["public_subnets"]}"
 
-resource "aws_subnet" "public_subnet_b" {
-  vpc_id = "${aws_vpc.vpc.id}"
-  cidr_block = "${var.subnet_config["public_subnet_b"]}"
-  availability_zone = "${var.azs[1]}"
+  enable_nat_gateway = true
+  create_database_subnet_group = true
 
-  tags = "${merge(local.common_tags, map("Name", "${var.stack_name}-public-b"))}"
-}
-
-resource "aws_subnet" "public_subnet_c" {
-  vpc_id = "${aws_vpc.vpc.id}"
-  cidr_block = "${var.subnet_config["public_subnet_c"]}"
-  availability_zone = "${var.azs[2]}"
-
-  tags = "${merge(local.common_tags, map("Name", "${var.stack_name}-public-c"))}"
-}
-
-resource "aws_internet_gateway" "public_gateway" {
-  vpc_id = "${aws_vpc.vpc.id}"
-  depends_on = [
-    "aws_route_table_association.public_subnet_a_route_table_association",
-    "aws_route_table_association.public_subnet_b_route_table_association",
-    "aws_route_table_association.public_subnet_c_route_table_association"
-  ]
   tags = "${local.common_tags}"
 }
 
-resource "aws_route_table" "public_route_table" {
-  vpc_id = "${aws_vpc.vpc.id}"
-  tags = "${local.common_tags}"
-}
+module "dns" {
+  source = "infrablocks/dns-zones/aws"
+  version = "0.2.0-rc.2"
 
-resource "aws_route" "public_route" {
-  route_table_id = "${aws_route_table.public_route_table.id}"
-  destination_cidr_block = "0.0.0.0/0"
-  gateway_id = "${aws_internet_gateway.public_gateway.id}"
-}
+  domain_name         = "${local.public_zone_name}"
+  private_domain_name = "${local.private_zone_name}"
 
-resource "aws_route_table_association" "public_subnet_a_route_table_association" {
-  route_table_id = "${aws_route_table.public_route_table.id}"
-  subnet_id = "${aws_subnet.public_subnet_a.id}"
-}
-
-resource "aws_route_table_association" "public_subnet_b_route_table_association" {
-  route_table_id = "${aws_route_table.public_route_table.id}"
-  subnet_id = "${aws_subnet.public_subnet_b.id}"
-}
-
-resource "aws_route_table_association" "public_subnet_c_route_table_association" {
-  route_table_id = "${aws_route_table.public_route_table.id}"
-  subnet_id = "${aws_subnet.public_subnet_c.id}"
-}
-
-resource "aws_subnet" "private_subnet_a" {
-  vpc_id = "${aws_vpc.vpc.id}"
-  cidr_block = "${var.subnet_config["private_subnet_a"]}"
-  availability_zone = "${var.azs[0]}"
-
-  tags = "${merge(local.common_tags, map("Name", "${var.stack_name}-private-a"))}"
-}
-
-resource "aws_subnet" "private_subnet_b" {
-  vpc_id = "${aws_vpc.vpc.id}"
-  cidr_block = "${var.subnet_config["private_subnet_b"]}"
-  availability_zone = "${var.azs[1]}"
-
-  tags = "${merge(local.common_tags, map("Name", "${var.stack_name}-private-b"))}"
-}
-
-resource "aws_subnet" "private_subnet_c" {
-  vpc_id = "${aws_vpc.vpc.id}"
-  cidr_block = "${var.subnet_config["private_subnet_c"]}"
-  availability_zone = "${var.azs[2]}"
-
-  tags = "${merge(local.common_tags, map("Name", "${var.stack_name}-private-c"))}"
-}
-
-resource "aws_eip" "nat_ip" {
-  vpc = true
-  tags = "${local.common_tags}"
-}
-
-resource "aws_nat_gateway" "nat" {
-  allocation_id = "${aws_eip.nat_ip.id}"
-  subnet_id = "${aws_subnet.public_subnet_a.id}"
-  tags = "${local.common_tags}"
-}
-
-resource "aws_route_table" "private_route_table" {
-  vpc_id = "${aws_vpc.vpc.id}"
-  tags = "${local.common_tags}"
-}
-
-resource "aws_route" "private_route" {
-  route_table_id = "${aws_route_table.private_route_table.id}"
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id = "${aws_nat_gateway.nat.id}"
-}
-
-resource "aws_route_table_association" "private_subnet_a_route_table_association" {
-  route_table_id = "${aws_route_table.private_route_table.id}"
-  subnet_id = "${aws_subnet.private_subnet_a.id}"
-}
-
-resource "aws_route_table_association" "private_subnet_b_route_table_association" {
-  route_table_id = "${aws_route_table.private_route_table.id}"
-  subnet_id = "${aws_subnet.private_subnet_b.id}"
-}
-
-resource "aws_route_table_association" "private_subnet_c_route_table_association" {
-  route_table_id = "${aws_route_table.private_route_table.id}"
-  subnet_id = "${aws_subnet.private_subnet_c.id}"
+  # Default VPC
+  private_zone_vpc_id     = "${module.vpc.vpc_id}"
+  private_zone_vpc_region = "${var.aws_region}"
 }
 
 data "aws_route53_zone" "hosted_zone" {
   name = "${var.hosted_zone_name}"
 }
 
-resource "aws_route53_zone" "public_zone" {
-  name = "${var.stack_name}.${var.hosted_zone_name}."
-  vpc_id = "${aws_vpc.vpc.id}"
-  vpc_region = "${var.aws_region}"
-  tags = "${local.common_tags}"
-}
-
 resource "aws_route53_record" "public_zone" {
   zone_id = "${data.aws_route53_zone.hosted_zone.id}"
   type = "NS"
-  name = "${aws_route53_zone.public_zone.name}"
+  name = "${local.public_zone_name}"
+  records = ["${module.dns.public_zone_name_servers}"]
   ttl = 300
-  records = [
-    "${aws_route53_zone.public_zone.name_servers.0}",
-    "${aws_route53_zone.public_zone.name_servers.1}",
-    "${aws_route53_zone.public_zone.name_servers.2}",
-    "${aws_route53_zone.public_zone.name_servers.3}"
-  ]
 }

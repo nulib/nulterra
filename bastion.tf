@@ -22,7 +22,7 @@ data "aws_ami" "amzn" {
 resource "aws_security_group" "bastion" {
   name = "${var.stack_name}-bastion"
   description = "Bastion Host Security Group"
-  vpc_id = "${aws_vpc.vpc.id}"
+  vpc_id = "${module.vpc.vpc_id}"
   tags = "${local.common_tags}"
 
   ingress {
@@ -45,7 +45,7 @@ resource "aws_instance" "bastion" {
   instance_type = "t2.nano"
   key_name = "${var.ec2_keyname}"
   vpc_security_group_ids = ["${aws_security_group.bastion.id}", "${aws_security_group.db_client.id}"]
-  subnet_id = "${aws_subnet.public_subnet_a.id}"
+  subnet_id = "${module.vpc.public_subnets[0]}"
   associate_public_ip_address = true
   tags = "${merge(local.common_tags, map("Name", "${var.stack_name}-bastion"))}"
 
@@ -64,8 +64,8 @@ resource "aws_instance" "bastion" {
 }
 
 resource "aws_route53_record" "bastion" {
-  zone_id = "${aws_route53_zone.public_zone.zone_id}"
-  name    = "bastion.${aws_route53_zone.public_zone.name}"
+  zone_id = "${module.dns.public_zone_id}"
+  name    = "bastion.${local.public_zone_name}"
   type    = "A"
   ttl     = "300"
   records = ["${aws_instance.bastion.public_ip}"]
