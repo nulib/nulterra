@@ -9,13 +9,13 @@ variable "project_name" {
 variable "subnet_config" {
   type = "map"
   default = {
-    "VPC"             = "10.0.0.0/16"
-    "PrivateSubnetA"  = "10.0.1.0/24"
-    "PublicSubnetA"   = "10.0.2.0/24"
-    "PrivateSubnetB"  = "10.0.3.0/24"
-    "PublicSubnetB"   = "10.0.4.0/24"
-    "PrivateSubnetC"  = "10.0.5.0/24"
-    "PublicSubnetC"   = "10.0.6.0/24"
+    "vpc"              = "10.0.0.0/16"
+    "private_subnet_a" = "10.0.1.0/24"
+    "public_subnet_a"  = "10.0.2.0/24"
+    "private_subnet_b" = "10.0.3.0/24"
+    "public_subnet_b"  = "10.0.4.0/24"
+    "private_subnet_c" = "10.0.5.0/24"
+    "public_subnet_c"  = "10.0.6.0/24"
   }
 }
 
@@ -41,9 +41,17 @@ variable "ec2_private_keyfile" {
   type = "string"
 }
 
+variable "tags" {
+  type = "map"
+  default = {}
+}
+
 locals {
-  common_tags = {
-    "Owner" = "${var.stack_name}"
-    "Project" = "${var.project_name}"
-  }
+  common_tags = "${merge(
+    var.tags,
+    map(
+      "Stack", "${var.stack_name}",
+      "Project", "${var.project_name}"
+    )
+  )}"
 }

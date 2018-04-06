@@ -1,0 +1,15 @@
+[
+  {
+    "name": "fcrepo",
+    "image": "nulib/fcrepo4:s3fix",
+    "cpu": 10,
+    "memory": 512,
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 8080,
+        "hostPort": 8080
+      }
+    ]
+  }
+]

@@ -1,8 +1,3 @@
-resource "aws_db_subnet_group" "db_subnet_group" {
-  depends_on = ["aws_internet_gateway.InternetGateway", "aws_route.PublicRoute"]
-  subnet_ids = ["${aws_subnet.PublicSubnetA.id}", "${aws_subnet.PublicSubnetB.id}", "${aws_subnet.PublicSubnetC.id}"]
-}
-
 variable "db_master_username" {
   type = "string"
   default = "dbadmin"
@@ -12,7 +7,17 @@ module "db_master_password" {
   source = "./password"
 }
 
+resource "aws_db_subnet_group" "db_subnet_group" {
+  subnet_ids = [
+    "${aws_subnet.private_subnet_a.id}",
+    "${aws_subnet.private_subnet_b.id}", 
+    "${aws_subnet.private_subnet_c.id}"
+  ]
+  tags = "${local.common_tags}"
+}
+
 resource "aws_db_instance" "db" {
+  name = "${var.stack_name}-db"
   engine = "postgres"
   instance_class = "db.t2.medium"
   allocated_storage = 5
@@ -20,18 +25,22 @@ resource "aws_db_instance" "db" {
   username = "${var.db_master_username}"
   password = "${module.db_master_password.result}"
   vpc_security_group_ids = ["${aws_security_group.db.id}"]
-  tags = "${local.common_tags}"
   skip_final_snapshot = true
+  tags = "${local.common_tags}"
 }
 
 resource "aws_security_group" "db_client" {
+  name = "${var.stack_name}-db-client"
   description = "RDS Client Security Group"
   vpc_id = "${aws_vpc.vpc.id}"
+  tags = "${local.common_tags}"
 }
 
 resource "aws_security_group" "db" {
+  name = "${var.stack_name}-db"
   description = "RDS Security Group"
   vpc_id = "${aws_vpc.vpc.id}"
+  tags = "${local.common_tags}"
 
   ingress {
     from_port = 5432

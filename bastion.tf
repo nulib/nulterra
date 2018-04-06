@@ -20,8 +20,10 @@ data "aws_ami" "amzn" {
 }
 
 resource "aws_security_group" "bastion" {
+  name = "${var.stack_name}-bastion"
   description = "Bastion Host Security Group"
   vpc_id = "${aws_vpc.vpc.id}"
+  tags = "${local.common_tags}"
 
   ingress {
     from_port = 22
@@ -43,23 +45,28 @@ resource "aws_instance" "bastion" {
   instance_type = "t2.nano"
   key_name = "${var.ec2_keyname}"
   vpc_security_group_ids = ["${aws_security_group.bastion.id}", "${aws_security_group.db_client.id}"]
-  subnet_id = "${aws_subnet.PublicSubnetA.id}"
+  subnet_id = "${aws_subnet.public_subnet_a.id}"
   associate_public_ip_address = true
-  tags = "${local.common_tags}"
-}
-
-resource "null_resource" "postgres_client" {
-  connection {
-    user = "ec2-user"
-    agent = true
-    timeout = "3m"
-    host = "${aws_instance.bastion.public_ip}"
-    private_key = "${file("/Users/mbk836/.ssh/id_rsa")}"
-  }
+  tags = "${merge(local.common_tags, map("Name", "${var.stack_name}-bastion"))}"
 
   provisioner "remote-exec" {
+    connection {
+      user = "ec2-user"
+      agent = true
+      timeout = "3m"
+      private_key = "${file(var.ec2_private_keyfile)}"
+    }
+
     inline = [
       "sudo yum install -y postgresql96"
     ]
   }
+}
+
+resource "aws_route53_record" "bastion" {
+  zone_id = "${aws_route53_zone.public_zone.zone_id}"
+  name    = "bastion.${aws_route53_zone.public_zone.name}"
+  type    = "A"
+  ttl     = "300"
+  records = ["${aws_instance.bastion.public_ip}"]
 }
