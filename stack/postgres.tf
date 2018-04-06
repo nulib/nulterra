@@ -4,7 +4,7 @@ variable "db_master_username" {
 }
 
 module "db_master_password" {
-  source = "./password"
+  source = "../password"
 }
 
 module "db" {

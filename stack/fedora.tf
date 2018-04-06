@@ -1,5 +1,5 @@
 module "fcrepodb" {
-  source = "./database"
+  source = "../database"
   schema = "fcrepo"
   host = "${module.db.this_db_instance_address}"
   port = "${module.db.this_db_instance_port}"
@@ -9,7 +9,7 @@ module "fcrepodb" {
   connection = {
     user        = "ec2-user"
     host        = "${aws_instance.bastion.public_ip}"
-    private_key = "${file(var.ec2_private_keyfile)}"    
+    private_key = "${file(var.ec2_private_keyfile)}"
   }
 }
 
@@ -137,6 +137,3 @@ module "fcrepodb" {
 #  }
 #}
 #
-output "fcrepo_password" {
-  value = "${module.fcrepodb.password}"
-}
