@@ -41,10 +41,10 @@ resource "null_resource" "this_database" {
     inline = ["${local.create_command}"]
   }
 
-  provisioner "remote-exec" {
-    inline = ["${local.destroy_command}"]
-    when   = "destroy"
-  }
+#  provisioner "remote-exec" {
+#    inline = ["${local.destroy_command}"]
+#    when   = "destroy"
+#  }
 
   lifecycle {
     create_before_destroy = true
