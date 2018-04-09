@@ -7,3 +7,7 @@
 
 # Variable definitions
 *.tfvars
+
+# Vim Backup Files
+.*~
+*~
