@@ -38,14 +38,14 @@ resource "aws_security_group" "this_client_security_group" {
   name = "${var.name}-client"
   description = "${var.name} Client Security Group"
   vpc_id = "${var.vpc_id}"
-  tags = "${var.tags}"
+  tags = "${merge(var.tags, map("Name", "${var.name}-client"))}"
 }
 
 resource "aws_security_group" "this_lb_security_group" {
   name = "${var.name}-lb"
   description = "${var.name} Security Group"
   vpc_id = "${var.vpc_id}"
-  tags = "${var.tags}"
+  tags = "${merge(var.tags, map("Name", "${var.name}-lb"))}"
 
   egress {
     from_port = 0
@@ -127,7 +127,7 @@ resource "aws_ecs_service" "this_service" {
   name = "${var.name}"
   cluster = "${aws_ecs_cluster.this_cluster.id}"
   task_definition = "${aws_ecs_task_definition.this_task_definition.arn}"
-  desired_count = 1
+  desired_count = "${var.desired_capacity}"
   iam_role = "${aws_iam_role.this_role.arn}"
 
   load_balancer {

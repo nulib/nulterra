@@ -24,6 +24,6 @@ data "aws_iam_policy_document" "ecs_service_permissions_document" {
 }
 
 resource "aws_iam_policy" "ecs_service_permissions" {
-  name   = "ecs-service-permissions"
+  name   = "${var.name}-ecs-service-permissions"
   policy = "${data.aws_iam_policy_document.ecs_service_permissions_document.json}"
 }

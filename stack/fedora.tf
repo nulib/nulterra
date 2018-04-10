@@ -111,7 +111,7 @@ resource "aws_security_group_rule" "allow_fedora_postgres_access" {
 }
 
 resource "aws_route53_record" "fcrepo" {
-  zone_id = "${module.dns.public_zone_id}"
+  zone_id = "${module.dns.private_zone_id}"
   name    = "fcrepo.${local.private_zone_name}"
   type    = "A"
 

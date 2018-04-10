@@ -1,0 +1,32 @@
+[
+  {
+    "name": "zookeeper",
+    "image": "nulib/zookeeper-exhibitor",
+    "memory": 3000,
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 8181,
+        "hostPort": 8181
+      }
+    ],
+    "environment": [
+      {
+        "name": "S3_BUCKET",
+        "value": "${config_bucket}"
+      },
+      {
+        "name": "S3_PREFIX",
+        "value": "zookeeper"
+      },
+      {
+        "name": "AWS_REGION",
+        "value": "${region}"
+      },
+      {
+        "name": "DYNAMIC_HOSTNAME",
+        "value": "true"
+      }
+    ]
+  }
+]

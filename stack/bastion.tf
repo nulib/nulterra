@@ -47,7 +47,8 @@ resource "aws_instance" "bastion" {
   vpc_security_group_ids = [
     "${aws_security_group.bastion.id}",
     "${aws_security_group.db_client.id}",
-    "${module.fcrepo_container.client_security_group}"
+    "${module.fcrepo_container.client_security_group}",
+    "${module.zookeeper_container.client_security_group}"
   ]
   subnet_id = "${module.vpc.public_subnets[0]}"
   associate_public_ip_address = true
