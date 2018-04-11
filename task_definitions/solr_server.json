@@ -36,6 +36,10 @@
       {
         "sourceVolume": "solr-backup",
         "containerPath": "/data/backup"
+      },
+      {
+        "sourceVolume": "solr-scripts",
+        "containerPath": "/docker-entrypoint-initdb.d"
       }
     ]
   }

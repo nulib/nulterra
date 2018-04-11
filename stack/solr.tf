@@ -1,3 +1,5 @@
+# SOLR CONTAINERS NEED UNIQUE HOSTNAMES
+
 module "backup_volume" {
   source  = "cloudposse/efs/aws"
   version = "0.3.3"
@@ -37,6 +39,11 @@ resource "aws_ecs_task_definition" "solr_task_definition" {
     name = "solr-backup",
     host_path = "/var/app/solr-backup"
   }
+
+  volume {
+    name = "solr-scripts",
+    host_path = "/var/app/solr-scripts"
+  }
 }
 
 module "solr_container" {
@@ -58,9 +65,11 @@ module "solr_container" {
   desired_capacity = 3
   custom_userdata = <<EOF
 yum install -y nfs-utils
-mkdir -p /var/app/solr-data /var/app/solr-backup
+mkdir -p /var/app/solr-data /var/app/solr-backup /var/app/solr-scripts
 mount -t nfs4 ${module.backup_volume.dns_name}:/ /var/app/solr-backup/
 chown 8983:8983 /var/app/solr-data /var/app/solr-backup
+echo '#!/bin/bash\n\necho "SOLR_HOST=$(wget -qO- http://169.254.169.254/latest/meta-data/local-hostname)" >> /opt/solr/bin/solr.in.sh' > /var/app/solr-scripts/set_hostname.sh
+chmod 0755 /var/app/solr-scripts/set_hostname.sh
 EOF
   client_access = [
     {
