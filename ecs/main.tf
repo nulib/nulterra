@@ -20,7 +20,7 @@ data "aws_ami" "ecs_ami" {
 }
 
 resource "aws_iam_role" "this_role" {
-  name = "${var.name}"
+  name = "${var.namespace}-${var.name}"
   assume_role_policy = "${data.aws_iam_policy_document.container_assume_role.json}"
 }
 
@@ -35,17 +35,17 @@ resource "aws_iam_role_policy_attachment" "this_container_permissions" {
 }
 
 resource "aws_security_group" "this_client_security_group" {
-  name = "${var.name}-client"
+  name = "${local.namespace_prefix}-client"
   description = "${var.name} Client Security Group"
   vpc_id = "${var.vpc_id}"
-  tags = "${merge(var.tags, map("Name", "${var.name}-client"))}"
+  tags = "${merge(var.tags, map("Name", "${local.namespace_prefix}-client"))}"
 }
 
 resource "aws_security_group" "this_lb_security_group" {
-  name = "${var.name}-lb"
+  name = "${local.namespace_prefix}-lb"
   description = "${var.name} Security Group"
   vpc_id = "${var.vpc_id}"
-  tags = "${merge(var.tags, map("Name", "${var.name}-lb"))}"
+  tags = "${merge(var.tags, map("Name", "${local.namespace_prefix}-lb"))}"
 
   egress {
     from_port = 0
@@ -79,7 +79,7 @@ resource "aws_security_group_rule" "this_cidr_rule" {
 }
 
 resource "aws_elb" "this_elb" {
-  name = "${var.name}-lb"
+  name = "${local.namespace_prefix}-lb"
   internal = true
   cross_zone_load_balancing = true
   connection_draining = true
@@ -114,19 +114,24 @@ resource "aws_security_group_rule" "lb_access_to_client" {
 }
 
 resource "aws_ecs_task_definition" "this_task_definition" {
-  family = "${var.name}-service"
+  count = "${var.create_task_definition ? 1 : 0}"
+  family = "${local.namespace_prefix}-service"
   container_definitions = "${var.container_definitions}"
   requires_compatibilities = ["EC2"]
 }
 
 resource "aws_ecs_cluster" "this_cluster" {
-  name = "${var.name}"
+  name = "${var.namespace}-${var.name}"
+}
+
+locals {
+  task_definition_arn = "${element(concat(aws_ecs_task_definition.this_task_definition.*.arn, list(var.existing_task_definition_arn)), 0)}"
 }
 
 resource "aws_ecs_service" "this_service" {
-  name = "${var.name}"
+  name = "${var.namespace}-${var.name}"
   cluster = "${aws_ecs_cluster.this_cluster.id}"
-  task_definition = "${aws_ecs_task_definition.this_task_definition.arn}"
+  task_definition = "${local.task_definition_arn}"
   desired_count = "${var.desired_capacity}"
   iam_role = "${aws_iam_role.this_role.arn}"
 
@@ -138,7 +143,7 @@ resource "aws_ecs_service" "this_service" {
 }
 
 resource "aws_iam_instance_profile" "this_instance_profile" {
-  name = "${var.name}-profile"
+  name = "${local.namespace_prefix}-profile"
   role = "${aws_iam_role.this_role.name}"
 }
 
@@ -146,8 +151,8 @@ module "ecs_instances" {
   source = "git://github.com/arminc/terraform-ecs//modules/ecs_instances"
 
   environment             = "${var.tags["Environment"]}"
-  cluster                 = "${var.name}"
-  instance_group          = "${var.name}"
+  cluster                 = "${var.namespace}-${var.name}"
+  instance_group          = "${var.namespace}-${var.name}"
   private_subnet_ids      = ["${var.subnets}"]
   aws_ami                 = "${data.aws_ami.ecs_ami.id}"
   instance_type           = "${var.instance_type}"
@@ -160,5 +165,5 @@ module "ecs_instances" {
   load_balancers          = ["${aws_elb.this_elb.name}"]
   depends_id              = "${var.vpc_id}"
   custom_userdata         = "${var.custom_userdata}"
-  cloudwatch_prefix       = "${var.name}"
+  cloudwatch_prefix       = "${var.namespace}-${var.name}"
 }

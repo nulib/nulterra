@@ -1,3 +1,4 @@
+variable "namespace"     { type = "string" }
 variable "name"          { type = "string" }
 variable "vpc_id"        { type = "string" }
 variable "instance_port" { type = "string" }
@@ -58,6 +59,7 @@ variable "health_check_interval" {
 
 variable "container_definitions" {
   type = "string"
+  default = ""
 }
 
 variable "instance_protocol" {
@@ -78,6 +80,16 @@ variable "client_access" {
 variable "cidr_access" {
   type = "list"
   default = []
+}
+
+variable "create_task_definition" {
+  type = "string"
+  default = "true"
+}
+
+variable "existing_task_definition_arn" {
+  type = "string"
+  default = ""
 }
 
 variable "tags" {

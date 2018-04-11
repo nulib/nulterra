@@ -80,6 +80,7 @@ data "template_file" "fcrepo_task" {
 
 module "fcrepo_container" {
   source = "../ecs"
+  namespace = "${var.stack_name}"
   name = "fcrepo"
   vpc_id = "${module.vpc.vpc_id}"
   subnets = ["${module.vpc.private_subnets}"]

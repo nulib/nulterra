@@ -11,7 +11,7 @@ output "role" {
 }
 
 output "asg" {
-  value = "${var.tags["Environment"]}_${var.name}_${var.name}"
+  value = "${var.tags["Environment"]}_${local.namespace_prefix}_${local.namespace_prefix}"
 }
 
 output "lb_endpoint" {

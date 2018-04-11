@@ -51,6 +51,7 @@ data "template_file" "zookeeper_task" {
 
 module "zookeeper_container" {
   source = "../ecs"
+  namespace = "${var.stack_name}"
   name = "zookeeper"
   vpc_id = "${module.vpc.vpc_id}"
   subnets = ["${module.vpc.private_subnets}"]
@@ -74,7 +75,19 @@ module "zookeeper_container" {
 }
 
 locals {
-  client_ports = [2181, 2888, 3888]
+  client_ports = [2181, 2888, 3888, 8181]
+}
+
+resource "aws_security_group_rule" "allow_zk_solr_access" {
+  count     = "${length(local.client_ports)}"
+  type      = "ingress"
+  from_port = "${local.client_ports[count.index]}"
+  to_port   = "${local.client_ports[count.index]}"
+  protocol  = "tcp"
+
+  security_group_id = "${module.zookeeper_container.security_group}"
+
+  source_security_group_id = "${module.solr_container.security_group}"
 }
 
 resource "aws_security_group_rule" "allow_zk_client_access" {
@@ -180,5 +193,44 @@ module "upsert_zk_records" {
       RecordSetName = "zk.${local.private_zone_name}"
       HostedZoneId = "${module.dns.private_zone_id}"
     }
+  }
+}
+
+data "template_file" "first_run_upsert_zk_records_payload" {
+  template = <<EOF
+{
+  "RequestType": "Create",
+  "ResourceProperties": {
+    "ZookeeperASGName": "$${zookeeper_asg}"
+  }
+}
+EOF
+  vars {
+    zookeeper_asg = "${module.zookeeper_container.asg}"
+  }
+}
+
+data "template_file" "delete_zk_records_change_batch" {
+  template = <<EOF
+{
+  "RequestType": "Delete",
+  "ResourceProperties": {
+    "ZookeeperASGName": "$${zookeeper_asg}"
+  }
+}
+EOF
+  vars {
+    zookeeper_asg = "${module.zookeeper_container.asg}"
+  }
+}
+
+resource "null_resource" "first_run_upsert_zk_records" {
+  provisioner "local-exec" {
+    command = "aws lambda invoke --function-name ${var.stack_name}-upsert-zk-route53-records --payload '${data.template_file.first_run_upsert_zk_records_payload.rendered}' /dev/null"
+  }
+
+  provisioner "local-exec" {
+    when = "destroy"
+    command = "aws lambda invoke --function-name ${var.stack_name}-upsert-zk-route53-records --payload '${data.template_file.delete_zk_records_change_batch.rendered}' /dev/null"
   }
 }

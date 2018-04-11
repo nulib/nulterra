@@ -1,3 +1,7 @@
+locals {
+  namespace_prefix = "${var.namespace}-${var.name}"
+}
+
 data "aws_iam_policy_document" "container_assume_role" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -24,6 +28,6 @@ data "aws_iam_policy_document" "ecs_service_permissions_document" {
 }
 
 resource "aws_iam_policy" "ecs_service_permissions" {
-  name   = "${var.name}-ecs-service-permissions"
+  name   = "${var.namespace}-${var.name}-ecs-service-permissions"
   policy = "${data.aws_iam_policy_document.ecs_service_permissions_document.json}"
 }
