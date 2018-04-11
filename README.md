@@ -8,7 +8,7 @@
 1. Create a `terraform.tfvars` file with the specifics of the stack you want to create:
     ```
     stack_name = "my_repo_stack"
-    project_name = "infrastructure"
+    environment = "infrastructure"
     hosted_zone_name = "rdc-staging.library.northwestern.edu"
     ec2_keyname = "my_keypair"
     ec2_private_keyfile = "/path/to/private/key/for/my_keypair"

@@ -10,7 +10,7 @@ module "stack" {
   source = "./stack"
 
   stack_name = "${var.stack_name}"
-  project_name = "${var.project_name}"
+  environment = "${var.environment}"
   hosted_zone_name = "${var.hosted_zone_name}"
   ec2_keyname = "${var.ec2_keyname}"
   ec2_private_keyfile = "${var.ec2_private_keyfile}"

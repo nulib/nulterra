@@ -2,7 +2,7 @@ variable "stack_name" {
   type = "string"
 }
 
-variable "project_name" {
+variable "environment" {
   type = "string"
 }
 
@@ -53,8 +53,8 @@ locals {
     var.tags,
     map(
       "Terraform", "true",
-      "Environment", "${var.stack_name}",
-      "Project", "${var.project_name}"
+      "Environment", "${var.stack_name}-${var.environment}",
+      "Project", "Infrastructure"
     )
   )}"
 }
