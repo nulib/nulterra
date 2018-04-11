@@ -1,0 +1,42 @@
+[
+  {
+    "name": "solr",
+    "image": "solr:6.6",
+    "memory": 3000,
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 8983,
+        "hostPort": 8983
+      }
+    ],
+    "environment": [
+      {
+        "name": "SOLR_MODE",
+        "value": "solrcloud"
+      },
+      {
+        "name": "SOLR_HOME",
+        "value": "/data/solr"
+      },
+      {
+        "name": "INIT_SOLR_HOME",
+        "value": "yes"
+      },
+      {
+        "name": "ZK_HOST",
+        "value": "${zookeeper_hostname}"
+      }
+    ],
+    "mountPoints": [
+      {
+        "sourceVolume": "solr-data",
+        "containerPath": "/data/solr"
+      },
+      {
+        "sourceVolume": "solr-backup",
+        "containerPath": "/data/backup"
+      }
+    ]
+  }
+]
