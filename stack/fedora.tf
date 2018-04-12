@@ -1,5 +1,5 @@
 locals {
-  db_schema = "fcrepo"
+  fcrepo_db_schema = "fcrepo"
 }
 
 data "archive_file" "fcrepo_source" {
@@ -17,7 +17,7 @@ resource "aws_s3_bucket_object" "fcrepo_source" {
 
 module "fcrepodb" {
   source          = "../database"
-  schema          = "${local.db_schema}"
+  schema          = "${local.fcrepo_db_schema}"
   host            = "${module.db.this_db_instance_address}"
   port            = "${module.db.this_db_instance_port}"
   master_username = "${module.db.this_db_instance_username}"
@@ -112,7 +112,7 @@ module "fcrepo_environment" {
   autoscale_min        = 1
   autoscale_max        = 2
   env_vars = {
-    JAVA_OPTIONS = "-Dfcrepo.postgresql.host=${module.db.this_db_instance_address} -Dfcrepo.postgresql.port=${module.db.this_db_instance_port} -Dfcrepo.postgresql.username=${local.db_schema} -Dfcrepo.postgresql.password=${module.fcrepodb.password} -Daws.accessKeyId=${aws_iam_access_key.fcrepo_binary_bucket_access_key.id} -Daws.secretKey=${aws_iam_access_key.fcrepo_binary_bucket_access_key.secret} -Daws.bucket=${aws_s3_bucket.fcrepo_binary_bucket.id}"
+    JAVA_OPTIONS = "-Dfcrepo.postgresql.host=${module.db.this_db_instance_address} -Dfcrepo.postgresql.port=${module.db.this_db_instance_port} -Dfcrepo.postgresql.username=${local.fcrepo_db_schema} -Dfcrepo.postgresql.password=${module.fcrepodb.password} -Daws.accessKeyId=${aws_iam_access_key.fcrepo_binary_bucket_access_key.id} -Daws.secretKey=${aws_iam_access_key.fcrepo_binary_bucket_access_key.secret} -Daws.bucket=${aws_s3_bucket.fcrepo_binary_bucket.id}"
   }
 }
 
