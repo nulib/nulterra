@@ -7,3 +7,4 @@
 
 # Variable definitions
 *.tfvars
+**/build/**
