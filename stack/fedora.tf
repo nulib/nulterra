@@ -91,11 +91,10 @@ resource "aws_elastic_beanstalk_application_version" "fcrepo" {
 }
 
 module "fcrepo_environment" {
-  #source  = "cloudposse/elastic-beanstalk-environment/aws"
-  #version = "0.3.11"
-  source = "/Users/mbk836/Workspace/terraform-aws-elastic-beanstalk-environment"
+  source = "git://github.com/nulib/terraform-aws-elastic-beanstalk-environment"
 
   app                  = "${aws_elastic_beanstalk_application.fcrepo.name}"
+  version_label        = "${aws_elastic_beanstalk_application_version.fcrepo.name}"
   namespace            = "${var.stack_name}"
   name                 = "fcrepo"
   stage                = "${var.environment}"

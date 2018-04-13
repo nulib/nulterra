@@ -67,11 +67,10 @@ resource "aws_elastic_beanstalk_application_version" "zookeeper" {
 }
 
 module "zookeeper_environment" {
-  #source  = "cloudposse/elastic-beanstalk-environment/aws"
-  #version = "0.3.11"
-  source = "/Users/mbk836/Workspace/terraform-aws-elastic-beanstalk-environment"
+  source = "git://github.com/nulib/terraform-aws-elastic-beanstalk-environment"
 
   app                  = "${aws_elastic_beanstalk_application.zookeeper.name}"
+  version_label        = "${aws_elastic_beanstalk_application_version.zookeeper.name}"
   namespace            = "${var.stack_name}"
   name                 = "zookeeper"
   stage                = "${var.environment}"
@@ -99,17 +98,17 @@ locals {
   client_ports = [2181, 2888, 3888, 8181]
 }
 
-#resource "aws_security_group_rule" "allow_zk_solr_access" {
-#  count     = "${length(local.client_ports)}"
-#  type      = "ingress"
-#  from_port = "${local.client_ports[count.index]}"
-#  to_port   = "${local.client_ports[count.index]}"
-#  protocol  = "tcp"
-#
-#  security_group_id = "${module.zookeeper_environment.security_group_id}"
-#
-#  source_security_group_id = "${module.solr_environment.security_group_id}"
-#}
+resource "aws_security_group_rule" "allow_zk_solr_access" {
+  count     = "${length(local.client_ports)}"
+  type      = "ingress"
+  from_port = "${local.client_ports[count.index]}"
+  to_port   = "${local.client_ports[count.index]}"
+  protocol  = "tcp"
+
+  security_group_id = "${module.zookeeper_environment.security_group_id}"
+
+  source_security_group_id = "${module.solr_environment.security_group_id}"
+}
 
 resource "aws_security_group_rule" "allow_zk_self_access" {
   count     = "${length(local.client_ports)}"
