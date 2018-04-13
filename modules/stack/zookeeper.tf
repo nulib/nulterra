@@ -67,25 +67,27 @@ resource "aws_elastic_beanstalk_application_version" "zookeeper" {
 }
 
 module "zookeeper_environment" {
-  source = "git://github.com/nulib/terraform-aws-elastic-beanstalk-environment"
+  source = "../beanstalk"
 
-  app                  = "${aws_elastic_beanstalk_application.zookeeper.name}"
-  version_label        = "${aws_elastic_beanstalk_application_version.zookeeper.name}"
-  namespace            = "${var.stack_name}"
-  name                 = "zookeeper"
-  stage                = "${var.environment}"
-  solution_stack_name  = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
-  vpc_id               = "${module.vpc.vpc_id}"
-  private_subnets      = "${module.vpc.private_subnets}"
-  public_subnets       = "${module.vpc.private_subnets}"
-  loadbalancer_scheme  = "internal"
-  healthcheck_url      = "/exhibitor/v1/ui/index.html"
-  keypair              = "${var.ec2_keyname}"
-  instance_type        = "t2.medium"
-  security_groups      = ["${aws_security_group.bastion.id}"]
-  ssh_listener_enabled = "true"
-  autoscale_min        = 2
-  autoscale_max        = 3
+  app                    = "${aws_elastic_beanstalk_application.zookeeper.name}"
+  version_label          = "${aws_elastic_beanstalk_application_version.zookeeper.name}"
+  namespace              = "${var.stack_name}"
+  name                   = "zookeeper"
+  stage                  = "${var.environment}"
+  solution_stack_name    = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
+  vpc_id                 = "${module.vpc.vpc_id}"
+  private_subnets        = "${module.vpc.private_subnets}"
+  public_subnets         = "${module.vpc.private_subnets}"
+  loadbalancer_scheme    = "internal"
+  instance_port          = "8181"
+  healthcheck_url        = "/exhibitor/v1/ui/index.html"
+  keypair                = "${var.ec2_keyname}"
+  instance_type          = "t2.medium"
+  autoscale_min          = 2
+  autoscale_max          = 3
+  health_check_threshold = "Severe"
+  tags                   = "${local.common_tags}"
+
   env_vars = {
     S3_BUCKET        = "${aws_s3_bucket.zookeeper_config_bucket.id}",
     S3_PREFIX        = "zookeeper",
@@ -94,15 +96,10 @@ module "zookeeper_environment" {
   }
 }
 
-locals {
-  client_ports = [2181, 2888, 3888, 8181]
-}
-
 resource "aws_security_group_rule" "allow_zk_solr_access" {
-  count     = "${length(local.client_ports)}"
   type      = "ingress"
-  from_port = "${local.client_ports[count.index]}"
-  to_port   = "${local.client_ports[count.index]}"
+  from_port = "2181"
+  to_port   = "2181"
   protocol  = "tcp"
 
   security_group_id = "${module.zookeeper_environment.security_group_id}"
@@ -111,11 +108,10 @@ resource "aws_security_group_rule" "allow_zk_solr_access" {
 }
 
 resource "aws_security_group_rule" "allow_zk_self_access" {
-  count     = "${length(local.client_ports)}"
   type      = "ingress"
-  from_port = "${local.client_ports[count.index]}"
-  to_port   = "${local.client_ports[count.index]}"
-  protocol  = "tcp"
+  from_port = 0
+  to_port   = 0
+  protocol  = -1
 
   security_group_id = "${module.zookeeper_environment.security_group_id}"
 

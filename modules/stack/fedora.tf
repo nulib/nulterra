@@ -91,25 +91,27 @@ resource "aws_elastic_beanstalk_application_version" "fcrepo" {
 }
 
 module "fcrepo_environment" {
-  source = "git://github.com/nulib/terraform-aws-elastic-beanstalk-environment"
+  source = "../beanstalk"
 
-  app                  = "${aws_elastic_beanstalk_application.fcrepo.name}"
-  version_label        = "${aws_elastic_beanstalk_application_version.fcrepo.name}"
-  namespace            = "${var.stack_name}"
-  name                 = "fcrepo"
-  stage                = "${var.environment}"
-  solution_stack_name  = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
-  vpc_id               = "${module.vpc.vpc_id}"
-  private_subnets      = "${module.vpc.private_subnets}"
-  public_subnets       = "${module.vpc.private_subnets}"
-  loadbalancer_scheme  = "internal"
-  healthcheck_url      = "/rest"
-  keypair              = "${var.ec2_keyname}"
-  instance_type        = "t2.medium"
-  security_groups      = ["${aws_security_group.bastion.id}"]
-  ssh_listener_enabled = "true"
-  autoscale_min        = 1
-  autoscale_max        = 2
+  app                    = "${aws_elastic_beanstalk_application.fcrepo.name}"
+  version_label          = "${aws_elastic_beanstalk_application_version.fcrepo.name}"
+  namespace              = "${var.stack_name}"
+  name                   = "fcrepo"
+  stage                  = "${var.environment}"
+  solution_stack_name    = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
+  vpc_id                 = "${module.vpc.vpc_id}"
+  private_subnets        = "${module.vpc.private_subnets}"
+  public_subnets         = "${module.vpc.private_subnets}"
+  loadbalancer_scheme    = "internal"
+  instance_port          = "8080"
+  healthcheck_url        = "/rest"
+  keypair                = "${var.ec2_keyname}"
+  instance_type          = "t2.medium"
+  autoscale_min          = 1
+  autoscale_max          = 2
+  health_check_threshold = "Severe"
+  tags                   = "${local.common_tags}"
+
   env_vars = {
     JAVA_OPTIONS = "-Dfcrepo.postgresql.host=${module.db.this_db_instance_address} -Dfcrepo.postgresql.port=${module.db.this_db_instance_port} -Dfcrepo.postgresql.username=${local.fcrepo_db_schema} -Dfcrepo.postgresql.password=${module.fcrepodb.password} -Daws.accessKeyId=${aws_iam_access_key.fcrepo_binary_bucket_access_key.id} -Daws.secretKey=${aws_iam_access_key.fcrepo_binary_bucket_access_key.secret} -Daws.bucket=${aws_s3_bucket.fcrepo_binary_bucket.id}"
   }

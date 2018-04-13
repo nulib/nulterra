@@ -21,7 +21,6 @@
       "essential": true,
       "memory": 3000,
       "portMappings": [
-        { "hostPort": 80,   "containerPort": 8983 },
         { "hostPort": 8983, "containerPort": 8983 }
       ],
       "environment": [

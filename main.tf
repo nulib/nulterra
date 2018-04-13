@@ -7,7 +7,7 @@ provider "aws" {
 }
 
 module "stack" {
-  source = "./stack"
+  source = "./modules/stack"
 
   stack_name = "${var.stack_name}"
   environment = "${var.environment}"

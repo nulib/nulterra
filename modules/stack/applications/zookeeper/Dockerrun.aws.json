@@ -7,7 +7,6 @@
       "essential": true,
       "memory": 3000,
       "portMappings": [
-        { "hostPort": 80  , "containerPort": 8181 },
         { "hostPort": 8181, "containerPort": 8181 },
         { "hostPort": 2181, "containerPort": 2181 },
         { "hostPort": 2888, "containerPort": 2888 },
