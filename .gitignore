@@ -8,3 +8,4 @@
 # Variable definitions
 *.tfvars
 **/build/**
+*tfstate*
