@@ -30,6 +30,7 @@ resource "aws_s3_bucket_object" "solr_source" {
 }
 
 resource "aws_elastic_beanstalk_application" "solr" {
+  depends_on = ["null_resource.wait_for_zookeeper"]
   name = "${var.stack_name}-solr"
 }
 
@@ -39,6 +40,16 @@ resource "aws_elastic_beanstalk_application_version" "solr" {
   description = "application version created by terraform"
   bucket      = "${aws_s3_bucket.app_sources.id}"
   key         = "${aws_s3_bucket_object.solr_source.id}"
+}
+
+resource "null_resource" "wait_for_zookeeper" {
+  triggers {
+    value = "${module.zookeeper_environment.name}"
+  }
+
+  provisioner "local-exec" {
+    command = "while [[ $(aws elasticbeanstalk describe-environments --environment-names ${module.zookeeper_environment.name} | jq -r '.Environments[].Status') -ne 'Ready' ]]; do sleep 10; done"
+  }
 }
 
 module "solr_environment" {
