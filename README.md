@@ -7,11 +7,15 @@
 1. Create an S3 bucket to hold the terraform state.
 1. Create a `terraform.tfvars` file with the specifics of the stack you want to create:
     ```
-    stack_name = "my_repo_stack"
-    environment = "infrastructure"
-    hosted_zone_name = "rdc-staging.library.northwestern.edu"
-    ec2_keyname = "my_keypair"
+    stack_name          = "my_repo_stack"
+    environment         = "staging"
+    hosted_zone_name    = "rdc-staging.library.northwestern.edu"
+    ec2_keyname         = "my_keypair"
     ec2_private_keyfile = "/path/to/private/key/for/my_keypair"
+    tags {
+      Creator    = "me"
+      AnotherTag = "Whatever value I want!"
+    }
     ```
   * Note: You can have more than one variable file and pass the name on the command line to manage more than one stack.
 1. Execute `terraform init`.
@@ -30,5 +34,5 @@ To actually make those changes:
     terraform apply
 
 You can proceed with `terraform plan` and `terraform apply` as often as you want to see and apply changes to the
-stack. Changes you make to the `*.tf` files in the root directory will automatically be reflected in the resources
-under Terraform's control.
+stack. Changes you make to the `*.tf` files  will automatically be reflected in the resources under Terraform's
+control.
