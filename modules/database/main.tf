@@ -30,11 +30,11 @@ resource "null_resource" "this_database" {
   }
 
   connection {
-    user = "${var.connection["user"]}"
-    host = "${var.connection["host"]}"
+    user        = "${var.connection["user"]}"
+    host        = "${var.connection["host"]}"
     private_key = "${var.connection["private_key"]}"
-    agent = true
-    timeout = "3m"
+    agent       = true
+    timeout     = "3m"
   }
 
   provisioner "remote-exec" {

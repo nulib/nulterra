@@ -47,10 +47,10 @@ variable "tags" {
 }
 
 locals {
-  namespace = "${var.stack_name}-${var.environment}"
+  namespace         = "${var.stack_name}-${var.environment}"
   public_zone_name  = "${var.stack_name}.${var.hosted_zone_name}"
   private_zone_name = "${var.stack_name}.vpc.${var.hosted_zone_name}"
-  common_tags = "${merge(
+  common_tags       = "${merge(
     var.tags,
     map(
       "Terraform", "true",
