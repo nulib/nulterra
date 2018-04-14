@@ -31,13 +31,13 @@ module "fcrepodb" {
 }
 
 resource "aws_s3_bucket" "fcrepo_binary_bucket" {
-  bucket = "${var.stack_name}-fcrepo-binaries"
+  bucket = "${local.namespace}-fcrepo-binaries"
   acl    = "private"
   tags   = "${local.common_tags}"
 }
 
 resource "aws_iam_user" "fcrepo_binary_bucket_user" {
-  name = "${var.stack_name}-fcrepo"
+  name = "${local.namespace}-fcrepo"
   path = "/system/"
 }
 
@@ -73,13 +73,13 @@ data "aws_iam_policy_document" "fcrepo_binary_bucket_access" {
 }
 
 resource "aws_iam_user_policy" "fcrepo_binary_bucket_policy" {
-  name   = "${var.stack_name}-fcrepo-s3-bucket-access"
+  name   = "${local.namespace}-fcrepo-s3-bucket-access"
   user   = "${aws_iam_user.fcrepo_binary_bucket_user.name}"
   policy = "${data.aws_iam_policy_document.fcrepo_binary_bucket_access.json}"
 }
 
 resource "aws_elastic_beanstalk_application" "fcrepo" {
-  name = "${var.stack_name}-fcrepo"
+  name = "${local.namespace}-fcrepo"
 }
 
 resource "aws_elastic_beanstalk_application_version" "fcrepo" {

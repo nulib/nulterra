@@ -11,7 +11,7 @@ module "db" {
   source = "terraform-aws-modules/rds/aws"
   version = "1.9.0"
 
-  identifier = "${var.stack_name}-db"
+  identifier = "${local.namespace}-db"
 
   engine            = "postgres"
   engine_version    = "9.6.6"
@@ -44,14 +44,14 @@ module "db" {
 }
 
 resource "aws_security_group" "db_client" {
-  name = "${var.stack_name}-db-client"
+  name = "${local.namespace}-db-client"
   description = "RDS Client Security Group"
   vpc_id = "${module.vpc.vpc_id}"
   tags = "${local.common_tags}"
 }
 
 resource "aws_security_group" "db" {
-  name = "${var.stack_name}-db"
+  name = "${local.namespace}-db"
   description = "RDS Security Group"
   vpc_id = "${module.vpc.vpc_id}"
   tags = "${local.common_tags}"

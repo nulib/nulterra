@@ -4,7 +4,7 @@ data "aws_elastic_beanstalk_solution_stack" "multi_docker" {
 }
 
 resource "aws_s3_bucket" "app_sources" {
-  bucket = "${var.stack_name}-${var.environment}-sources"
+  bucket = "${local.namespace}-sources"
   acl    = "private"
 
   versioning {

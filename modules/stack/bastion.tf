@@ -20,7 +20,7 @@ data "aws_ami" "amzn" {
 }
 
 resource "aws_security_group" "bastion" {
-  name = "${var.stack_name}-bastion"
+  name = "${local.namespace}-bastion"
   description = "Bastion Host Security Group"
   vpc_id = "${module.vpc.vpc_id}"
   tags = "${local.common_tags}"
@@ -50,7 +50,7 @@ resource "aws_instance" "bastion" {
   ]
   subnet_id = "${module.vpc.public_subnets[0]}"
   associate_public_ip_address = true
-  tags = "${merge(local.common_tags, map("Name", "${var.stack_name}-bastion"))}"
+  tags = "${merge(local.common_tags, map("Name", "${local.namespace}-bastion"))}"
 
   provisioner "remote-exec" {
     connection {

@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "zookeeper_config_bucket" {
-  bucket = "${var.stack_name}-zk-configs"
+  bucket = "${local.namespace}-zk-configs"
   acl = "private"
   tags = "${local.common_tags}"
 }
@@ -32,7 +32,7 @@ data "aws_iam_policy_document" "zookeeper_config_bucket_access" {
 }
 
 resource "aws_iam_policy" "zookeeper_config_bucket_policy" {
-  name = "${var.stack_name}-zk-config-bucket-access"
+  name = "${local.namespace}-zk-config-bucket-access"
   policy = "${data.aws_iam_policy_document.zookeeper_config_bucket_access.json}"
 }
 
@@ -55,7 +55,7 @@ resource "aws_s3_bucket_object" "zookeeper_source" {
 }
 
 resource "aws_elastic_beanstalk_application" "zookeeper" {
-  name = "${var.stack_name}-zookeeper"
+  name = "${local.namespace}-zookeeper"
 }
 
 resource "aws_elastic_beanstalk_application_version" "zookeeper" {
@@ -151,7 +151,7 @@ data "aws_iam_policy_document" "upsert_route53_access" {
 }
 
 resource "aws_cloudwatch_event_rule" "upsert_zk_records_event" {
-  name = "${var.stack_name}-upsert-zk-records"
+  name = "${local.namespace}-upsert-zk-records"
   description = "Upsert Route53 records for Zookeeper on scaling"
   event_pattern = <<PATTERN
 {
@@ -182,7 +182,7 @@ resource "aws_lambda_permission" "upsert_invoke_permission" {
 module "upsert_zk_records" {
   source = "git://github.com/claranet/terraform-aws-lambda"
 
-  function_name = "${var.stack_name}-upsert-zk-route53-records"
+  function_name = "${local.namespace}-upsert-zk-route53-records"
   description   = "Upsert Route53 records for Zookeeper on scaling"
   handler       = "index.handler"
   runtime       = "nodejs4.3"
@@ -230,11 +230,11 @@ EOF
 
 resource "null_resource" "first_run_upsert_zk_records" {
   provisioner "local-exec" {
-    command = "aws lambda invoke --function-name ${var.stack_name}-upsert-zk-route53-records --payload '${data.template_file.first_run_upsert_zk_records_payload.rendered}' /dev/null"
+    command = "aws lambda invoke --function-name ${local.namespace}-upsert-zk-route53-records --payload '${data.template_file.first_run_upsert_zk_records_payload.rendered}' /dev/null"
   }
 
   provisioner "local-exec" {
     when = "destroy"
-    command = "aws lambda invoke --function-name ${var.stack_name}-upsert-zk-route53-records --payload '${data.template_file.delete_zk_records_change_batch.rendered}' /dev/null"
+    command = "aws lambda invoke --function-name ${local.namespace}-upsert-zk-route53-records --payload '${data.template_file.delete_zk_records_change_batch.rendered}' /dev/null"
   }
 }

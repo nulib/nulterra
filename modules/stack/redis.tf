@@ -12,12 +12,12 @@ resource "aws_security_group_rule" "redis_egress" {
 }
 
 resource "aws_elasticache_subnet_group" "redis" {
-  name       = "${var.stack_name}-${var.environment}-redis"
+  name       = "${local.namespace}-redis"
   subnet_ids = ["${module.vpc.private_subnets}"]
 }
 
 resource "aws_elasticache_cluster" "redis" {
-  cluster_id           = "${var.stack_name}-${var.environment}-redis"
+  cluster_id           = "${local.namespace}-redis"
   engine               = "redis"
   node_type            = "cache.t2.small"
   num_cache_nodes      = 1

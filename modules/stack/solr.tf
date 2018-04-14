@@ -1,4 +1,4 @@
-module "backup_volume" {
+module "solr_backup_volume" {
   source  = "cloudposse/efs/aws"
   version = "0.3.3"
 
@@ -31,7 +31,7 @@ resource "aws_s3_bucket_object" "solr_source" {
 
 resource "aws_elastic_beanstalk_application" "solr" {
   depends_on = ["null_resource.wait_for_zookeeper"]
-  name = "${var.stack_name}-solr"
+  name = "${local.namespace}-solr"
 }
 
 resource "aws_elastic_beanstalk_application_version" "solr" {
@@ -76,7 +76,7 @@ module "solr_environment" {
 
   env_vars = {
     MOUNT_UID     = "8983",
-    MOUNT_VOLUMES = "/var/app/solr-backup=${module.backup_volume.dns_name}",
+    MOUNT_VOLUMES = "/var/app/solr-backup=${module.solr_backup_volume.dns_name}",
     ZK_HOST       = "zk.${local.private_zone_name}"
   }
 }
