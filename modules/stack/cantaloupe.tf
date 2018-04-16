@@ -99,6 +99,50 @@ module "cantaloupe_environment" {
   }
 }
 
+resource "aws_cloudfront_distribution" "cantaloupe" {
+  count            = "${var.enable_iiif_cloudfront ? 1 : 0}"
+  enabled          = true
+  is_ipv6_enabled  = true
+  retain_on_delete = true
+
+  origin {
+    domain_name = "${aws_route53_record.cantaloupe.name}"
+    origin_id   = "cantaloupe-elb"
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "http-only"
+      origin_ssl_protocols   = ["TLSv1", "TLSv1.1", "TLSv1.2"]
+    }
+  }
+
+  default_cache_behavior {
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    target_origin_id       = "cantaloupe-elb"
+    viewer_protocol_policy = "allow-all"
+
+    forwarded_values {
+      cookies {
+        forward = "none"
+      }
+      query_string = false
+      headers      = ["Origin"]
+    }
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+}
+
 resource "aws_route53_record" "cantaloupe" {
   zone_id = "${module.dns.public_zone_id}"
   name    = "cantaloupe.${local.public_zone_name}"

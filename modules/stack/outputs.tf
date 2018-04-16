@@ -19,15 +19,15 @@ output "db_master_password" {
 }
 
 output "repo_endpoint" {
-  value = "http://${aws_route53_record.fcrepo.name"}/rest"
+  value = "http://${aws_route53_record.fcrepo.name}/rest"
 }
 
 output "index_endpoint" {
-  value = "http://${aws_route53_record.solr.name"}/solr/"
+  value = "http://${aws_route53_record.solr.name}/solr/"
 }
 
 output "iiif_endpoint" {
-  value = "http://${aws_route53_record.cantaloupe.name"}/iiif/2"
+  value = "http://${element(concat(aws_cloudfront_distribution.cantaloupe.*.domain_name, list(aws_route53_record.cantaloupe.name)), 0)}/iiif/2"
 }
 
 output "cache_address" {

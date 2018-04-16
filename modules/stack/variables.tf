@@ -41,6 +41,10 @@ variable "ec2_private_keyfile" {
   type = "string"
 }
 
+variable "enable_iiif_cloudfront" {
+  default = false
+}
+
 variable "tags" {
   type = "map"
   default = {}
