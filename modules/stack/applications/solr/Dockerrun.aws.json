@@ -19,7 +19,7 @@
       "name": "solr-app",
       "image": "solr:6.6",
       "essential": true,
-      "memory": 3000,
+      "memoryReservation": 3000,
       "portMappings": [
         { "hostPort": 8983, "containerPort": 8983 }
       ],

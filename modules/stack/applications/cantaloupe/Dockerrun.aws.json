@@ -13,7 +13,7 @@
       "name": "cantaloupe-app",
       "image": "nulib/cantaloupe:latest",
       "essential": true,
-      "memory": 3000,
+      "memoryReservation": 3000,
       "portMappings": [
         {
           "hostPort": 8182,
