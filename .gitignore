@@ -9,3 +9,7 @@
 *.tfvars
 **/build/**
 *tfstate*
+
+# Vi statefiles
+.*~
+*~
