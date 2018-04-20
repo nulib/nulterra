@@ -16,4 +16,4 @@
 # Vi statefiles
 .*~
 *~
-
+*.swp
