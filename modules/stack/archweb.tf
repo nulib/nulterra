@@ -34,6 +34,10 @@ module "archweb_environment" {
 resource "aws_route53_record" "archweb" {
   zone_id = "${module.dns.private_zone_id}"
   name    = "archweb.${local.private_zone_name}"
-  ttl     = "300"
   type    = "A"
+  alias { 
+    name                   = "${module.archweb_environment.elb_dns_name}"
+    zone_id                = "${module.archweb_environment.elb_zone_id}"
+    evaluate_target_health = "true"
+  }
 }
