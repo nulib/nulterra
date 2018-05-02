@@ -11,6 +11,14 @@ resource "aws_elastic_beanstalk_application" "archweb" {
   name = "${local.namespace}-archweb"
 }
 
+resource "aws_elastic_beanstalk_application_version" "archweb" {
+  description = "application version created by terraform"
+  bucket      = "${aws_s3_bucket.app_sources.id}"
+  application = "archweb"
+  key = "archweb"
+  name = "somename"
+}
+
 module "archweb_environment" {
   source                 = "../beanstalk"
   app                    = "${aws_elastic_beanstalk_application.archweb.name}"
