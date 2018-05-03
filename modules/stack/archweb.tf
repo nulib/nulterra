@@ -40,7 +40,7 @@ module "archweb_environment" {
 }
 
 resource "aws_cloudfront_distribution" "archweb" {
-  count            = "${var.enable_archweb ? 1 : 0}"
+  count            = "${var.enable_iiif_cloudfront ? 1 : 0}"
   enabled          = true
   is_ipv6_enabled  = true
   retain_on_delete = true
