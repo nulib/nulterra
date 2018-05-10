@@ -1,0 +1,38 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "volumes": [
+    {
+      "name": "arch-working",
+      "host": { "sourcePath": "/var/app/arch-working" }
+    },
+    {
+      "name": "arch-derivatives",
+      "host": { "sourcePath": "/var/app/arch-derivatives" }
+    }
+  ],
+  "containerDefinitions": [
+    {
+      "name": "arch-app",
+      "image": "nulib/arch",
+      "essential": true,
+      "memoryReservation": 3000,
+      "portMappings": [
+        { "hostPort": 3000, "containerPort": 3000 }
+      ],
+      "environment": [
+        { "name": "BUNDLE_WITH",                         "value": "aws:postgres" },
+        { "name": "BUNDLE_WITHOUT",                      "value": "development:test" },
+        { "name": "DISABLE_REDIS_CLUSTER",               "value": "true" },
+        { "name": "RAILS_GROUPS",                        "value": "aws" },
+        { "name": "RAILS_SERVE_STATIC_FILES",            "value": "true" },
+        { "name": "SETTINGS__GROUPS__SYSTEM_GROUPS",     "value": "administrator,group_manager,manager" },
+        { "name": "SETTINGS__NAME",                      "value": "arch" },
+        { "name": "TMPDIR",                              "value": "/var/arch-working/temp" }
+      ],
+      "mountPoints": [
+        { "sourceVolume": "arch-working",     "containerPath": "/var/arch-working"     },
+        { "sourceVolume": "arch-derivatives", "containerPath": "/var/arch-derivatives" }
+      ]
+    }
+  ]
+}
