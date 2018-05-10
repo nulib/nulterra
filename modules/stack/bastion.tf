@@ -51,7 +51,6 @@ resource "aws_instance" "bastion" {
   subnet_id = "${module.vpc.public_subnets[0]}"
   associate_public_ip_address = true
   tags = "${merge(local.common_tags, map("Name", "${local.namespace}-bastion"))}"
-
   provisioner "remote-exec" {
     connection {
       user = "ec2-user"

@@ -18,6 +18,7 @@
     }
     ```
   * Note: You can have more than one variable file and pass the name on the command line to manage more than one stack.
+1. Run: `eval 'ssh-agent'` to populate the requisite ssh-agent variables.  (Note: the quotes around ssh-agent should be backticks).
 1. Execute `terraform init`.
   * You will be prompted for an S3 bucket, key, and region in which to store the state. This is useful when
     executing terraform on multiple machines (or working as a team) because it allows state to remain in sync.

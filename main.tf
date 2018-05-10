@@ -21,3 +21,4 @@ module "stack" {
 output "iiif_endpoint" {
   value = "${module.stack.iiif_endpoint}"
 }
+

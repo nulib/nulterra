@@ -9,3 +9,11 @@
 *.tfvars
 **/build/**
 *tfstate*
+
+# Terraform .plan files
+*.plan
+
+# Vi statefiles
+.*~
+*~
+*.swp
