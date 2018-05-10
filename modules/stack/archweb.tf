@@ -1,3 +1,39 @@
+module "archweb_derivative_space_volume" {
+  source  = "cloudposse/efs/aws"
+  version = "0.3.3"
+
+  namespace          = "${var.stack_name}"
+  stage              = "archweb"
+  name               = "derivative_space"
+  aws_region         = "${var.aws_region}"
+  vpc_id             = "${module.vpc.vpc_id}"
+  subnets            = "${module.vpc.private_subnets}"
+  availability_zones = ["${var.azs}"]
+  security_groups    = ["${module.archweb_environment.security_group_id}"]
+
+  zone_id = "${module.dns.private_zone_id}"
+
+  tags = "${local.common_tags}"
+}
+
+module "archweb_working_space_volume" {
+  source  = "cloudposse/efs/aws"
+  version = "0.3.3"
+
+  namespace          = "${var.stack_name}"
+  stage              = "archweb"
+  name               = "working_space"
+  aws_region         = "${var.aws_region}"
+  vpc_id             = "${module.vpc.vpc_id}"
+  subnets            = "${module.vpc.private_subnets}"
+  availability_zones = ["${var.azs}"]
+  security_groups    = ["${module.archweb_environment.security_group_id}"]
+
+  zone_id = "${module.dns.private_zone_id}"
+
+  tags = "${local.common_tags}"
+}
+
 resource "aws_iam_user" "archweb_bucket_user" {
   name = "${local.namespace}-archweb"
   path = "/system/"
