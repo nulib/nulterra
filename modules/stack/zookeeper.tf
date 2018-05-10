@@ -54,13 +54,9 @@ resource "aws_s3_bucket_object" "zookeeper_source" {
   etag   = "${data.archive_file.zookeeper_source.output_md5}"
 }
 
-resource "aws_elastic_beanstalk_application" "zookeeper" {
-  name = "${local.namespace}-zookeeper"
-}
-
 resource "aws_elastic_beanstalk_application_version" "zookeeper" {
   name        = "zookeeper-${data.archive_file.zookeeper_source.output_md5}"
-  application = "${aws_elastic_beanstalk_application.zookeeper.name}"
+  application = "${aws_elastic_beanstalk_application.solrcloud.name}"
   description = "application version created by terraform"
   bucket      = "${aws_s3_bucket.app_sources.id}"
   key         = "${aws_s3_bucket_object.zookeeper_source.id}"
@@ -69,7 +65,7 @@ resource "aws_elastic_beanstalk_application_version" "zookeeper" {
 module "zookeeper_environment" {
   source = "../beanstalk"
 
-  app                    = "${aws_elastic_beanstalk_application.zookeeper.name}"
+  app                    = "${aws_elastic_beanstalk_application.solrcloud.name}"
   version_label          = "${aws_elastic_beanstalk_application_version.zookeeper.name}"
   namespace              = "${var.stack_name}"
   name                   = "zookeeper"

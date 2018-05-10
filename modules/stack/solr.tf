@@ -29,14 +29,10 @@ resource "aws_s3_bucket_object" "solr_source" {
   etag   = "${data.archive_file.solr_source.output_md5}"
 }
 
-resource "aws_elastic_beanstalk_application" "solr" {
-  depends_on = ["null_resource.wait_for_zookeeper"]
-  name = "${local.namespace}-solr"
-}
-
 resource "aws_elastic_beanstalk_application_version" "solr" {
+  depends_on  = ["null_resource.wait_for_zookeeper"]
   name        = "solr-${data.archive_file.solr_source.output_md5}"
-  application = "${aws_elastic_beanstalk_application.solr.name}"
+  application = "${aws_elastic_beanstalk_application.solrcloud.name}"
   description = "application version created by terraform"
   bucket      = "${aws_s3_bucket.app_sources.id}"
   key         = "${aws_s3_bucket_object.solr_source.id}"
@@ -53,9 +49,9 @@ resource "null_resource" "wait_for_zookeeper" {
 }
 
 module "solr_environment" {
-  source = "../beanstalk"
+  source     = "../beanstalk"
 
-  app                    = "${aws_elastic_beanstalk_application.solr.name}"
+  app                    = "${aws_elastic_beanstalk_application.solrcloud.name}"
   version_label          = "${aws_elastic_beanstalk_application_version.solr.name}"
   namespace              = "${var.stack_name}"
   name                   = "solr"
