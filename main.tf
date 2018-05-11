@@ -17,7 +17,3 @@ module "stack" {
   ec2_private_keyfile    = "${var.ec2_private_keyfile}"
   tags                   = "${var.tags}"
 }
-
-output "iiif_endpoint" {
-  value = "${module.stack.iiif_endpoint}"
-}

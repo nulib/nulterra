@@ -106,7 +106,7 @@ module "fcrepo_environment" {
   instance_port          = "8080"
   healthcheck_url        = "/rest"
   keypair                = "${var.ec2_keyname}"
-  instance_type          = "t2.medium"
+  instance_type          = "m4.xlarge"
   autoscale_min          = 1
   autoscale_max          = 2
   health_check_threshold = "Severe"
