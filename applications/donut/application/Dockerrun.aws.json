@@ -34,6 +34,7 @@
         { "name": "SETTINGS__FITS__PATH",                "value": "/usr/local/fits-1.0.5/fits.sh" },
         { "name": "SETTINGS__GROUPS__SYSTEM_GROUPS",     "value": "administrator,group_manager,manager" },
         { "name": "SETTINGS__NAME",                      "value": "donut" },
+        { "name": "SETTINGS__SOLRCLOUD",                 "value": "true" },
         { "name": "SETTINGS__UPLOAD_PATH",               "value": "/var/donut-working/temp" },
         { "name": "SETTINGS__DERIVATIVES_PATH",          "value": "/var/donut-derivatives" },
         { "name": "SETTINGS__WORKING_PATH",              "value": "/var/donut-working/work" },

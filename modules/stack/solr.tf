@@ -48,6 +48,17 @@ resource "null_resource" "wait_for_zookeeper" {
   }
 }
 
+resource "aws_security_group_rule" "allow_solr_self_access" {
+  type      = "ingress"
+  from_port = 0
+  to_port   = 0
+  protocol  = -1
+
+  security_group_id = "${module.solr_environment.security_group_id}"
+
+  source_security_group_id = "${module.solr_environment.security_group_id}"
+}
+
 module "solr_environment" {
   source     = "../beanstalk"
 

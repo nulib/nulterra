@@ -101,67 +101,151 @@ module "donutdb" {
   }
 }
 
-resource "aws_sqs_queue" "donut_fifo_deadletter_queue" {
+resource "aws_sqs_queue" "donut_ui_fifo_deadletter_queue" {
   name                        = "${data.terraform_remote_state.stack.stack_name}-donut-ui-dead-letter-queue.fifo"
   fifo_queue                  = true
   content_based_deduplication = false
   tags                        = "${local.common_tags}"
 }
 
-resource "aws_sqs_queue" "donut_fifo_queue" {
+resource "aws_sqs_queue" "donut_ui_fifo_queue" {
   name                        = "${data.terraform_remote_state.stack.stack_name}-donut-ui-queue.fifo"
   fifo_queue                  = true
   content_based_deduplication = false
   delay_seconds               = 0
   visibility_timeout_seconds  = 3600
-  redrive_policy              = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.donut_fifo_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
+  redrive_policy              = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.donut_ui_fifo_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
   tags                        = "${local.common_tags}"
 }
 
-resource "aws_ssm_parameter" "active_job_queue_adapter" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/active_job/queue_adapter"
-  type = "String"
-  value = "active_elastic_job"
+resource "aws_s3_bucket" "donut_batch" {
+  bucket = "${local.namespace}-donut-batch"
+  acl    = "private"
+  tags   = "${local.common_tags}"
 }
 
-resource "aws_ssm_parameter" "derivatives_path" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/derivatives_path"
-  type = "String"
-  value = "/var/donut-derivatives"
+resource "aws_s3_bucket" "donut_dropbox" {
+  bucket = "${local.namespace}-donut-dropbox"
+  acl    = "private"
+  tags   = "${local.common_tags}"
 }
 
-resource "aws_ssm_parameter" "ffmpeg_path" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/ffmpeg/path"
-  type = "String"
-  value = "/usr/local/bin/ffmpeg"
+resource "aws_s3_bucket" "donut_pyramids" {
+  bucket = "${local.namespace}-donut-pyramids"
+  acl    = "private"
+  tags   = "${local.common_tags}"
 }
 
-resource "aws_ssm_parameter" "fits_path" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/fits/path"
-  type = "String"
-  value = "/usr/local/fits/fits.sh"
+resource "aws_s3_bucket" "donut_uploads" {
+  bucket = "${local.namespace}-donut-uploads"
+  acl    = "private"
+  tags   = "${local.common_tags}"
 }
 
-resource "aws_ssm_parameter" "groups_system_groups" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/groups/system_groups"
-  type = "String"
-  value = "administrator,group_manager,manager"
+data "aws_iam_policy_document" "donut_bucket_access" {
+  statement {
+    effect = "Allow"
+    actions = ["s3:ListAllMyBuckets"]
+    resources = ["arn:aws:s3:::*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+      "s3:GetBucketLocation"
+    ]
+    resources = [
+      "${aws_s3_bucket.donut_batch.arn}",
+      "${aws_s3_bucket.donut_dropbox.arn}",
+      "${aws_s3_bucket.donut_pyramids.arn}",
+      "${aws_s3_bucket.donut_uploads.arn}"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:PutObject",
+      "s3:GetObject",
+      "s3:DeleteObject"
+    ]
+    resources = [
+      "${aws_s3_bucket.donut_batch.arn}/*",
+      "${aws_s3_bucket.donut_dropbox.arn}/*",
+      "${aws_s3_bucket.donut_pyramids.arn}/*",
+      "${aws_s3_bucket.donut_uploads.arn}/*"
+    ]
+  }
 }
 
-resource "aws_ssm_parameter" "name" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/name"
-  type = "String"
-  value = "${local.app_name}"
+resource "aws_iam_policy" "donut_bucket_policy" {
+  name = "${data.terraform_remote_state.stack.stack_name}-${local.app_name}-bucket-access"
+  policy = "${data.aws_iam_policy_document.donut_bucket_access.json}"
 }
 
-resource "aws_ssm_parameter" "upload_path" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/upload_path"
+resource "aws_ssm_parameter" "aws_buckets_batch" {
+  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/aws/buckets/batch"
   type = "String"
-  value = "/var/donut-working/temp"
+  value = "${aws_s3_bucket.donut_batch.id}"
 }
 
-resource "aws_ssm_parameter" "working_path" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/working_path"
+resource "aws_ssm_parameter" "aws_buckets_dropbox" {
+  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/aws/buckets/dropbox"
   type = "String"
-  value = "/var/donut-working/work"
+  value = "${aws_s3_bucket.donut_dropbox.id}"
+}
+
+resource "aws_ssm_parameter" "aws_buckets_pyramids" {
+  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/aws/buckets/pyramids"
+  type = "String"
+  value = "${aws_s3_bucket.donut_pyramids.id}"
+}
+
+resource "aws_ssm_parameter" "aws_buckets_uploads" {
+  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/aws/buckets/uploads"
+  type = "String"
+  value = "${aws_s3_bucket.donut_uploads.id}"
+}
+
+resource "aws_ssm_parameter" "domain_host" {
+  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/domain/host"
+  type = "String"
+  value = "${aws_route53_record.donut.name}"
+}
+
+resource "aws_ssm_parameter" "geonames_username" {
+  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/geonames_username"
+  type = "String"
+  value = "nul_rdc"
+}
+
+resource "aws_ssm_parameter" "iiif_endpoint" {
+  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/iiif/endpoint"
+  type = "String"
+  value = "${data.terraform_remote_state.stack.iiif_endpoint}"
+}
+
+resource "aws_ssm_parameter" "solr_collection_options_replication_factor" {
+  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/solr/collection_options/replication_factor"
+  type = "String"
+  value = "3"
+}
+
+resource "aws_ssm_parameter" "solr_collection_options_rule" {
+  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/solr/collection_options/rule"
+  type = "String"
+  value = "shard:*,replica:<2,cores:<5~"
+}
+
+resource "aws_ssm_parameter" "solr_url" {
+  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/solr/url"
+  type = "String"
+  value = "${data.terraform_remote_state.stack.index_endpoint}donut"
+}
+
+resource "aws_ssm_parameter" "zookeeper_connection_str" {
+  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/zookeeper/connection_str"
+  type = "String"
+  value = "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
 }
