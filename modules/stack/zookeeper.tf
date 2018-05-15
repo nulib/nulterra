@@ -93,24 +93,20 @@ module "zookeeper_environment" {
 }
 
 resource "aws_security_group_rule" "allow_zk_solr_access" {
-  type      = "ingress"
-  from_port = "2181"
-  to_port   = "2181"
-  protocol  = "tcp"
-
-  security_group_id = "${module.zookeeper_environment.security_group_id}"
-
+  security_group_id        = "${module.zookeeper_environment.security_group_id}"
+  type                     = "ingress"
+  from_port                = "2181"
+  to_port                  = "2181"
+  protocol                 = "tcp"
   source_security_group_id = "${module.solr_environment.security_group_id}"
 }
 
 resource "aws_security_group_rule" "allow_zk_self_access" {
-  type      = "ingress"
-  from_port = 0
-  to_port   = 0
-  protocol  = -1
-
-  security_group_id = "${module.zookeeper_environment.security_group_id}"
-
+  security_group_id        = "${module.zookeeper_environment.security_group_id}"
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = -1
   source_security_group_id = "${module.zookeeper_environment.security_group_id}"
 }
 

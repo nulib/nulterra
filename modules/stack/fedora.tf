@@ -118,13 +118,11 @@ module "fcrepo_environment" {
 }
 
 resource "aws_security_group_rule" "allow_fedora_postgres_access" {
-  type      = "ingress"
-  from_port = "${module.db.this_db_instance_port}"
-  to_port   = "${module.db.this_db_instance_port}"
-  protocol  = "tcp"
-
-  security_group_id = "${aws_security_group.db.id}"
-
+  security_group_id        = "${aws_security_group.db.id}"
+  type                     = "ingress"
+  from_port                = "${module.db.this_db_instance_port}"
+  to_port                  = "${module.db.this_db_instance_port}"
+  protocol                 = "tcp"
   source_security_group_id = "${module.fcrepo_environment.security_group_id}"
 }
 

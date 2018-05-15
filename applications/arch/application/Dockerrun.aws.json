@@ -17,7 +17,7 @@
       "essential": true,
       "memoryReservation": 3000,
       "portMappings": [
-        { "hostPort": 3000, "containerPort": 3000 }
+        { "hostPort": 80, "containerPort": 3000 }
       ],
       "environment": [
         { "name": "BUNDLE_WITH",                         "value": "aws:postgres" },

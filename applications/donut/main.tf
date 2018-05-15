@@ -2,11 +2,6 @@ locals {
   app_name = "donut"
 }
 
-data "aws_elastic_beanstalk_solution_stack" "multi_docker" {
-  most_recent   = true
-  name_regex    = "^64bit Amazon Linux (.*) Multi-container Docker (.*)$"
-}
-
 resource "random_id" "secret_key_base" {
   byte_length = 32
 }
@@ -29,10 +24,10 @@ module "donut_derivative_volume" {
   subnets            = "${data.terraform_remote_state.stack.private_subnets}"
   availability_zones = ["${data.terraform_remote_state.stack.azs}"]
   security_groups    = [
-    "${module.donut_webapp_environment.security_group_id}"
+    "${module.webapp.security_group_id}",
+    "${module.worker.security_group_id}",
+    "${module.batch_worker.security_group_id}"
   ]
-#    "${module.donut_worker_environment.security_group_id}",
-#    "${module.donut_ui_worker_environment.security_group_id}"
 
   zone_id = "${data.terraform_remote_state.stack.private_zone_id}"
 
@@ -51,10 +46,10 @@ module "donut_working_volume" {
   subnets            = "${data.terraform_remote_state.stack.private_subnets}"
   availability_zones = ["${data.terraform_remote_state.stack.azs}"]
   security_groups    = [
-    "${module.donut_webapp_environment.security_group_id}"
+    "${module.webapp.security_group_id}",
+    "${module.worker.security_group_id}",
+    "${module.batch_worker.security_group_id}"
   ]
-#    "${module.donut_worker_environment.security_group_id}",
-#    "${module.donut_ui_worker_environment.security_group_id}"
 
   zone_id = "${data.terraform_remote_state.stack.private_zone_id}"
 
@@ -69,8 +64,8 @@ data "archive_file" "donut_source" {
 
 resource "aws_s3_bucket_object" "donut_source" {
   bucket = "${data.terraform_remote_state.stack.application_source_bucket}"
-  key    = "${local.app_name}.zip"
-  source = "${path.module}/build/${local.app_name}.zip"
+  key    = "${local.app_name}-${random_pet.app_version_name.id}.zip"
+  source = "${data.archive_file.donut_source.output_path}"
   etag   = "${data.archive_file.donut_source.output_md5}"
 }
 
@@ -79,11 +74,12 @@ resource "aws_elastic_beanstalk_application" "donut" {
 }
 
 resource "aws_elastic_beanstalk_application_version" "donut" {
-  description = "application version created by terraform"
-  bucket      = "${data.terraform_remote_state.stack.application_source_bucket}"
-  application = "${local.namespace}-${local.app_name}"
-  key         = "${local.app_name}.zip"
-  name        = "${random_pet.app_version_name.id}"
+  depends_on      = ["aws_elastic_beanstalk_application.donut"]
+  description     = "application version created by terraform"
+  bucket          = "${data.terraform_remote_state.stack.application_source_bucket}"
+  application     = "${local.namespace}-${local.app_name}"
+  key             = "${local.app_name}-${random_pet.app_version_name.id}.zip"
+  name            = "${random_pet.app_version_name.id}"
 }
 
 module "donutdb" {
@@ -118,6 +114,23 @@ resource "aws_sqs_queue" "donut_ui_fifo_queue" {
   tags                        = "${local.common_tags}"
 }
 
+resource "aws_sqs_queue" "donut_batch_fifo_deadletter_queue" {
+  name                        = "${data.terraform_remote_state.stack.stack_name}-donut-batch-dead-letter-queue.fifo"
+  fifo_queue                  = true
+  content_based_deduplication = false
+  tags                        = "${local.common_tags}"
+}
+
+resource "aws_sqs_queue" "donut_batch_fifo_queue" {
+  name                        = "${data.terraform_remote_state.stack.stack_name}-donut-batch-queue.fifo"
+  fifo_queue                  = true
+  content_based_deduplication = false
+  delay_seconds               = 0
+  visibility_timeout_seconds  = 3600
+  redrive_policy              = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.donut_batch_fifo_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
+  tags                        = "${local.common_tags}"
+}
+
 resource "aws_s3_bucket" "donut_batch" {
   bucket = "${local.namespace}-donut-batch"
   acl    = "private"
@@ -126,12 +139,6 @@ resource "aws_s3_bucket" "donut_batch" {
 
 resource "aws_s3_bucket" "donut_dropbox" {
   bucket = "${local.namespace}-donut-dropbox"
-  acl    = "private"
-  tags   = "${local.common_tags}"
-}
-
-resource "aws_s3_bucket" "donut_pyramids" {
-  bucket = "${local.namespace}-donut-pyramids"
   acl    = "private"
   tags   = "${local.common_tags}"
 }
@@ -158,7 +165,7 @@ data "aws_iam_policy_document" "donut_bucket_access" {
     resources = [
       "${aws_s3_bucket.donut_batch.arn}",
       "${aws_s3_bucket.donut_dropbox.arn}",
-      "${aws_s3_bucket.donut_pyramids.arn}",
+      "${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}",
       "${aws_s3_bucket.donut_uploads.arn}"
     ]
   }
@@ -173,9 +180,19 @@ data "aws_iam_policy_document" "donut_bucket_access" {
     resources = [
       "${aws_s3_bucket.donut_batch.arn}/*",
       "${aws_s3_bucket.donut_dropbox.arn}/*",
-      "${aws_s3_bucket.donut_pyramids.arn}/*",
+      "${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}/*",
       "${aws_s3_bucket.donut_uploads.arn}/*"
     ]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = [
+      "sqs:ListQueues",
+      "sqs:GetQueueUrl",
+      "sqs:GetQueueAttributes"
+    ]
+    resources = ["*"]
   }
 }
 
@@ -199,7 +216,7 @@ resource "aws_ssm_parameter" "aws_buckets_dropbox" {
 resource "aws_ssm_parameter" "aws_buckets_pyramids" {
   name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/aws/buckets/pyramids"
   type = "String"
-  value = "${aws_s3_bucket.donut_pyramids.id}"
+  value = "${data.terraform_remote_state.stack.iiif_pyramid_bucket}"
 }
 
 resource "aws_ssm_parameter" "aws_buckets_uploads" {
@@ -211,7 +228,7 @@ resource "aws_ssm_parameter" "aws_buckets_uploads" {
 resource "aws_ssm_parameter" "domain_host" {
   name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/domain/host"
   type = "String"
-  value = "${aws_route53_record.donut.name}"
+  value = "${local.app_name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}"
 }
 
 resource "aws_ssm_parameter" "geonames_username" {

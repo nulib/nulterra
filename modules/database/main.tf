@@ -1,9 +1,9 @@
-variable "schema"              { type = "string" }
-variable "host"                { type = "string" }
-variable "port"                { type = "string" }
-variable "master_username"     { type = "string" }
-variable "master_password"     { type = "string" }
-variable "connection"          { type = "map"    }
+variable "schema"           { type = "string" }
+variable "host"             { type = "string" }
+variable "port"             { type = "string" }
+variable "master_username"  { type = "string" }
+variable "master_password"  { type = "string" }
+variable "connection"       { type = "map"    }
 
 module "role_password" {
   source = "../password"

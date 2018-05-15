@@ -17,7 +17,7 @@
       "essential": true,
       "memoryReservation": 3000,
       "portMappings": [
-        { "hostPort": 3000, "containerPort": 3000 }
+        { "hostPort": 80, "containerPort": 3000 }
       ],
       "environment": [
         { "name": "BUNDLE_WITH",                         "value": "aws:postgres" },
@@ -29,9 +29,9 @@
         { "name": "RAILS_SERVE_STATIC_FILES",            "value": "true" },
         { "name": "RAILS_SKIP_ASSET_COMPILATION",        "value": "false" },
         { "name": "RAILS_SKIP_MIGRATIONS",               "value": "false" },
-        { "name": "SETTINGS__ACTIVE_JOB__QUEUE_ADAPTER", "value": "better_active_elastic_job" },
+        { "name": "SETTINGS__ACTIVE_JOB__QUEUE_ADAPTER", "value": "active_elastic_job" },
         { "name": "SETTINGS__FFMPEG__PATH",              "value": "/usr/local/bin/ffmpeg" },
-        { "name": "SETTINGS__FITS__PATH",                "value": "/usr/local/fits-1.0.5/fits.sh" },
+        { "name": "SETTINGS__FITS__PATH",                "value": "/usr/local/fits/fits.sh" },
         { "name": "SETTINGS__GROUPS__SYSTEM_GROUPS",     "value": "administrator,group_manager,manager" },
         { "name": "SETTINGS__NAME",                      "value": "donut" },
         { "name": "SETTINGS__SOLRCLOUD",                 "value": "true" },
@@ -41,8 +41,9 @@
         { "name": "TMPDIR",                              "value": "/var/donut-working/temp" }
       ],
       "mountPoints": [
-        { "sourceVolume": "donut-working",     "containerPath": "/var/donut-working"     },
-        { "sourceVolume": "donut-derivatives", "containerPath": "/var/donut-derivatives" }
+        { "sourceVolume": "awseb-logs-donut-app",  "containerPath": "/home/app/current/log"  },
+        { "sourceVolume": "donut-working",         "containerPath": "/var/donut-working"     },
+        { "sourceVolume": "donut-derivatives",     "containerPath": "/var/donut-derivatives" }
       ]
     }
   ]

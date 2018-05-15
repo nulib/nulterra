@@ -1,0 +1,87 @@
+#!/bin/bash
+
+AWS_REGION=$(curl -s http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r .region)
+
+gather_ips() {
+  ips=($(aws --region ${AWS_REGION} ec2 describe-instances --filters "[{\"Name\":\"tag:Name\",\"Values\":[\"$1\"]},{\"Name\":\"instance-state-code\",\"Values\":[\"16\"]}]" | \
+    jq -r ".Reservations[].Instances[].PrivateIpAddress"))
+  instance_ids=($(aws --region ${AWS_REGION} ec2 describe-instances --filters "[{\"Name\":\"tag:Name\",\"Values\":[\"$1\"]},{\"Name\":\"instance-state-code\",\"Values\":[\"16\"]}]" | \
+    jq -r ".Reservations[].Instances[].InstanceId"))
+}
+
+display_ips() {
+  gather_ips $1
+  i=1
+  for ip in ${ips[*]}; do
+    echo "${i}: ${ip} (${instance_ids[$i-1]})"
+    let i+=1
+  done
+}
+
+index=0
+while getopts 'li:' opt; do
+  case $opt in
+    l)
+      list_mode=1
+      ;;
+    i)
+      index=$OPTARG
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      exit 1
+      ;;
+  esac
+done
+shift $((OPTIND-1))
+env=$1
+shift
+
+if [[ $AWS_PROFILE =~ 'staging' ]]; then
+  keyfile='id_stagebox_rsa'
+  proxy_host="vpn.repo.rdc-staging.library.northwestern.edu"
+else
+  keyfile='id_haybox_rsa'
+  proxy_host="vpn.repo.rdc.library.northwestern.edu"
+fi
+
+if [[ $list_mode == 1 ]]; then
+  display_ips $env
+  exit 1
+fi
+
+if [[ $env =~ '.' ]]; then
+  ip=$env
+else
+  gather_ips $env
+  if [[ $index == 0 ]]; then
+    if [[ ${#ips[@]} == 1 ]]; then
+      index=1
+    else
+      display_ips $env
+      echo -n "Enter number of ${env} instance to connect to: "
+      read index
+    fi
+  fi
+  ip=${ips[$index-1]}
+fi
+echo "Connecting to ${ip}..."
+
+date=$(date +%Y%m%d%H%M%S%N)
+cat > /tmp/awssh.${date} << EOF
+ControlPath /tmp/%r@%h:%p
+Host ${ip}
+HostName ${ip}
+Port 22
+User ec2-user
+IdentityFile ~/.ssh/${keyfile}
+UserKnownHostsFile /dev/null
+StrictHostKeyChecking no
+EOF
+
+ssh -t -F /tmp/awssh.${date} $ip $@
+rm /tmp/awssh.${date}

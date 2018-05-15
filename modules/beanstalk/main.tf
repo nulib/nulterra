@@ -466,78 +466,78 @@ resource "aws_elastic_beanstalk_environment" "default" {
     value     = "${var.autoscale_max}"
   }
   setting {
-    namespace = "aws:elb:loadbalancer"
-    name      = "CrossZone"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elb:loadbalancer"}"
+    name      = "${var.tier == "Worker" ? "awselbloadbalancerCrossZone" : "CrossZone"}"
     value     = "true"
   }
   setting {
-    namespace = "aws:elb:listener"
-    name      = "ListenerProtocol"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elb:listener"}"
+    name      = "${var.tier == "Worker" ? "awselblistenerListenerProtocol" : "ListenerProtocol"}"
     value     = "HTTP"
   }
   setting {
-    namespace = "aws:elb:listener"
-    name      = "InstancePort"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elb:listener"}"
+    name      = "${var.tier == "Worker" ? "awselblistenerInstancePort" : "InstancePort"}"
     value     = "${var.instance_port}"
   }
   setting {
-    namespace = "aws:elb:listener"
-    name      = "ListenerEnabled"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elb:listener"}"
+    name      = "${var.tier == "Worker" ? "awselblistenerListenerEnabled" : "ListenerEnabled"}"
     value     = "${var.http_listener_enabled  == "true" || var.loadbalancer_certificate_arn == "" ? "true" : "false"}"
   }
   setting {
-    namespace = "aws:elb:listener:443"
-    name      = "ListenerProtocol"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elb:listener:443"}"
+    name      = "${var.tier == "Worker" ? "awselblistener443ListenerProtocol" : "ListenerProtocol"}"
     value     = "HTTPS"
   }
   setting {
-    namespace = "aws:elb:listener:443"
-    name      = "InstancePort"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elb:listener:443"}"
+    name      = "${var.tier == "Worker" ? "awselblistener443InstancePort" : "InstancePort"}"
     value     = "${var.instance_port}"
   }
   setting {
-    namespace = "aws:elb:listener:443"
-    name      = "SSLCertificateId"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elb:listener:443"}"
+    name      = "${var.tier == "Worker" ? "awselblistener443SSLCertificateId" : "SSLCertificateId"}"
     value     = "${var.loadbalancer_certificate_arn}"
   }
   setting {
-    namespace = "aws:elb:listener:443"
-    name      = "ListenerEnabled"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elb:listener:443"}"
+    name      = "${var.tier == "Worker" ? "awselblistener443ListenerEnabled" : "ListenerEnabled"}"
     value     = "${var.loadbalancer_certificate_arn == "" ? "false" : "true"}"
   }
   setting {
-    namespace = "aws:elb:policies"
-    name      = "ConnectionDrainingEnabled"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elb:policies"}"
+    name      = "${var.tier == "Worker" ? "awselbpoliciesConnectionDrainingEnabled" : "ConnectionDrainingEnabled"}"
     value     = "true"
   }
   setting {
-    namespace = "aws:elbv2:loadbalancer"
-    name      = "AccessLogsS3Bucket"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elbv2:loadbalancer"}"
+    name      = "${var.tier == "Worker" ? "awselbv2loadbalancerAccessLogsS3Bucket" : "AccessLogsS3Bucket"}"
     value     = "${aws_s3_bucket.elb_logs.id}"
   }
   setting {
-    namespace = "aws:elbv2:loadbalancer"
-    name      = "AccessLogsS3Enabled"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elbv2:loadbalancer"}"
+    name      = "${var.tier == "Worker" ? "awselbv2loadbalancerAccessLogsS3Enabled" : "AccessLogsS3Enabled"}"
     value     = "true"
   }
   setting {
-    namespace = "aws:elbv2:listener:default"
-    name      = "ListenerEnabled"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elbv2:listener:default"}"
+    name      = "${var.tier == "Worker" ? "awselbv2listenerListenerEnabled" : "ListenerEnabled"}"
     value     = "${var.http_listener_enabled == "true" || var.loadbalancer_certificate_arn == "" ? "true" : "false"}"
   }
   setting {
-    namespace = "aws:elbv2:listener:443"
-    name      = "ListenerEnabled"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elbv2:listener:443"}"
+    name      = "${var.tier == "Worker" ? "awselbv2listenerListenerEnabled" : "ListenerEnabled"}"
     value     = "${var.loadbalancer_certificate_arn == "" ? "false" : "true"}"
   }
   setting {
-    namespace = "aws:elbv2:listener:443"
-    name      = "Protocol"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elbv2:listener:443"}"
+    name      = "${var.tier == "Worker" ? "awselbv2listenerProtocol" : "Protocol"}"
     value     = "HTTPS"
   }
   setting {
-    namespace = "aws:elbv2:listener:443"
-    name      = "SSLCertificateArns"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elbv2:listener:443"}"
+    name      = "${var.tier == "Worker" ? "awselbv2listenerSSLCertificateArns" : "SSLCertificateArns"}"
     value     = "${var.loadbalancer_certificate_arn}"
   }
   setting {
@@ -765,6 +765,63 @@ resource "aws_elastic_beanstalk_environment" "default" {
     namespace = "aws:elasticbeanstalk:environment:process:default"
     name      = "Protocol"
     value     = "HTTP"
+  }
+
+  ###===================== SQS Settings =====================================================###
+
+
+  setting {
+      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+      name      = "${var.tier == "Worker" ? "ConnectTimeout" : "awselasticbeanstalksqsdConnectTimeout"}"
+      value     = "${var.sqsd_connect_timeout}"
+  }
+
+  setting {
+      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+      name      = "${var.tier == "Worker" ? "HttpConnections" : "awselasticbeanstalksqsdHttpConnections"}"
+      value     = "${var.sqsd_http_connections}"
+  }
+
+  setting {
+      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+      name      = "${var.tier == "Worker" ? "HttpPath" : "awselasticbeanstalksqsdHttpPath"}"
+      value     = "${var.sqsd_http_path}"
+  }
+
+  setting {
+      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+      name      = "${var.tier == "Worker" ? "InactivityTimeout" : "awselasticbeanstalksqsdInactivityTimeout"}"
+      value     = "${var.sqsd_inactivity_timeout}"
+  }
+
+  setting {
+      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+      name      = "${var.tier == "Worker" ? "MaxRetries" : "awselasticbeanstalksqsdMaxRetries"}"
+      value     = "${var.sqsd_max_retries}"
+  }
+
+  setting {
+      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+      name      = "${var.tier == "Worker" ? "MimeType" : "awselasticbeanstalksqsdMimeType"}"
+      value     = "${var.sqsd_mime_type}"
+  }
+
+  setting {
+      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+      name      = "${var.tier == "Worker" ? "RetentionPeriod" : "awselasticbeanstalksqsdRetentionPeriod"}"
+      value     = "${var.sqsd_retention_period}"
+  }
+
+  setting {
+      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+      name      = "${var.tier == "Worker" ? "VisibilityTimeout" : "awselasticbeanstalksqsdVisibilityTimeout"}"
+      value     = "${var.sqsd_visibility_timeout}"
+  }
+
+  setting {
+      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+      name      = "${var.tier == "Worker" ? "WorkerQueueURL" : "awselasticbeanstalksqsdWorkerQueueURL"}"
+      value     = "${var.sqsd_worker_queue_url}"
   }
 
   ###===================== Notification =====================================================###

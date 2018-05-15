@@ -1,3 +1,3 @@
 output "donut_endpoint" {
-  value = "${aws_route53_record.donut.fqdn}"
+  value = "${module.webapp.endpoint[0]}"
 }

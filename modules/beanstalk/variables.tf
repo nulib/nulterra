@@ -260,3 +260,48 @@ variable "health_check_threshold" {
   default     = "Ok"
   description = "Ok, Warning, Degraded, or Severe"
 }
+
+variable "sqsd_connect_timeout" {
+  default     = "5"
+  description = "SQSD ConnectTimeout"
+}
+
+variable "sqsd_http_connections" {
+  default     = "3"
+  description = "SQSD HttpConnections"
+}
+
+variable "sqsd_http_path" {
+  default     = "/"
+  description = "SQSD HttpPath"
+}
+
+variable "sqsd_inactivity_timeout" {
+  default     = "299"
+  description = "SQSD InactivityTimeout"
+}
+
+variable "sqsd_max_retries" {
+  default     = "10"
+  description = "SQSD MaxRetries"
+}
+
+variable "sqsd_mime_type" {
+  default     = "application/json"
+  description = "SQSD MimeType"
+}
+
+variable "sqsd_retention_period" {
+  default     = "345600"
+  description = "SQSD RetentionPeriod"
+}
+
+variable "sqsd_visibility_timeout" {
+  default     = "300"
+  description = "SQSD VisibilityTimeout"
+}
+
+variable "sqsd_worker_queue_url" {
+  default     = ""
+  description = "SQSD QueueURL"
+}

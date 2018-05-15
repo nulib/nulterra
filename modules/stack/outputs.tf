@@ -13,6 +13,10 @@ output "vpc_cidr_block"         { value = "${var.vpc_cidr_block}"         }
 
 # Security Groups
 
+output "cache_security_group" {
+  value = "${aws_security_group.redis.id}"
+}
+
 output "cantaloupe_security_group" {
   value = "${module.cantaloupe_environment.security_group_id}"
 }
@@ -21,7 +25,7 @@ output "fcrepo_security_group" {
   value = "${module.fcrepo_environment.security_group_id}"
 }
 
-output "solr_security_group" {
+output "index_security_group" {
   value = "${module.solr_environment.security_group_id}"
 }
 
@@ -82,6 +86,14 @@ output "exhibitor_endpoint" {
 
 output "iiif_endpoint" {
   value = "http://${element(concat(aws_cloudfront_distribution.cantaloupe.*.domain_name, list(aws_route53_record.cantaloupe.name)), 0)}/iiif/2"
+}
+
+output "iiif_pyramid_bucket" {
+  value = "${aws_s3_bucket.pyramid_tiff_bucket.id}"
+}
+
+output "iiif_pyramid_bucket_arn" {
+  value = "${aws_s3_bucket.pyramid_tiff_bucket.arn}"
 }
 
 output "index_endpoint" {
