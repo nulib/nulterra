@@ -201,68 +201,34 @@ resource "aws_iam_policy" "donut_bucket_policy" {
   policy = "${data.aws_iam_policy_document.donut_bucket_access.json}"
 }
 
-resource "aws_ssm_parameter" "aws_buckets_batch" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/aws/buckets/batch"
-  type = "String"
-  value = "${aws_s3_bucket.donut_batch.id}"
+
 }
 
-resource "aws_ssm_parameter" "aws_buckets_dropbox" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/aws/buckets/dropbox"
-  type = "String"
-  value = "${aws_s3_bucket.donut_dropbox.id}"
 }
 
-resource "aws_ssm_parameter" "aws_buckets_pyramids" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/aws/buckets/pyramids"
-  type = "String"
-  value = "${data.terraform_remote_state.stack.iiif_pyramid_bucket}"
 }
 
-resource "aws_ssm_parameter" "aws_buckets_uploads" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/aws/buckets/uploads"
-  type = "String"
-  value = "${aws_s3_bucket.donut_uploads.id}"
 }
 
-resource "aws_ssm_parameter" "domain_host" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/domain/host"
-  type = "String"
-  value = "${local.app_name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}"
+locals {
+  ssm_parameters = "${map(
+    "aws/buckets/batch",                           "${aws_s3_bucket.donut_batch.id}",
+    "aws/buckets/dropbox",                         "${aws_s3_bucket.donut_dropbox.id}",
+    "aws/buckets/pyramids",                        "${data.terraform_remote_state.stack.iiif_pyramid_bucket}",
+    "aws/buckets/uploads",                         "${aws_s3_bucket.donut_uploads.id}",
+    "domain/host",                                 "${local.app_name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}",
+    "geonames_username",                           "nul_rdc",
+    "iiif/endpoint",                               "${data.terraform_remote_state.stack.iiif_endpoint}",
+    "solr/collection_options/replication_factor",  "3",
+    "solr/collection_options/rule",                "shard:*,replica:<2,cores:<5~",
+    "solr/url",                                    "${data.terraform_remote_state.stack.index_endpoint}donut",
+    "zookeeper/connection_str",                    "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
+  )}"
 }
 
-resource "aws_ssm_parameter" "geonames_username" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/geonames_username"
+resource "aws_ssm_parameter" "donut_config_setting" {
+  count = "${length(local.ssm_parameters)}"
+  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(local.ssm_parameters), count.index)}"
   type = "String"
-  value = "nul_rdc"
-}
-
-resource "aws_ssm_parameter" "iiif_endpoint" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/iiif/endpoint"
-  type = "String"
-  value = "${data.terraform_remote_state.stack.iiif_endpoint}"
-}
-
-resource "aws_ssm_parameter" "solr_collection_options_replication_factor" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/solr/collection_options/replication_factor"
-  type = "String"
-  value = "3"
-}
-
-resource "aws_ssm_parameter" "solr_collection_options_rule" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/solr/collection_options/rule"
-  type = "String"
-  value = "shard:*,replica:<2,cores:<5~"
-}
-
-resource "aws_ssm_parameter" "solr_url" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/solr/url"
-  type = "String"
-  value = "${data.terraform_remote_state.stack.index_endpoint}donut"
-}
-
-resource "aws_ssm_parameter" "zookeeper_connection_str" {
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/zookeeper/connection_str"
-  type = "String"
-  value = "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
+  value = "${lookup(local.ssm_parameters, element(keys(local.ssm_parameters), count.index))}"
 }
