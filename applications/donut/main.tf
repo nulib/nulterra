@@ -201,13 +201,61 @@ resource "aws_iam_policy" "donut_bucket_policy" {
   policy = "${data.aws_iam_policy_document.donut_bucket_access.json}"
 }
 
+data "aws_iam_policy_document" "donut_batch_ingest_access" {
+  statement {
+    effect    = "Allow"
+    actions   = ["iam:Passrole"]
+    resources = ["*"]
+  }
 
+  statement {
+    effect    = "Allow"
+    actions   = ["sqs:*"]
+    resources = ["${aws_sqs_queue.donut_batch_fifo_queue.arn}"]
+  }
 }
 
+module "donut_batch_ingest" {
+  source = "git://github.com/claranet/terraform-aws-lambda"
+
+  function_name = "${data.terraform_remote_state.stack.stack_name}-${local.app_name}-batch-ingest"
+  description   = "Batch Ingest trigger for ${local.app_name}"
+  handler       = "index.handler"
+  runtime       = "nodejs8.10"
+  timeout       = 300
+
+  attach_policy = true
+  policy        = "${data.aws_iam_policy_document.donut_batch_ingest_access.json}"
+
+  source_path = "${path.module}/lambdas/batch_ingest_notification"
+  environment {
+    variables {
+      JobClassName = "S3ImportJob"
+      Secret = "${random_id.secret_key_base.hex}"
+      QueueUrl = "${aws_sqs_queue.donut_batch_fifo_queue.id}"
+    }
+  }
 }
 
+resource "aws_lambda_permission" "allow_trigger" {
+  statement_id  = "AllowExecutionFromS3Bucket"
+  action        = "lambda:InvokeFunction"
+  function_name = "${module.donut_batch_ingest.function_arn}"
+  principal     = "s3.amazonaws.com"
+  source_arn    = "${aws_s3_bucket.donut_batch.arn}"
 }
 
+resource "aws_s3_bucket_notification" "batch_ingest_notification" {
+  bucket     = "${aws_s3_bucket.donut_batch.id}"
+  lambda_function {
+    lambda_function_arn = "${module.donut_batch_ingest.function_arn}"
+    filter_suffix       = ".csv"
+    events = [
+      "s3:ObjectCreated:Put",
+      "s3:ObjectCreated:Post",
+      "s3:ObjectCreated:CompleteMultipartUpload"
+    ]
+  }
 }
 
 locals {

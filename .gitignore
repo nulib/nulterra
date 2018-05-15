@@ -7,5 +7,7 @@
 
 # Variable definitions
 *.tfvars
-**/build/**
+**/build
 *tfstate*
+**/node_modules
+**/package-lock.json
