@@ -11,13 +11,35 @@ module "role_password" {
 
 locals {
   create_script = <<EOF
-CREATE ROLE ${var.schema} WITH LOGIN ENCRYPTED PASSWORD '${module.role_password.result}';
-GRANT ${var.schema} TO ${var.master_username};
-CREATE DATABASE ${var.schema} OWNER ${var.schema};
+DO
+$do$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${var.schema}') THEN
+    CREATE ROLE ${var.schema};
+  END IF;
+  ALTER ROLE ${var.schema} WITH LOGIN ENCRYPTED PASSWORD '${module.role_password.result}';
+  IF NOT EXISTS (
+    SELECT FROM pg_catalog.pg_auth_members a
+      JOIN pg_catalog.pg_roles b ON a.roleid = b.oid
+      JOIN pg_catalog.pg_roles c ON a.member = c.oid
+      WHERE c.rolname = '${var.master_username}' AND b.rolname = '${var.schema}'
+  ) THEN
+    GRANT ${var.schema} TO ${var.master_username};
+  END IF;
+  IF NOT EXISTS (SELECT FROM pg_catalog.pg_database WHERE datname = '${var.schema}') THEN
+    CREATE DATABASE ${var.schema} OWNER ${var.schema};
+  END IF;
+END
+$do$;
 EOF
   destroy_script = <<EOF
-DROP DATABASE ${var.schema};
-DROP ROLE ${var.schema};
+DO
+$do$
+BEGIN
+  DROP DATABASE ${var.schema};
+  DROP ROLE ${var.schema};
+END
+$do$;
 EOF
   psql = "PGPASSWORD='${var.master_password}' psql -U ${var.master_username} -h ${var.host} -p ${var.port} postgres"
   create_command  = "echo \"${local.create_script}\" | ${local.psql}"
