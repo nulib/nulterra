@@ -74,7 +74,11 @@ resource "aws_elastic_beanstalk_application" "donut" {
 }
 
 resource "aws_elastic_beanstalk_application_version" "donut" {
-  depends_on      = ["aws_elastic_beanstalk_application.donut"]
+  depends_on = [
+    "aws_elastic_beanstalk_application.donut",
+    "module.donut_derivative_volume",
+    "module.donut_working_volume"
+  ]
   description     = "application version created by terraform"
   bucket          = "${data.terraform_remote_state.stack.application_source_bucket}"
   application     = "${local.namespace}-${local.app_name}"
