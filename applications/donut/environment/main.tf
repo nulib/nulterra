@@ -98,6 +98,7 @@ module "donut_environment" {
     SECRET_KEY_BASE                 = "${var.secret_key_base}"
     SETTINGS__ACTIVE_JOB__QUEUE_URL = "${var.worker_queue}"
     SETTINGS__AWS__QUEUES__INGEST   = "${var.worker_queue}"
+    SETTINGS__SOLRCLOUD             = "true"
     SETTINGS__WORKER                = "${lower(var.tier) == "worker" ? "true" : "false" }"
     SOLR_URL                        = "${data.terraform_remote_state.stack.index_endpoint}${var.name}"
     SSM_PARAM_PATH                  = "/${data.terraform_remote_state.stack.stack_name}-${var.name}"

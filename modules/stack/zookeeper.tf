@@ -2,6 +2,7 @@ resource "aws_s3_bucket" "zookeeper_config_bucket" {
   bucket = "${local.namespace}-zk-configs"
   acl = "private"
   tags = "${local.common_tags}"
+  force_destroy = true
 }
 
 data "aws_iam_policy_document" "zookeeper_config_bucket_access" {

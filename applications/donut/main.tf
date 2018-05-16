@@ -258,25 +258,23 @@ resource "aws_s3_bucket_notification" "batch_ingest_notification" {
   }
 }
 
-locals {
-  ssm_parameters = "${map(
-    "aws/buckets/batch",                           "${aws_s3_bucket.donut_batch.id}",
-    "aws/buckets/dropbox",                         "${aws_s3_bucket.donut_dropbox.id}",
-    "aws/buckets/pyramids",                        "${data.terraform_remote_state.stack.iiif_pyramid_bucket}",
-    "aws/buckets/uploads",                         "${aws_s3_bucket.donut_uploads.id}",
-    "domain/host",                                 "${local.app_name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}",
-    "geonames_username",                           "nul_rdc",
-    "iiif/endpoint",                               "${data.terraform_remote_state.stack.iiif_endpoint}",
-    "solr/collection_options/replication_factor",  "3",
-    "solr/collection_options/rule",                "shard:*,replica:<2,cores:<5~",
-    "solr/url",                                    "${data.terraform_remote_state.stack.index_endpoint}donut",
-    "zookeeper/connection_str",                    "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
+data "null_data_source" "ssm_parameters" {
+  inputs = "${map(
+    "aws/buckets/batch",        "${aws_s3_bucket.donut_batch.id}",
+    "aws/buckets/dropbox",      "${aws_s3_bucket.donut_dropbox.id}",
+    "aws/buckets/pyramids",     "${data.terraform_remote_state.stack.iiif_pyramid_bucket}",
+    "aws/buckets/uploads",      "${aws_s3_bucket.donut_uploads.id}",
+    "domain/host",              "${local.app_name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}",
+    "geonames_username",        "nul_rdc",
+    "iiif/endpoint",            "${data.terraform_remote_state.stack.iiif_endpoint}",
+    "solr/url",                 "${data.terraform_remote_state.stack.index_endpoint}donut",
+    "zookeeper/connection_str", "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
   )}"
 }
 
 resource "aws_ssm_parameter" "donut_config_setting" {
-  count = "${length(local.ssm_parameters)}"
-  name = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(local.ssm_parameters), count.index)}"
-  type = "String"
-  value = "${lookup(local.ssm_parameters, element(keys(local.ssm_parameters), count.index))}"
+  count = 9
+  name  = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
+  type  = "String"
+  value = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"
 }
