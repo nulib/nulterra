@@ -12,7 +12,7 @@ module "role_password" {
 locals {
   create_script = <<EOF
 DO
-$do$
+\$do\$
 BEGIN
   IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = '${var.schema}') THEN
     CREATE ROLE ${var.schema};
@@ -26,11 +26,9 @@ BEGIN
   ) THEN
     GRANT ${var.schema} TO ${var.master_username};
   END IF;
-  IF NOT EXISTS (SELECT FROM pg_catalog.pg_database WHERE datname = '${var.schema}') THEN
-    CREATE DATABASE ${var.schema} OWNER ${var.schema};
-  END IF;
 END
-$do$;
+\$do\$;
+CREATE DATABASE ${var.schema} OWNER ${var.schema};
 EOF
   destroy_script = <<EOF
 DO
