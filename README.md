@@ -4,6 +4,7 @@
 
 1. Download and install [Terraform](https://www.terraform.io/downloads.html)
 1. Clone this repo
+1. `cd <working_dir>/stack`
 1. Create an S3 bucket to hold the terraform state.
 1. Create a `terraform.tfvars` file with the specifics of the stack you want to create:
     ```

@@ -72,7 +72,7 @@ resource "aws_elastic_beanstalk_application_version" "cantaloupe" {
 }
 
 module "cantaloupe_environment" {
-  source = "../beanstalk"
+  source = "../modules/beanstalk"
 
   app                    = "${aws_elastic_beanstalk_application.cantaloupe.name}"
   version_label          = "${aws_elastic_beanstalk_application_version.cantaloupe.name}"

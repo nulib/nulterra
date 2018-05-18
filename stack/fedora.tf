@@ -16,7 +16,7 @@ resource "aws_s3_bucket_object" "fcrepo_source" {
 }
 
 module "fcrepodb" {
-  source          = "../database"
+  source          = "../modules/database"
   schema          = "${local.fcrepo_db_schema}"
   host            = "${module.db.this_db_instance_address}"
   port            = "${module.db.this_db_instance_port}"
@@ -91,7 +91,7 @@ resource "aws_elastic_beanstalk_application_version" "fcrepo" {
 }
 
 module "fcrepo_environment" {
-  source = "../beanstalk"
+  source = "../modules/beanstalk"
 
   app                    = "${aws_elastic_beanstalk_application.fcrepo.name}"
   version_label          = "${aws_elastic_beanstalk_application_version.fcrepo.name}"

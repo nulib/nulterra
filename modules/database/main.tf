@@ -71,6 +71,8 @@ resource "null_resource" "this_database" {
   }
 }
 
+# The empty string reference below is just to prevent things that depend on the
+# password from using it until after the provisioner runs.
 output "password" {
-  value = "${module.role_password.result}"
+  value = "${module.role_password.result}${null_resource.this_database.id == "" ? "" : ""}"
 }

@@ -58,7 +58,7 @@ resource "aws_security_group_rule" "allow_solr_self_access" {
 }
 
 module "solr_environment" {
-  source     = "../beanstalk"
+  source = "../modules/beanstalk"
 
   app                    = "${aws_elastic_beanstalk_application.solrcloud.name}"
   version_label          = "${aws_elastic_beanstalk_application_version.solr.name}"

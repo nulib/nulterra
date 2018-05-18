@@ -64,7 +64,7 @@ resource "aws_elastic_beanstalk_application_version" "zookeeper" {
 }
 
 module "zookeeper_environment" {
-  source = "../beanstalk"
+  source = "../modules/beanstalk"
 
   app                    = "${aws_elastic_beanstalk_application.solrcloud.name}"
   version_label          = "${aws_elastic_beanstalk_application_version.zookeeper.name}"
