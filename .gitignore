@@ -13,5 +13,5 @@
 **/package-lock.json
 
 # Vi backup files
-*-
-.*-
+*~
+.*~
