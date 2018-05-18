@@ -5,6 +5,9 @@
 # Module directory
 .terraform/
 
+# Plan files
+*.plan
+
 # Variable definitions
 *.tfvars
 **/build
