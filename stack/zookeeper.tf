@@ -223,11 +223,11 @@ EOF
 
 resource "null_resource" "first_run_upsert_zk_records" {
   provisioner "local-exec" {
-    command = "aws lambda invoke --function-name ${local.namespace}-upsert-zk-route53-records --payload '${data.template_file.first_run_upsert_zk_records_payload.rendered}' /dev/null"
+    command = "aws --region ${var.aws_region} lambda invoke --function-name ${local.namespace}-upsert-zk-route53-records --payload '${data.template_file.first_run_upsert_zk_records_payload.rendered}' /dev/null"
   }
 
   provisioner "local-exec" {
     when = "destroy"
-    command = "aws lambda invoke --function-name ${local.namespace}-upsert-zk-route53-records --payload '${data.template_file.delete_zk_records_change_batch.rendered}' /dev/null"
+    command = "aws --region ${var.aws_region} lambda invoke --function-name ${local.namespace}-upsert-zk-route53-records --payload '${data.template_file.delete_zk_records_change_batch.rendered}' /dev/null"
   }
 }

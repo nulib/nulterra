@@ -22,7 +22,7 @@ output "cantaloupe_security_group" {
 }
 
 output "fcrepo_security_group" {
-  value = "${module.fcrepo_environment.security_group_id}"
+  value = "${aws_security_group.fcrepo_lb_security_group.id}"
 }
 
 output "index_security_group" {
