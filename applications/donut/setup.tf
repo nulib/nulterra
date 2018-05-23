@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "${var.stack_region}"
+  region = "${data.terraform_remote_state.stack.aws_region}"
 }
 
 terraform {
