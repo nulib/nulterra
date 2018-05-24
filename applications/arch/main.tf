@@ -169,7 +169,6 @@ data "aws_iam_policy_document" "arch_bucket_access" {
     resources = [
       "${aws_s3_bucket.arch_batch.arn}",
       "${aws_s3_bucket.arch_dropbox.arn}",
-      "${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}",
       "${aws_s3_bucket.arch_uploads.arn}"
     ]
   }
@@ -184,7 +183,6 @@ data "aws_iam_policy_document" "arch_bucket_access" {
     resources = [
       "${aws_s3_bucket.arch_batch.arn}/*",
       "${aws_s3_bucket.arch_dropbox.arn}/*",
-      "${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}/*",
       "${aws_s3_bucket.arch_uploads.arn}/*"
     ]
   }
@@ -266,11 +264,9 @@ data "null_data_source" "ssm_parameters" {
   inputs = "${map(
     "aws/buckets/batch",        "${aws_s3_bucket.arch_batch.id}",
     "aws/buckets/dropbox",      "${aws_s3_bucket.arch_dropbox.id}",
-    "aws/buckets/pyramids",     "${data.terraform_remote_state.stack.iiif_pyramid_bucket}",
     "aws/buckets/uploads",      "${aws_s3_bucket.arch_uploads.id}",
     "domain/host",              "${local.app_name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}",
     "geonames_username",        "nul_rdc",
-    "iiif/endpoint",            "${data.terraform_remote_state.stack.iiif_endpoint}",
     "solr/url",                 "${data.terraform_remote_state.stack.index_endpoint}arch",
     "zookeeper/connection_str", "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
   )}"
