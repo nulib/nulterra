@@ -1,10 +1,14 @@
+provider "aws" {
+  region = "${var.stack_region}"
+}
+
 terraform {
   backend "s3" {}
 }
 
-variable "remote_state_bucket" { type = "string" }
-variable "remote_state_key"    { type = "string" }
-variable "remote_state_region" { type = "string" }
+variable "stack_bucket" { type = "string" }
+variable "stack_key"    { type = "string" }
+variable "stack_region" { type = "string" }
 variable "tags" {
   type = "map"
   default = {}
@@ -13,9 +17,9 @@ variable "tags" {
 data "terraform_remote_state" "stack" {
   backend = "s3"
   config {
-    bucket = "${var.remote_state_bucket}"
-    key    = "${var.remote_state_key}"
-    region = "${var.remote_state_region}"
+    bucket = "${var.stack_bucket}"
+    key    = "${var.stack_key}"
+    region = "${var.stack_region}"
   }
 }
 
@@ -31,4 +35,9 @@ locals {
       "Project", "Infrastructure"
     )
   )}"
+  stack_state = {
+    bucket = "${var.stack_bucket}"
+    key = "${var.stack_key}"
+    region = "${var.stack_region}"
+  }
 }
