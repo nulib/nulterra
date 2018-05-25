@@ -23,7 +23,7 @@ resource "aws_security_group_rule" "allow_fcrepo_postgres_access" {
   from_port                = "${module.db.this_db_instance_port}"
   to_port                  = "${module.db.this_db_instance_port}"
   protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.fcrepo_instance.id}"
+  source_security_group_id = "${module.fcrepo_service.instance_security_group}"
 }
 
 resource "aws_s3_bucket" "fcrepo_binary_bucket" {
@@ -74,7 +74,23 @@ resource "aws_iam_user_policy" "fcrepo_binary_bucket_policy" {
   policy = "${data.aws_iam_policy_document.fcrepo_binary_bucket_access.json}"
 }
 
-data "template_file" "task_definition" {
+resource "aws_security_group" "fcrepo_client_security_group" {
+  name        = "${local.namespace}-fedora-client"
+  description = "Fedora Security Group"
+  vpc_id      = "${module.vpc.vpc_id}"
+  tags        = "${local.common_tags}"
+}
+
+resource "aws_security_group_rule" "allow_fcrepo_clients_lb_access" {
+  security_group_id        = "${module.fcrepo_service.lb_security_group}"
+  type                     = "ingress"
+  from_port                = "80"
+  to_port                  = "80"
+  protocol                 = "tcp"
+  source_security_group_id = "${aws_security_group.fcrepo_client_security_group.id}"
+}
+
+data "template_file" "fcrepo_task_definition" {
   template = "${file("${path.module}/applications/fcrepo/service.json.tpl")}"
 
   vars = {
@@ -88,88 +104,21 @@ data "template_file" "task_definition" {
   }
 }
 
-resource "aws_ecs_task_definition" "fcrepo_task" {
-  depends_on               = ["module.fcrepodb"]
-  family                   = "${local.namespace}-fcrepo-task"
-  container_definitions    = "${data.template_file.task_definition.rendered}"
-  requires_compatibilities = ["FARGATE"]
-  cpu                      = "1024"
-  network_mode             = "awsvpc"
-  memory                   = "8192"
-}
+module "fcrepo_service" {
+  source                = "../modules/fargate"
 
-resource "aws_security_group" "fcrepo_lb_security_group" {
-  name        = "${local.namespace}-fcrepo-lb"
-  description = "Fedora Load Balancer Security Group"
-  vpc_id      = "${module.vpc.vpc_id}"
-  tags        = "${local.common_tags}"
-}
-
-resource "aws_security_group" "fcrepo_instance" {
-  name        = "${local.namespace}-fcrepo-instance"
-  description = "Fedora Load Balancer Security Group"
-  vpc_id      = "${module.vpc.vpc_id}"
-  tags        = "${local.common_tags}"
-
-  ingress {
-    from_port       = 8080
-    to_port         = 8080
-    protocol        = "tcp"
-    security_groups = ["${aws_security_group.fcrepo_lb_security_group.id}"]
-  }
-}
-
-resource "aws_ecs_cluster" "fcrepo_cluster" {
-  name = "${local.namespace}-fcrepo"
-}
-
-resource "aws_lb" "fcrepo_load_balancer" {
-  name            = "${local.namespace}-fcrepo-lb"
-  internal        = true
-  security_groups = ["${module.vpc.default_security_group_id}", "${aws_security_group.fcrepo_lb_security_group.id}"]
-  subnets         = ["${module.vpc.private_subnets}"]
-
-  tags = "${local.common_tags}"
-}
-
-resource "aws_lb_target_group" "fcrepo_target_group" {
-  name        = "${local.namespace}-fcrepo-target-group"
-  target_type = "ip"
-  port        = 80
-  protocol    = "HTTP"
-  vpc_id      = "${module.vpc.vpc_id}"
-}
-
-resource "aws_lb_listener" "fcrepo_listener" {
-  load_balancer_arn = "${aws_lb.fcrepo_load_balancer.arn}"
-  port              = "80"
-  protocol          = "HTTP"
-
-  default_action {
-    target_group_arn = "${aws_lb_target_group.fcrepo_target_group.arn}"
-    type             = "forward"
-  }
-}
-
-resource "aws_ecs_service" "fcrepo_service" {
-  depends_on      = ["aws_lb_listener.fcrepo_listener"]
-  name            = "${local.namespace}-fcrepo-service"
-  cluster         = "${aws_ecs_cluster.fcrepo_cluster.id}"
-  task_definition = "${aws_ecs_task_definition.fcrepo_task.arn}"
-  desired_count   = 1
-  launch_type     = "FARGATE"
-
-  load_balancer {
-    target_group_arn = "${aws_lb_target_group.fcrepo_target_group.arn}"
-    container_name   = "fcrepo-app"
-    container_port   = 8080
-  }
-
-  network_configuration {
-    subnets = ["${module.vpc.private_subnets}"]
-    security_groups = ["${module.vpc.default_security_group_id}", "${aws_security_group.fcrepo_instance.id}"]
-    assign_public_ip = false
-  }
+  container_definitions = "${data.template_file.fcrepo_task_definition.rendered}"
+  container_name        = "fcrepo-app"
+  cpu                   = "1024"
+  family                = "fedora"
+  instance_port         = "8080"
+  memory                = "8192"
+  namespace             = "${local.namespace}"
+  private_subnets       = ["${module.vpc.private_subnets}"]
+  public_subnets        = ["${module.vpc.public_subnets}"]
+  security_groups       = ["${module.vpc.default_security_group_id}"]
+  tags                  = "${local.common_tags}"
+  vpc_id                = "${module.vpc.vpc_id}"
 }
 
 resource "aws_route53_record" "fcrepo" {
@@ -178,8 +127,8 @@ resource "aws_route53_record" "fcrepo" {
   type    = "A"
 
   alias {
-    name                   = "${aws_lb.fcrepo_load_balancer.dns_name}"
-    zone_id                = "${aws_lb.fcrepo_load_balancer.zone_id}"
+    name                   = "${module.fcrepo_service.lb_dns_name}"
+    zone_id                = "${module.fcrepo_service.lb_zone_id}"
     evaluate_target_health = true
   }
 }

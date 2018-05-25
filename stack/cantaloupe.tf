@@ -1,16 +1,3 @@
-data "archive_file" "cantaloupe_source" {
-  type        = "zip"
-  source_dir  = "${path.module}/applications/cantaloupe"
-  output_path = "${path.module}/build/cantaloupe.zip"
-}
-
-resource "aws_s3_bucket_object" "cantaloupe_source" {
-  bucket = "${aws_s3_bucket.app_sources.id}"
-  key    = "cantaloupe.zip"
-  source = "${path.module}/build/cantaloupe.zip"
-  etag   = "${data.archive_file.cantaloupe_source.output_md5}"
-}
-
 resource "aws_s3_bucket" "pyramid_tiff_bucket" {
   bucket = "${local.namespace}-pyramids"
   acl    = "private"
@@ -59,44 +46,42 @@ resource "aws_iam_user_policy" "pyramid_tiff_bucket_policy" {
   policy = "${data.aws_iam_policy_document.pyramid_tiff_bucket_access.json}"
 }
 
-resource "aws_elastic_beanstalk_application" "cantaloupe" {
-  name = "${local.namespace}-cantaloupe"
-}
+data "template_file" "cantaloupe_task_definition" {
+  template = "${file("${path.module}/applications/cantaloupe/service.json.tpl")}"
 
-resource "aws_elastic_beanstalk_application_version" "cantaloupe" {
-  name        = "cantaloupe-${data.archive_file.cantaloupe_source.output_md5}"
-  application = "${aws_elastic_beanstalk_application.cantaloupe.name}"
-  description = "application version created by terraform"
-  bucket      = "${aws_s3_bucket.app_sources.id}"
-  key         = "${aws_s3_bucket_object.cantaloupe_source.id}"
-}
-
-module "cantaloupe_environment" {
-  source = "../modules/beanstalk"
-
-  app                    = "${aws_elastic_beanstalk_application.cantaloupe.name}"
-  version_label          = "${aws_elastic_beanstalk_application_version.cantaloupe.name}"
-  namespace              = "${var.stack_name}"
-  name                   = "cantaloupe"
-  stage                  = "${var.environment}"
-  solution_stack_name    = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
-  vpc_id                 = "${module.vpc.vpc_id}"
-  private_subnets        = "${module.vpc.private_subnets}"
-  public_subnets         = "${module.vpc.public_subnets}"
-  instance_port          = "8182"
-  healthcheck_url        = "/iiif/2"
-  keypair                = "${var.ec2_keyname}"
-  instance_type          = "t2.medium"
-  autoscale_min          = 1
-  autoscale_max          = 2
-  health_check_threshold = "Severe"
-  tags                   = "${local.common_tags}"
-
-  env_vars = {
-    TIFF_BUCKET       = "${aws_s3_bucket.pyramid_tiff_bucket.id}",
-    AWS_ACCESS_KEY_ID = "${aws_iam_access_key.pyramid_tiff_bucket_access_key.id}",
-    AWS_SECRET_KEY    = "${aws_iam_access_key.pyramid_tiff_bucket_access_key.secret}"
+  vars = {
+    aws_region        = "${var.aws_region}"
+    tiff_bucket       = "${aws_s3_bucket.pyramid_tiff_bucket.id}"
+    aws_access_key_id = "${aws_iam_access_key.pyramid_tiff_bucket_access_key.id}"
+    aws_secret_key    = "${aws_iam_access_key.pyramid_tiff_bucket_access_key.secret}"
   }
+}
+
+module "cantaloupe_service" {
+  source                = "../modules/fargate"
+
+  container_definitions = "${data.template_file.cantaloupe_task_definition.rendered}"
+  container_name        = "cantaloupe-app"
+  cpu                   = "1024"
+  family                = "cantaloupe"
+  instance_port         = "8182"
+  memory                = "8192"
+  namespace             = "${local.namespace}"
+  internal              = "false"
+  private_subnets       = ["${module.vpc.private_subnets}"]
+  public_subnets        = ["${module.vpc.public_subnets}"]
+  security_groups       = ["${module.vpc.default_security_group_id}"]
+  tags                  = "${local.common_tags}"
+  vpc_id                = "${module.vpc.vpc_id}"
+}
+
+resource "aws_security_group_rule" "allow_all_access_to_cantaloupe" {
+  security_group_id = "${module.cantaloupe_service.lb_security_group}"
+  type              = "ingress"
+  from_port         = "80"
+  to_port           = "80"
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
 }
 
 resource "aws_cloudfront_distribution" "cantaloupe" {
@@ -149,8 +134,8 @@ resource "aws_route53_record" "cantaloupe" {
   type    = "A"
 
   alias {
-    name                   = "${module.cantaloupe_environment.elb_dns_name}"
-    zone_id                = "${module.cantaloupe_environment.elb_zone_id}"
+    name                   = "${module.cantaloupe_service.lb_dns_name}"
+    zone_id                = "${module.cantaloupe_service.lb_zone_id}"
     evaluate_target_health = true
   }
 }

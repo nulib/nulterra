@@ -18,11 +18,11 @@ output "cache_security_group" {
 }
 
 output "cantaloupe_security_group" {
-  value = "${module.cantaloupe_environment.security_group_id}"
+  value = "${module.cantaloupe_service.lb_security_group}"
 }
 
 output "fcrepo_security_group" {
-  value = "${aws_security_group.fcrepo_lb_security_group.id}"
+  value = "${module.fcrepo_service.lb_security_group}"
 }
 
 output "index_security_group" {
