@@ -85,7 +85,7 @@ module "arch_environment" {
   tags                   = "${var.tags}"
 
   env_vars = {
-    AWS_REGION                      = "us-east-1"
+    AWS_REGION                      = "${data.terraform_remote_state.stack.aws_region}"
     DATABASE_URL                    = "${var.database_url}"
     FEDORA_BASE_PATH                = "/${var.name}"
     FEDORA_URL                      = "${data.terraform_remote_state.stack.repo_endpoint}"

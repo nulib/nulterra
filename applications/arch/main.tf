@@ -1,5 +1,5 @@
 locals {
-  app_name = "arch"
+  app_name = "nuarch"
 }
 
 resource "random_id" "secret_key_base" {
@@ -25,8 +25,7 @@ module "arch_derivative_volume" {
   availability_zones = ["${data.terraform_remote_state.stack.azs}"]
   security_groups    = [
     "${module.webapp.security_group_id}",
-    "${module.worker.security_group_id}",
-    "${module.batch_worker.security_group_id}"
+    "${module.worker.security_group_id}"
   ]
 
   zone_id = "${data.terraform_remote_state.stack.private_zone_id}"
@@ -47,8 +46,7 @@ module "arch_working_volume" {
   availability_zones = ["${data.terraform_remote_state.stack.azs}"]
   security_groups    = [
     "${module.webapp.security_group_id}",
-    "${module.worker.security_group_id}",
-    "${module.batch_worker.security_group_id}"
+    "${module.worker.security_group_id}"
   ]
 
   zone_id = "${data.terraform_remote_state.stack.private_zone_id}"
@@ -118,37 +116,14 @@ resource "aws_sqs_queue" "arch_ui_fifo_queue" {
   tags                        = "${local.common_tags}"
 }
 
-resource "aws_sqs_queue" "arch_batch_fifo_deadletter_queue" {
-  name                        = "${data.terraform_remote_state.stack.stack_name}-arch-batch-dead-letter-queue.fifo"
-  fifo_queue                  = true
-  content_based_deduplication = false
-  tags                        = "${local.common_tags}"
-}
-
-resource "aws_sqs_queue" "arch_batch_fifo_queue" {
-  name                        = "${data.terraform_remote_state.stack.stack_name}-arch-batch-queue.fifo"
-  fifo_queue                  = true
-  content_based_deduplication = false
-  delay_seconds               = 0
-  visibility_timeout_seconds  = 3600
-  redrive_policy              = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.arch_batch_fifo_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
-  tags                        = "${local.common_tags}"
-}
-
-resource "aws_s3_bucket" "arch_batch" {
-  bucket = "${local.namespace}-arch-batch"
-  acl    = "private"
-  tags   = "${local.common_tags}"
-}
-
 resource "aws_s3_bucket" "arch_dropbox" {
-  bucket = "${local.namespace}-arch-dropbox"
+  bucket = "${local.namespace}-${local.app_name}-dropbox"
   acl    = "private"
   tags   = "${local.common_tags}"
 }
 
 resource "aws_s3_bucket" "arch_uploads" {
-  bucket = "${local.namespace}-arch-uploads"
+  bucket = "${local.namespace}-${local.app_name}-uploads"
   acl    = "private"
   tags   = "${local.common_tags}"
 }
@@ -167,7 +142,6 @@ data "aws_iam_policy_document" "arch_bucket_access" {
       "s3:GetBucketLocation"
     ]
     resources = [
-      "${aws_s3_bucket.arch_batch.arn}",
       "${aws_s3_bucket.arch_dropbox.arn}",
       "${aws_s3_bucket.arch_uploads.arn}"
     ]
@@ -181,7 +155,6 @@ data "aws_iam_policy_document" "arch_bucket_access" {
       "s3:DeleteObject"
     ]
     resources = [
-      "${aws_s3_bucket.arch_batch.arn}/*",
       "${aws_s3_bucket.arch_dropbox.arn}/*",
       "${aws_s3_bucket.arch_uploads.arn}/*"
     ]
@@ -203,66 +176,8 @@ resource "aws_iam_policy" "arch_bucket_policy" {
   policy = "${data.aws_iam_policy_document.arch_bucket_access.json}"
 }
 
-data "aws_iam_policy_document" "arch_batch_ingest_access" {
-  statement {
-    effect    = "Allow"
-    actions   = ["iam:Passrole"]
-    resources = ["*"]
-  }
-
-  statement {
-    effect    = "Allow"
-    actions   = ["sqs:*"]
-    resources = ["${aws_sqs_queue.arch_batch_fifo_queue.arn}"]
-  }
-}
-
-module "arch_batch_ingest" {
-  source = "git://github.com/claranet/terraform-aws-lambda"
-
-  function_name = "${data.terraform_remote_state.stack.stack_name}-${local.app_name}-batch-ingest"
-  description   = "Batch Ingest trigger for ${local.app_name}"
-  handler       = "index.handler"
-  runtime       = "nodejs8.10"
-  timeout       = 300
-
-  attach_policy = true
-  policy        = "${data.aws_iam_policy_document.arch_batch_ingest_access.json}"
-
-  source_path = "${path.module}/lambdas/batch_ingest_notification"
-  environment {
-    variables {
-      JobClassName = "S3ImportJob"
-      Secret = "${random_id.secret_key_base.hex}"
-      QueueUrl = "${aws_sqs_queue.arch_batch_fifo_queue.id}"
-    }
-  }
-}
-
-resource "aws_lambda_permission" "allow_trigger" {
-  statement_id  = "AllowExecutionFromS3Bucket"
-  action        = "lambda:InvokeFunction"
-  function_name = "${module.arch_batch_ingest.function_arn}"
-  principal     = "s3.amazonaws.com"
-  source_arn    = "${aws_s3_bucket.arch_batch.arn}"
-}
-
-resource "aws_s3_bucket_notification" "batch_ingest_notification" {
-  bucket     = "${aws_s3_bucket.arch_batch.id}"
-  lambda_function {
-    lambda_function_arn = "${module.arch_batch_ingest.function_arn}"
-    filter_suffix       = ".csv"
-    events = [
-      "s3:ObjectCreated:Put",
-      "s3:ObjectCreated:Post",
-      "s3:ObjectCreated:CompleteMultipartUpload"
-    ]
-  }
-}
-
 data "null_data_source" "ssm_parameters" {
   inputs = "${map(
-    "aws/buckets/batch",        "${aws_s3_bucket.arch_batch.id}",
     "aws/buckets/dropbox",      "${aws_s3_bucket.arch_dropbox.id}",
     "aws/buckets/uploads",      "${aws_s3_bucket.arch_uploads.id}",
     "domain/host",              "${local.app_name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}",
@@ -273,7 +188,7 @@ data "null_data_source" "ssm_parameters" {
 }
 
 resource "aws_ssm_parameter" "arch_config_setting" {
-  count = 9
+  count = 6
   name  = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
   type  = "String"
   value = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"
