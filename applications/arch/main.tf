@@ -1,5 +1,5 @@
 locals {
-  app_name = "nuarch"
+  app_name = "arch"
 }
 
 resource "random_id" "secret_key_base" {

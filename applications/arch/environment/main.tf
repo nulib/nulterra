@@ -28,6 +28,15 @@ data "aws_elastic_beanstalk_solution_stack" "multi_docker" {
   name_regex    = "^64bit Amazon Linux (.*) Multi-container Docker (.*)$"
 }
 
+resource "aws_security_group_rule" "allow_archs_fcrepo_access" {
+  security_group_id        = "${data.terraform_remote_state.stack.fcrepo_security_group}"
+  type                     = "ingress"
+  from_port                = "80"
+  to_port                  = "80"
+  protocol                 = "tcp"
+  source_security_group_id = "${module.arch_environment.security_group_id}"
+}
+
 resource "aws_security_group_rule" "allow_archs_postgres_access" {
   security_group_id        = "${data.terraform_remote_state.stack.db_security_group_id}"
   type                     = "ingress"
