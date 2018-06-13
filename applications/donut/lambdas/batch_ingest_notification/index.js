@@ -22,12 +22,14 @@ exports.handler = (event, context, callback) => {
   var params = {
     MessageBody: body,
     QueueUrl: process.env.QueueUrl,
-    MessageDeduplicationId: message['job_id'],
-    MessageGroupId: context.invokedFunctionArn,
     MessageAttributes: {
       "origin": { DataType: "String", StringValue: "AEJ" },
       "message-digest": { DataType: "String", StringValue: digest }
     }
   };
+  if (process.env.QueueUrl.match(/\.fifo$/)) {
+    params.MessageDeduplicationId = message['job_id']
+    params.MessageGroupId = context.invokedFunctionArn
+  }
   sqs.sendMessage(params, callback);
 }
