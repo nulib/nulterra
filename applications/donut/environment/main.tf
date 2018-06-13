@@ -6,6 +6,7 @@ variable "bucket_policy_arn"   { type = "string" }
 variable "database_url"        { type = "string" }
 variable "mount_volumes"       { type = "string" }
 variable "name"                { type = "string" }
+variable "namespace"           { type = "string" }
 variable "secret_key_base"     { type = "string" }
 variable "stack_state"         { type = "map"    }
 variable "tags"                { type = "map"    }
@@ -104,6 +105,7 @@ module "donut_environment" {
     RACK_ENV                        = "production"
     REDIS_HOST                      = "${data.terraform_remote_state.stack.cache_address}"
     REDIS_PORT                      = "${data.terraform_remote_state.stack.cache_port}"
+    REDIS_URL                       = "redis://${data.terraform_remote_state.stack.cache_address}:${data.terraform_remote_state.stack.cache_port}/"
     SECRET_KEY_BASE                 = "${var.secret_key_base}"
     SETTINGS__ACTIVE_JOB__QUEUE_URL = "${var.worker_queue}"
     SETTINGS__AWS__QUEUES__INGEST   = "${var.worker_queue}"
@@ -112,6 +114,8 @@ module "donut_environment" {
     SOLR_URL                        = "${data.terraform_remote_state.stack.index_endpoint}${var.name}"
     SSM_PARAM_PATH                  = "/${data.terraform_remote_state.stack.stack_name}-${var.name}"
     STACK_NAME                      = "${var.name}"
+    STACK_NAMESPACE                 = "${var.namespace}"
+    STACK_TIER                      = "${var.tier_name}"
   }
 }
 
