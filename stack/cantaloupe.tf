@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "pyramid_tiff_bucket" {
-  bucket = "${local.namespace}-pyramids"
+  bucket = "${local.namespace}-pyramid-tiffs"
   acl    = "private"
   tags   = "${local.common_tags}"
 }
@@ -54,6 +54,7 @@ data "template_file" "cantaloupe_task_definition" {
     tiff_bucket       = "${aws_s3_bucket.pyramid_tiff_bucket.id}"
     aws_access_key_id = "${aws_iam_access_key.pyramid_tiff_bucket_access_key.id}"
     aws_secret_key    = "${aws_iam_access_key.pyramid_tiff_bucket_access_key.secret}"
+    namespace         = "${local.namespace}"
   }
 }
 

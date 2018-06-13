@@ -27,7 +27,7 @@ resource "aws_security_group_rule" "allow_fcrepo_postgres_access" {
 }
 
 resource "aws_s3_bucket" "fcrepo_binary_bucket" {
-  bucket = "${local.namespace}-fcrepo-binaries"
+  bucket = "${local.namespace}-fedora-binaries"
   acl    = "private"
   tags   = "${local.common_tags}"
 }
@@ -101,6 +101,8 @@ data "template_file" "fcrepo_task_definition" {
     bucket_name              = "${aws_s3_bucket.fcrepo_binary_bucket.id}"
     bucket_access_key_id     = "${aws_iam_access_key.fcrepo_binary_bucket_access_key.id}"
     bucket_access_key_secret = "${aws_iam_access_key.fcrepo_binary_bucket_access_key.secret}"
+    namespace                = "${local.namespace}"
+    aws_region               = "${var.aws_region}"
   }
 }
 
