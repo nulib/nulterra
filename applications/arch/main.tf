@@ -122,12 +122,6 @@ resource "aws_s3_bucket" "arch_dropbox" {
   tags   = "${local.common_tags}"
 }
 
-resource "aws_s3_bucket" "arch_uploads" {
-  bucket = "${local.namespace}-${local.app_name}-uploads"
-  acl    = "private"
-  tags   = "${local.common_tags}"
-}
-
 data "aws_iam_policy_document" "arch_bucket_access" {
   statement {
     effect = "Allow"
@@ -142,8 +136,7 @@ data "aws_iam_policy_document" "arch_bucket_access" {
       "s3:GetBucketLocation"
     ]
     resources = [
-      "${aws_s3_bucket.arch_dropbox.arn}",
-      "${aws_s3_bucket.arch_uploads.arn}"
+      "${aws_s3_bucket.arch_dropbox.arn}"
     ]
   }
 
@@ -155,8 +148,7 @@ data "aws_iam_policy_document" "arch_bucket_access" {
       "s3:DeleteObject"
     ]
     resources = [
-      "${aws_s3_bucket.arch_dropbox.arn}/*",
-      "${aws_s3_bucket.arch_uploads.arn}/*"
+      "${aws_s3_bucket.arch_dropbox.arn}/*"
     ]
   }
 
@@ -179,7 +171,6 @@ resource "aws_iam_policy" "arch_bucket_policy" {
 data "null_data_source" "ssm_parameters" {
   inputs = "${map(
     "aws/buckets/dropbox",      "${aws_s3_bucket.arch_dropbox.id}",
-    "aws/buckets/uploads",      "${aws_s3_bucket.arch_uploads.id}",
     "domain/host",              "${local.app_name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}",
     "geonames_username",        "nul_rdc",
     "solr/url",                 "${data.terraform_remote_state.stack.index_endpoint}arch",
@@ -188,7 +179,7 @@ data "null_data_source" "ssm_parameters" {
 }
 
 resource "aws_ssm_parameter" "arch_config_setting" {
-  count = 6
+  count = 5
   name  = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
   type  = "String"
   value = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"
