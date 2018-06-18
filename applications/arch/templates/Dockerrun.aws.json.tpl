@@ -13,7 +13,7 @@
   "containerDefinitions": [
     {
       "name": "arch-app",
-      "image": "nulib/arch",
+      "image": "${app_image}",
       "essential": true,
       "memoryReservation": 3000,
       "portMappings": [

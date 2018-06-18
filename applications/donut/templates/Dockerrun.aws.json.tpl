@@ -13,7 +13,7 @@
   "containerDefinitions": [
     {
       "name": "donut-app",
-      "image": "nulib/donut",
+      "image": "${app_image}",
       "essential": true,
       "memoryReservation": 3000,
       "portMappings": [

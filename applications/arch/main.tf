@@ -54,7 +54,21 @@ module "arch_working_volume" {
   tags = "${local.common_tags}"
 }
 
+data "template_file" "dockerrun_aws_json" {
+  template = "${file("./templates/Dockerrun.aws.json.tpl")}"
+
+  vars {
+    app_image = "${var.app_image}"
+  }
+}
+
+resource "local_file" "dockerrun_aws_json" {
+  content  = "${data.template_file.dockerrun_aws_json.rendered}"
+  filename = "./application/Dockerrun.aws.json"
+}
+
 data "archive_file" "arch_source" {
+  depends_on  = ["local_file.dockerrun_aws_json"]
   type        = "zip"
   source_dir  = "${path.module}/application"
   output_path = "${path.module}/build/${local.app_name}.zip"

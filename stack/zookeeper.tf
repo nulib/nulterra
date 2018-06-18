@@ -89,7 +89,10 @@ module "zookeeper_environment" {
     S3_BUCKET        = "${aws_s3_bucket.zookeeper_config_bucket.id}",
     S3_PREFIX        = "zookeeper",
     AWS_REGION       = "${var.aws_region}",
-    DYNAMIC_HOSTNAME = "true"
+    DYNAMIC_HOSTNAME = "true",
+    STACK_NAMESPACE = "${local.namespace}",
+    STACK_NAME      = "zookeeper",
+    STACK_TIER      = "app"
   }
 }
 

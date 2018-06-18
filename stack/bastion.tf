@@ -91,7 +91,7 @@ resource "aws_security_group_rule" "bastion_egress" {
 
 resource "aws_instance" "bastion" {
   ami                         = "${data.aws_ami.amzn.id}"
-  instance_type               = "t2.nano"
+  instance_type               = "${var.bastion_instance_type}"
   key_name                    = "${var.ec2_keyname}"
   subnet_id                   = "${module.vpc.public_subnets[0]}"
   associate_public_ip_address = true

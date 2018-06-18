@@ -6,6 +6,11 @@ terraform {
   backend "s3" {}
 }
 
+variable "app_image" {
+  type    = "string"
+  default = "nulib/donut"
+}
+
 variable "stack_bucket" { type = "string" }
 variable "stack_key"    { type = "string" }
 variable "stack_region" { type = "string" }

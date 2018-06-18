@@ -4,7 +4,7 @@
   "containerDefinitions": [
     {
       "name": "avr-app",
-      "image": "nulib/avr",
+      "image": "${app_image}",
       "essential": true,
       "memoryReservation": 3000,
       "portMappings": [

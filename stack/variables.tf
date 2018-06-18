@@ -29,6 +29,11 @@ variable "azs" {
   default = ["us-east-1a", "us-east-1b", "us-east-1c"]
 }
 
+variable "bastion_instance_type" {
+  type = "string"
+  default = "t2.nano"
+}
+
 variable "hosted_zone_name" {
   type = "string"
 }

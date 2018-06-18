@@ -6,9 +6,15 @@ terraform {
   backend "s3" {}
 }
 
-variable "stack_bucket" { type = "string" }
-variable "stack_key"    { type = "string" }
-variable "stack_region" { type = "string" }
+variable "app_image" {
+  type    = "string"
+  default = "nulib/donut"
+}
+
+variable "stack_bucket"      { type = "string" }
+variable "stack_key"         { type = "string" }
+variable "stack_region"      { type = "string" }
+
 variable "tags" {
   type = "map"
   default = {}
@@ -17,9 +23,9 @@ variable "tags" {
 data "terraform_remote_state" "stack" {
   backend = "s3"
   config {
-    bucket = "${var.stack_bucket}"
-    key    = "${var.stack_key}"
-    region = "${var.stack_region}"
+    bucket      = "${var.stack_bucket}"
+    key         = "${var.stack_key}"
+    region      = "${var.stack_region}"
   }
 }
 

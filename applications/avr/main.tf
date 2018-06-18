@@ -12,7 +12,21 @@ resource "random_pet" "app_version_name" {
   }
 }
 
+data "template_file" "dockerrun_aws_json" {
+  template = "${file("./templates/Dockerrun.aws.json.tpl")}"
+
+  vars {
+    app_image = "${var.app_image}"
+  }
+}
+
+resource "local_file" "dockerrun_aws_json" {
+  content  = "${data.template_file.dockerrun_aws_json.rendered}"
+  filename = "./application/Dockerrun.aws.json"
+}
+
 data "archive_file" "avr_source" {
+  depends_on  = ["local_file.dockerrun_aws_json"]
   type        = "zip"
   source_dir  = "${path.module}/application"
   output_path = "${path.module}/build/${local.app_name}.zip"
@@ -175,7 +189,7 @@ module "avr_batch_ingest" {
   attach_policy = true
   policy        = "${data.aws_iam_policy_document.avr_batch_ingest_access.json}"
 
-  source_path = "${path.module}/lambdas/batch_ingest_notification"
+  source_path = "${path.module}/lambdas/"
   environment {
     variables {
       JobClassName = "BatchIngestJob"
@@ -210,29 +224,7 @@ resource "aws_s3_bucket_notification" "batch_ingest_notification" {
   lambda_function {
     lambda_function_arn = "${module.avr_batch_ingest.function_arn}"
     filter_prefix       = "dropbox/"
-    filter_suffix       = ".csv"
-    events = [
-      "s3:ObjectCreated:Put",
-      "s3:ObjectCreated:Post",
-      "s3:ObjectCreated:CompleteMultipartUpload"
-    ]
-  }
-
-  lambda_function {
-    lambda_function_arn = "${module.avr_batch_ingest.function_arn}"
-    filter_prefix       = "dropbox/"
     filter_suffix       = ".xlsx"
-    events = [
-      "s3:ObjectCreated:Put",
-      "s3:ObjectCreated:Post",
-      "s3:ObjectCreated:CompleteMultipartUpload"
-    ]
-  }
-
-  lambda_function {
-    lambda_function_arn = "${module.avr_batch_ingest.function_arn}"
-    filter_prefix       = "dropbox/"
-    filter_suffix       = ".ods"
     events = [
       "s3:ObjectCreated:Put",
       "s3:ObjectCreated:Post",

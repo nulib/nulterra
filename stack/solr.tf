@@ -80,9 +80,12 @@ module "solr_environment" {
   tags                   = "${local.common_tags}"
 
   env_vars = {
-    MOUNT_UID     = "8983",
-    MOUNT_VOLUMES = "/var/app/solr-backup=${module.solr_backup_volume.dns_name}",
-    ZK_HOST       = "zk.${local.private_zone_name}"
+    MOUNT_UID       = "8983",
+    MOUNT_VOLUMES   = "/var/app/solr-backup=${module.solr_backup_volume.dns_name}",
+    STACK_NAMESPACE = "${local.namespace}",
+    STACK_NAME      = "solr",
+    STACK_TIER      = "app",
+    ZK_HOST         = "zk.${local.private_zone_name}"
   }
 }
 
