@@ -189,7 +189,7 @@ module "avr_batch_ingest" {
   attach_policy = true
   policy        = "${data.aws_iam_policy_document.avr_batch_ingest_access.json}"
 
-  source_path = "${path.module}/lambdas/"
+  source_path = "${path.module}/lambdas/batch_ingest_notification"
   environment {
     variables {
       JobClassName = "BatchIngestJob"
