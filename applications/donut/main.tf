@@ -153,18 +153,45 @@ resource "aws_s3_bucket" "donut_batch" {
   bucket = "${local.namespace}-donut-batch"
   acl    = "private"
   tags   = "${local.common_tags}"
+
+  lifecycle_rule {
+    id = "batch-delete-after-30-days"
+    enabled = true
+    abort_incomplete_multipart_upload_days = 3
+    expiration {
+      days = 30
+    }
+  }
 }
 
 resource "aws_s3_bucket" "donut_dropbox" {
   bucket = "${local.namespace}-donut-dropbox"
   acl    = "private"
   tags   = "${local.common_tags}"
+
+  lifecycle_rule {
+    id = "dropbox-delete-after-30-days"
+    enabled = true
+    abort_incomplete_multipart_upload_days = 3
+    expiration {
+      days = 30
+    }
+  }
 }
 
 resource "aws_s3_bucket" "donut_uploads" {
   bucket = "${local.namespace}-donut-uploads"
   acl    = "private"
   tags   = "${local.common_tags}"
+
+  lifecycle_rule {
+    id = "uploads-delete-after-30-days"
+    enabled = true
+    abort_incomplete_multipart_upload_days = 3
+    expiration {
+      days = 30
+    }
+  }
 }
 
 data "aws_iam_policy_document" "donut_bucket_access" {
