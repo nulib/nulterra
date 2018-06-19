@@ -134,6 +134,15 @@ resource "aws_s3_bucket" "arch_dropbox" {
   bucket = "${local.namespace}-${local.app_name}-dropbox"
   acl    = "private"
   tags   = "${local.common_tags}"
+
+  lifecycle_rule {
+    id = "auto-delete-after-15-days"
+    enabled = true
+    abort_incomplete_multipart_upload_days = 3
+    expiration {
+      days = 15
+    }
+  }
 }
 
 data "aws_iam_policy_document" "arch_bucket_access" {
