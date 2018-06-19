@@ -9,7 +9,10 @@ module "solr_backup_volume" {
   vpc_id             = "${module.vpc.vpc_id}"
   subnets            = "${module.vpc.private_subnets}"
   availability_zones = ["${var.azs}"]
-  security_groups    = ["${module.solr_environment.security_group_id}"]
+  security_groups    = [
+    "${module.solr_environment.security_group_id}",
+    "${module.fcrepo_environment.security_group_id}"
+  ]
 
   zone_id = "${module.dns.private_zone_id}"
 

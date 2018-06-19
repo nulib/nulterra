@@ -1,5 +1,15 @@
 locals {
+  app_name         = "fcrepo"
   fcrepo_db_schema = "fcrepo"
+  java_options     = [
+    "-Dfcrepo.postgresql.host=${module.db.this_db_instance_address}",
+    "-Dfcrepo.postgresql.port=${module.db.this_db_instance_port}",
+    "-Dfcrepo.postgresql.username=${local.fcrepo_db_schema}",
+    "-Dfcrepo.postgresql.password=${module.fcrepodb.password}",
+    "-Daws.accessKeyId=${aws_iam_access_key.fcrepo_binary_bucket_access_key.id}",
+    "-Daws.secretKey=${aws_iam_access_key.fcrepo_binary_bucket_access_key.secret}",
+    "-Daws.bucket=${aws_s3_bucket.fcrepo_binary_bucket.id}"
+  ]
 }
 
 module "fcrepodb" {
@@ -23,7 +33,7 @@ resource "aws_security_group_rule" "allow_fcrepo_postgres_access" {
   from_port                = "${module.db.this_db_instance_port}"
   to_port                  = "${module.db.this_db_instance_port}"
   protocol                 = "tcp"
-  source_security_group_id = "${module.fcrepo_service.instance_security_group}"
+  source_security_group_id = "${module.fcrepo_environment.security_group_id}"
 }
 
 resource "aws_s3_bucket" "fcrepo_binary_bucket" {
@@ -74,53 +84,60 @@ resource "aws_iam_user_policy" "fcrepo_binary_bucket_policy" {
   policy = "${data.aws_iam_policy_document.fcrepo_binary_bucket_access.json}"
 }
 
-resource "aws_security_group" "fcrepo_client_security_group" {
-  name        = "${local.namespace}-fedora-client"
-  description = "Fedora Security Group"
-  vpc_id      = "${module.vpc.vpc_id}"
-  tags        = "${local.common_tags}"
+data "archive_file" "fcrepo_source" {
+  type        = "zip"
+  source_dir  = "${path.module}/applications/fcrepo"
+  output_path = "${path.module}/build/fcrepo.zip"
 }
 
-resource "aws_security_group_rule" "allow_fcrepo_clients_lb_access" {
-  security_group_id        = "${module.fcrepo_service.lb_security_group}"
-  type                     = "ingress"
-  from_port                = "80"
-  to_port                  = "80"
-  protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.fcrepo_client_security_group.id}"
+resource "aws_s3_bucket_object" "fcrepo_source" {
+  bucket = "${aws_s3_bucket.app_sources.id}"
+  key    = "fcrepo.zip"
+  source = "${path.module}/build/fcrepo.zip"
+  etag   = "${data.archive_file.fcrepo_source.output_md5}"
 }
 
-data "template_file" "fcrepo_task_definition" {
-  template = "${file("${path.module}/applications/fcrepo/service.json.tpl")}"
+resource "aws_elastic_beanstalk_application" "fcrepo" {
+  name = "${local.namespace}-${local.app_name}"
+}
 
-  vars = {
-    db_host                  = "${module.db.this_db_instance_address}"
-    db_port                  = "${module.db.this_db_instance_port}"
-    db_user                  = "${local.fcrepo_db_schema}"
-    db_password              = "${module.fcrepodb.password}"
-    bucket_name              = "${aws_s3_bucket.fcrepo_binary_bucket.id}"
-    bucket_access_key_id     = "${aws_iam_access_key.fcrepo_binary_bucket_access_key.id}"
-    bucket_access_key_secret = "${aws_iam_access_key.fcrepo_binary_bucket_access_key.secret}"
-    namespace                = "${local.namespace}"
-    aws_region               = "${var.aws_region}"
+resource "aws_elastic_beanstalk_application_version" "fcrepo" {
+  name        = "fcrepo-${data.archive_file.fcrepo_source.output_md5}"
+  application = "${aws_elastic_beanstalk_application.fcrepo.name}"
+  description = "application version created by terraform"
+  bucket      = "${aws_s3_bucket.app_sources.id}"
+  key         = "${aws_s3_bucket_object.fcrepo_source.id}"
+}
+
+module "fcrepo_environment" {
+  source = "../modules/beanstalk"
+
+  app                    = "${aws_elastic_beanstalk_application.fcrepo.name}"
+  version_label          = "${aws_elastic_beanstalk_application_version.fcrepo.name}"
+  namespace              = "${var.stack_name}"
+  name                   = "fcrepo"
+  stage                  = "${var.environment}"
+  solution_stack_name    = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
+  vpc_id                 = "${module.vpc.vpc_id}"
+  private_subnets        = "${module.vpc.private_subnets}"
+  public_subnets         = "${module.vpc.private_subnets}"
+  loadbalancer_scheme    = "internal"
+  instance_port          = "8080"
+  healthcheck_url        = "/rest/alive"
+  keypair                = "${var.ec2_keyname}"
+  instance_type          = "t2.xlarge"
+  autoscale_min          = 1
+  autoscale_max          = 2
+  health_check_threshold = "Severe"
+  tags                   = "${local.common_tags}"
+
+  env_vars = {
+    MOUNT_VOLUMES   = "/var/backup=${module.solr_backup_volume.dns_name}",
+    JAVA_OPTIONS    = "${join(" ", local.java_options)}",
+    STACK_NAMESPACE = "${local.namespace}",
+    STACK_NAME      = "fcr",
+    STACK_TIER      = "app"
   }
-}
-
-module "fcrepo_service" {
-  source                = "../modules/fargate"
-
-  container_definitions = "${data.template_file.fcrepo_task_definition.rendered}"
-  container_name        = "fcrepo-app"
-  cpu                   = "1024"
-  family                = "fedora"
-  instance_port         = "8080"
-  memory                = "8192"
-  namespace             = "${local.namespace}"
-  private_subnets       = ["${module.vpc.private_subnets}"]
-  public_subnets        = ["${module.vpc.public_subnets}"]
-  security_groups       = ["${module.vpc.default_security_group_id}"]
-  tags                  = "${local.common_tags}"
-  vpc_id                = "${module.vpc.vpc_id}"
 }
 
 resource "aws_route53_record" "fcrepo" {
@@ -129,8 +146,8 @@ resource "aws_route53_record" "fcrepo" {
   type    = "A"
 
   alias {
-    name                   = "${module.fcrepo_service.lb_dns_name}"
-    zone_id                = "${module.fcrepo_service.lb_zone_id}"
+    name                   = "${module.fcrepo_environment.elb_dns_name}"
+    zone_id                = "${module.fcrepo_environment.elb_zone_id}"
     evaluate_target_health = true
   }
 }

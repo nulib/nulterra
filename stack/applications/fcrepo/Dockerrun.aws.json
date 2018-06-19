@@ -1,0 +1,28 @@
+{
+  "AWSEBDockerrunVersion": 2,
+  "volumes": [
+    {
+      "name": "backup",
+      "host": { "sourcePath": "/var/backup/fedora" }
+    }
+  ],
+  "containerDefinitions": [
+    {
+      "name": "fcrepo-app",
+      "image": "nulib/fcrepo4:s3fix",
+      "memoryReservation": 3000,
+      "portMappings": [
+        { "hostPort": 8080, "containerPort": 8080 }
+      ],
+      "environment": [
+        {
+          "name": "MODESHAPE_CONFIG",
+          "value": "classpath:/config/jdbc-postgresql-s3/repository.json"
+        }
+      ],
+      "mountPoints": [
+        { "sourceVolume": "backup", "containerPath": "/var/backup" }
+      ]
+    }
+  ]
+}
