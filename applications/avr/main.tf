@@ -113,6 +113,12 @@ resource "aws_s3_bucket" "avr_derivatives" {
   bucket = "${local.namespace}-avr-derivatives"
   acl    = "private"
   tags   = "${local.common_tags}"
+  cors_rule {
+    allowed_origins = ["*.northwestern.edu"]
+    allowed_methods = ["GET"]
+    max_age_seconds = "3000"
+    allowed_headers = ["Authorization", "Access-Control-Allow-Origin"]
+  }
 }
 
 data "aws_iam_policy_document" "avr_bucket_access" {

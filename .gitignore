@@ -16,4 +16,5 @@
 **/package-lock.json
 
 .env
-Dockerrun.aws.json
+applications/**/Dockerrun.aws.json
+batch
