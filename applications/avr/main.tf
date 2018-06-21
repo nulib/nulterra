@@ -112,6 +112,9 @@ resource "aws_s3_bucket" "avr_masterfiles" {
 data "aws_s3_bucket" "existing_avr_derivatives" {
   bucket = "${var.derivatives_bucket}"
 }
+
+data "aws_s3_bucket" "avr_preservation" {
+  bucket = "${var.preservation_bucket}"
 }
 
 data "aws_iam_policy_document" "avr_bucket_access" {
@@ -130,6 +133,7 @@ data "aws_iam_policy_document" "avr_bucket_access" {
     resources = [
       "${aws_s3_bucket.avr_masterfiles.arn}",
       "${data.aws_s3_bucket.existing_avr_derivatives.arn}",
+      "${data.aws_s3_bucket.avr_preservation.arn}"
     ]
   }
 
@@ -143,6 +147,7 @@ data "aws_iam_policy_document" "avr_bucket_access" {
     resources = [
       "${aws_s3_bucket.avr_masterfiles.arn}/*",
       "${data.aws_s3_bucket.existing_avr_derivatives.arn}/*",
+      "${data.aws_s3_bucket.avr_preservation.arn}/*"
     ]
   }
 

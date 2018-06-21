@@ -12,3 +12,6 @@ variable "trusted_signers" {
 variable "derivatives_bucket" {
   type = "string"
 }
+variable "preservation_bucket" {
+  type = "string"
+}
