@@ -4,6 +4,8 @@ variable "autoscale_min"       { type = "string" }
 variable "autoscale_max"       { type = "string" }
 variable "bucket_policy_arn"   { type = "string" }
 variable "database_url"        { type = "string" }
+variable "lti_key"             { type = "string" }
+variable "lti_secret"          { type = "string" }
 variable "mount_volumes"       { type = "string" }
 variable "name"                { type = "string" }
 variable "namespace"           { type = "string" }
@@ -100,6 +102,8 @@ module "avr_environment" {
     DATABASE_URL                               = "${var.database_url}"
     FEDORA_BASE_PATH                           = "/${var.name}"
     FEDORA_URL                                 = "${data.terraform_remote_state.stack.repo_endpoint}"
+    LTI_AUTH_KEY                               = "${var.lti_key}"
+    LTI_AUTH_SECRET                            = "${var.lti_secret}"
     MOUNT_GID                                  = "1000"
     MOUNT_VOLUMES                              = "${var.mount_volumes}"
     PROCESS_ACTIVE_ELASTIC_JOBS                = "${lower(var.tier) == "worker" ? "true" : "false" }"

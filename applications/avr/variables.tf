@@ -15,3 +15,9 @@ variable "derivatives_bucket" {
 variable "preservation_bucket" {
   type = "string"
 }
+variable "lti_key" {
+  type = "string"
+}
+variable "lti_secret" {
+  type = "string"
+}

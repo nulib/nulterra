@@ -66,6 +66,8 @@ module "webapp" {
   autoscale_max       = 2
   bucket_policy_arn   = "${aws_iam_policy.avr_bucket_policy.arn}"
   database_url        = "${local.database_url}"
+  lti_key             = "${var.lti_key}"
+  lti_secret          = "${var.lti_secret}"
   mount_volumes       = "${local.mount_volumes}"
   name                = "${local.app_name}"
   namespace           = "${local.namespace}"
@@ -87,6 +89,8 @@ module "worker" {
   autoscale_max       = 2
   bucket_policy_arn   = "${aws_iam_policy.avr_bucket_policy.arn}"
   database_url        = "${local.database_url}"
+  lti_key             = "${var.lti_key}"
+  lti_secret          = "${var.lti_secret}"
   mount_volumes       = "${local.mount_volumes}"
   name                = "${local.app_name}"
   namespace           = "${local.namespace}"
@@ -108,6 +112,8 @@ module "batch_worker" {
   autoscale_max       = 2
   bucket_policy_arn   = "${aws_iam_policy.avr_bucket_policy.arn}"
   database_url        = "${local.database_url}"
+  lti_key             = "${var.lti_key}"
+  lti_secret          = "${var.lti_secret}"
   mount_volumes       = "${local.mount_volumes}"
   name                = "${local.app_name}"
   namespace           = "${local.namespace}"
