@@ -9,3 +9,9 @@ variable "trusted_signers" {
   type = "list"
   default = []
 }
+variable "lti_key" {
+  type = "string"
+}
+variable "lti_secret" {
+  type = "string"
+}

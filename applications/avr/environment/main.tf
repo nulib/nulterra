@@ -4,6 +4,8 @@ variable "autoscale_min"       { type = "string" }
 variable "autoscale_max"       { type = "string" }
 variable "bucket_policy_arn"   { type = "string" }
 variable "database_url"        { type = "string" }
+variable "lti_key"             { type = "string" }
+variable "lti_secret"          { type = "string" }
 variable "mount_volumes"       { type = "string" }
 variable "name"                { type = "string" }
 variable "namespace"           { type = "string" }
@@ -95,30 +97,32 @@ module "avr_environment" {
   tags                   = "${var.tags}"
 
   env_vars = {
-    AWS_REGION                           = "${data.terraform_remote_state.stack.aws_region}"
-    DATABASE_URL                         = "${var.database_url}"
-    FEDORA_BASE_PATH                     = "/${var.name}"
-    FEDORA_URL                           = "${data.terraform_remote_state.stack.repo_endpoint}"
-    MOUNT_GID                            = "1000"
-    MOUNT_VOLUMES                        = "${var.mount_volumes}"
-    PROCESS_ACTIVE_ELASTIC_JOBS          = "${lower(var.tier) == "worker" ? "true" : "false" }"
-    RACK_ENV                             = "production"
-    REDIS_HOST                           = "${data.terraform_remote_state.stack.cache_address}"
-    REDIS_PORT                           = "${data.terraform_remote_state.stack.cache_port}"
-    REDIS_URL                            = "redis://${data.terraform_remote_state.stack.cache_address}:${data.terraform_remote_state.stack.cache_port}/"
-    SECRET_KEY_BASE                      = "${var.secret_key_base}"
-    SETTINGS__ACTIVE_JOB__QUEUE_URL      = "${var.worker_queue}"
-    SETTINGS__ACTIVE_JOB__QUEUES__INGEST = "${var.worker_queue}"
-    SETTINGS__DOMAIN__HOST               = "${var.name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}"
-    SETTINGS__REDIS__HOST                = "${data.terraform_remote_state.stack.cache_address}"
-    SETTINGS__REDIS__PORT                = "${data.terraform_remote_state.stack.cache_port}"
-    SETTINGS__SOLRCLOUD                  = "true"
-    SETTINGS__WORKER                     = "${lower(var.tier) == "worker" ? "true" : "false" }"
-    SOLR_URL                             = "${data.terraform_remote_state.stack.index_endpoint}${var.name}"
-    SSM_PARAM_PATH                       = "/${data.terraform_remote_state.stack.stack_name}-${var.name}"
-    STACK_NAME                           = "${var.name}"
-    STACK_NAMESPACE                      = "${var.namespace}"
-    STACK_TIER                           = "${var.tier_name}"
+    AWS_REGION                                 = "${data.terraform_remote_state.stack.aws_region}"
+    DATABASE_URL                               = "${var.database_url}"
+    FEDORA_BASE_PATH                           = "/${var.name}"
+    FEDORA_URL                                 = "${data.terraform_remote_state.stack.repo_endpoint}"
+    LTI_AUTH_KEY                               = "${var.lti_key}"
+    LTI_AUTH_SECRET                            = "${var.lti_secret}"
+    MOUNT_GID                                  = "1000"
+    MOUNT_VOLUMES                              = "${var.mount_volumes}"
+    PROCESS_ACTIVE_ELASTIC_JOBS                = "${lower(var.tier) == "worker" ? "true" : "false" }"
+    RACK_ENV                                   = "production"
+    REDIS_HOST                                 = "${data.terraform_remote_state.stack.cache_address}"
+    REDIS_PORT                                 = "${data.terraform_remote_state.stack.cache_port}"
+    REDIS_URL                                  = "redis://${data.terraform_remote_state.stack.cache_address}:${data.terraform_remote_state.stack.cache_port}/"
+    SECRET_KEY_BASE                            = "${var.secret_key_base}"
+    SETTINGS__ACTIVE_JOB__QUEUE_URL            = "${var.worker_queue}"
+    SETTINGS__ACTIVE_JOB__QUEUES__INGEST       = "${var.worker_queue}"
+    SETTINGS__DOMAIN__HOST                     = "${var.name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}"
+    SETTINGS__REDIS__HOST                      = "${data.terraform_remote_state.stack.cache_address}"
+    SETTINGS__REDIS__PORT                      = "${data.terraform_remote_state.stack.cache_port}"
+    SETTINGS__SOLRCLOUD                        = "true"
+    SETTINGS__WORKER                           = "${lower(var.tier) == "worker" ? "true" : "false" }"
+    SOLR_URL                                   = "${data.terraform_remote_state.stack.index_endpoint}${var.name}"
+    SSM_PARAM_PATH                             = "/${data.terraform_remote_state.stack.stack_name}-${var.name}"
+    STACK_NAME                                 = "${var.name}"
+    STACK_NAMESPACE                            = "${var.namespace}"
+    STACK_TIER                                 = "${var.tier_name}"
   }
 }
 
