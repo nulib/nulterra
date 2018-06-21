@@ -15,9 +15,9 @@ data "aws_iam_policy_document" "avr_instance_pipeline_access_policy" {
     ]
     resources = [
       "${aws_s3_bucket.avr_masterfiles.arn}",
-      "${aws_s3_bucket.avr_derivatives.arn}",
+      "${data.aws_s3_bucket.existing_avr_derivatives.arn}",
       "${aws_s3_bucket.avr_masterfiles.arn}/*",
-      "${aws_s3_bucket.avr_derivatives.arn}/*"
+      "${data.aws_s3_bucket.existing_avr_derivatives.arn}/*"
     ]
   }
 

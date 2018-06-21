@@ -9,3 +9,6 @@ variable "trusted_signers" {
   type = "list"
   default = []
 }
+variable "derivatives_bucket" {
+  type = "string"
+}

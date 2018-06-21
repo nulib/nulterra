@@ -30,9 +30,9 @@ data "aws_iam_policy_document" "avr_pipeline_policy" {
     ]
     resources = [
       "${aws_s3_bucket.avr_masterfiles.arn}",
-      "${aws_s3_bucket.avr_derivatives.arn}",
+      "${data.aws_s3_bucket.existing_avr_derivatives.arn}",
       "${aws_s3_bucket.avr_masterfiles.arn}/*",
-      "${aws_s3_bucket.avr_derivatives.arn}/*"
+      "${data.aws_s3_bucket.existing_avr_derivatives.arn}/*"
     ]
   }
 
@@ -68,7 +68,7 @@ resource "aws_iam_role_policy_attachment" "avr_pipeline" {
 resource "aws_elastictranscoder_pipeline" "avr_pipeline" {
   name          = "${local.namespace}-${local.app_name}-transcoding-pipeline"
   input_bucket  = "${aws_s3_bucket.avr_masterfiles.id}"
-  output_bucket = "${aws_s3_bucket.avr_derivatives.id}"
+  output_bucket = "${data.aws_s3_bucket.existing_avr_derivatives.id}"
   role          = "${aws_iam_role.avr_pipeline_role.arn}"
 
   notifications {

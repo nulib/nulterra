@@ -6,35 +6,6 @@ resource "aws_cloudfront_origin_access_identity" "avr_origin_access_identity" {
   comment = "${local.namespace}-${local.app_name}"
 }
 
-data "aws_iam_policy_document" "derivative_bucket_policy" {
-  statement {
-    effect    = "Allow"
-    actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.avr_derivatives.arn}/*"]
-
-    principals {
-      type        = "AWS"
-      identifiers = ["${aws_cloudfront_origin_access_identity.avr_origin_access_identity.iam_arn}"]
-    }
-  }
-
-  statement {
-    effect    = "Allow"
-    actions   = ["s3:ListBucket"]
-    resources = ["${aws_s3_bucket.avr_derivatives.arn}"]
-
-    principals {
-      type        = "AWS"
-      identifiers = ["${aws_cloudfront_origin_access_identity.avr_origin_access_identity.iam_arn}"]
-    }
-  }
-}
-
-resource "aws_s3_bucket_policy" "allow_cloudfront_derivative_access" {
-  bucket = "${aws_s3_bucket.avr_derivatives.id}"
-  policy = "${data.aws_iam_policy_document.derivative_bucket_policy.json}"
-}
-
 resource "aws_cloudfront_distribution" "avr_streaming" {
   enabled          = true
   is_ipv6_enabled  = true
@@ -43,7 +14,7 @@ resource "aws_cloudfront_distribution" "avr_streaming" {
   price_class      = "PriceClass_100"
 
   origin {
-    domain_name = "${aws_s3_bucket.avr_derivatives.bucket_domain_name}"
+    domain_name = "${data.aws_s3_bucket.existing_avr_derivatives.bucket_domain_name}"
     origin_id   = "${local.namespace}-${local.app_name}-origin-hls"
 
     s3_origin_config {
