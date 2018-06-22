@@ -9,6 +9,7 @@ variable "lti_secret"          { type = "string" }
 variable "mount_volumes"       { type = "string" }
 variable "name"                { type = "string" }
 variable "namespace"           { type = "string" }
+variable "preservation_bucket" { type = "string" }
 variable "secret_key_base"     { type = "string" }
 variable "stack_state"         { type = "map"    }
 variable "tags"                { type = "map"    }
@@ -119,6 +120,8 @@ module "avr_environment" {
     SECRET_KEY_BASE                            = "${var.secret_key_base}"
     SETTINGS__ACTIVE_JOB__QUEUE_URL            = "${var.worker_queue}"
     SETTINGS__ACTIVE_JOB__QUEUES__INGEST       = "${var.worker_queue}"
+    SETTINGS__MASTER_FILE_MANAGEMENT__PATH     = "s3://${var.preservation_bucket}/avalon-masterfiles/"
+    SETTINGS__MASTER_FILE_MANAGEMENT__STRATEGY = "MOVE"
     SETTINGS__REDIS__HOST                      = "${data.terraform_remote_state.stack.cache_address}"
     SETTINGS__REDIS__PORT                      = "${data.terraform_remote_state.stack.cache_port}"
     SETTINGS__SOLRCLOUD                        = "true"

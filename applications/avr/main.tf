@@ -127,6 +127,12 @@ resource "aws_s3_bucket" "avr_derivatives" {
   }
 }
 
+resource "aws_s3_bucket" "avr_preservation" {
+  bucket = "${local.namespace}-avr-preservation"
+  acl    = "private"
+  tags   = "${local.common_tags}"
+}
+
 data "aws_iam_policy_document" "avr_bucket_access" {
   statement {
     effect = "Allow"
@@ -142,7 +148,8 @@ data "aws_iam_policy_document" "avr_bucket_access" {
     ]
     resources = [
       "${aws_s3_bucket.avr_masterfiles.arn}",
-      "${aws_s3_bucket.avr_derivatives.arn}"
+      "${aws_s3_bucket.avr_derivatives.arn}",
+      "${aws_s3_bucket.avr_preservation.arn}"
     ]
   }
 
@@ -155,7 +162,8 @@ data "aws_iam_policy_document" "avr_bucket_access" {
     ]
     resources = [
       "${aws_s3_bucket.avr_masterfiles.arn}/*",
-      "${aws_s3_bucket.avr_derivatives.arn}/*"
+      "${aws_s3_bucket.avr_derivatives.arn}/*",
+      "${aws_s3_bucket.avr_preservation.arn}/*"
     ]
   }
 
@@ -263,7 +271,7 @@ data "null_data_source" "ssm_parameters" {
 }
 
 resource "aws_ssm_parameter" "avr_config_setting" {
-  count     = 11
+  count     = 12
   name      = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
   type      = "String"
   value     = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"
