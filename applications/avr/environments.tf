@@ -71,6 +71,7 @@ module "webapp" {
   mount_volumes       = "${local.mount_volumes}"
   name                = "${local.app_name}"
   namespace           = "${local.namespace}"
+  ssl_certificate     = "${var.ssl_certificate}"
   worker_queue        = "${aws_sqs_queue.avr_ui_queue.name}"
   worker_queue_url    = "${aws_sqs_queue.avr_ui_queue.id}"
   secret_key_base     = "${random_id.secret_key_base.hex}"

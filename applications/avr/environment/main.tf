@@ -17,6 +17,11 @@ variable "tier_name"           { type = "string" }
 variable "worker_queue"        { type = "string" }
 variable "worker_queue_url"    { type = "string" }
 
+variable "ssl_certificate" {
+  type    = "string"
+  default = ""
+}
+
 data "terraform_remote_state" "stack" {
   backend = "s3"
   config {
@@ -73,28 +78,29 @@ resource "aws_security_group_rule" "allow_zk_avr_access" {
 }
 
 module "avr_environment" {
-  source                 = "../../../modules/beanstalk"
-  app                    = "${var.app_name}"
-  version_label          = "${var.app_version}"
-  namespace              = "${data.terraform_remote_state.stack.stack_name}"
-  name                   = "${var.name}-${var.tier_name}"
-  tier                   = "${var.tier}"
-  stage                  = "${data.terraform_remote_state.stack.environment}"
-  solution_stack_name    = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
-  vpc_id                 = "${data.terraform_remote_state.stack.vpc_id}"
-  private_subnets        = "${data.terraform_remote_state.stack.private_subnets}"
-  public_subnets         = "${data.terraform_remote_state.stack.public_subnets}"
-  http_listener_enabled  = "${lower(var.tier) == "worker" ? "false" : "true" }"
-  loadbalancer_scheme    = "${lower(var.tier) == "worker" ? "" : "public" }"
-  instance_port          = "80"
-  healthcheck_url        = "/"
-  keypair                = "${data.terraform_remote_state.stack.ec2_keyname}"
-  instance_type          = "t2.medium"
-  autoscale_min          = "${var.autoscale_min}"
-  autoscale_max          = "${var.autoscale_max}"
-  health_check_threshold = "Severe"
-  sqsd_worker_queue_url  = "${var.worker_queue_url}"
-  tags                   = "${var.tags}"
+  source                       = "../../../modules/beanstalk"
+  app                          = "${var.app_name}"
+  version_label                = "${var.app_version}"
+  namespace                    = "${data.terraform_remote_state.stack.stack_name}"
+  name                         = "${var.name}-${var.tier_name}"
+  tier                         = "${var.tier}"
+  stage                        = "${data.terraform_remote_state.stack.environment}"
+  solution_stack_name          = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
+  vpc_id                       = "${data.terraform_remote_state.stack.vpc_id}"
+  private_subnets              = "${data.terraform_remote_state.stack.private_subnets}"
+  public_subnets               = "${data.terraform_remote_state.stack.public_subnets}"
+  http_listener_enabled        = "${lower(var.tier) == "worker" ? "false" : "true" }"
+  loadbalancer_certificate_arn = "${var.ssl_certificate}"
+  loadbalancer_scheme          = "${lower(var.tier) == "worker" ? "" : "public" }"
+  instance_port                = "80"
+  healthcheck_url              = "/"
+  keypair                      = "${data.terraform_remote_state.stack.ec2_keyname}"
+  instance_type                = "t2.medium"
+  autoscale_min                = "${var.autoscale_min}"
+  autoscale_max                = "${var.autoscale_max}"
+  health_check_threshold       = "Severe"
+  sqsd_worker_queue_url        = "${var.worker_queue_url}"
+  tags                         = "${var.tags}"
 
   env_vars = {
     AWS_REGION                                 = "${data.terraform_remote_state.stack.aws_region}"
@@ -113,7 +119,6 @@ module "avr_environment" {
     SECRET_KEY_BASE                            = "${var.secret_key_base}"
     SETTINGS__ACTIVE_JOB__QUEUE_URL            = "${var.worker_queue}"
     SETTINGS__ACTIVE_JOB__QUEUES__INGEST       = "${var.worker_queue}"
-    SETTINGS__DOMAIN__HOST                     = "${var.name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}"
     SETTINGS__REDIS__HOST                      = "${data.terraform_remote_state.stack.cache_address}"
     SETTINGS__REDIS__PORT                      = "${data.terraform_remote_state.stack.cache_port}"
     SETTINGS__SOLRCLOUD                        = "true"

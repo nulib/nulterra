@@ -1,8 +1,24 @@
+variable "public_hostname" {
+  type = "string"
+  default = ""
+}
+variable "streaming_hostname" {
+  type = "string"
+  default = ""
+}
+variable "ssl_certificate" {
+  type = "string"
+  default = ""
+}
+variable "streaming_certificate" {
+  type = "string"
+  default = ""
+}
 variable "email" {
   type = "map"
 }
 variable "initial_user" {
-  type    = "string" 
+  type    = "string"
   default = "archivist1@example.edu"
 }
 variable "trusted_signers" {

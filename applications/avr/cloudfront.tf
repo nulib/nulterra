@@ -1,5 +1,6 @@
 locals {
   stream_fqdn = "httpstream.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}"
+  streaming_aliases = "${compact(list(local.stream_fqdn, var.streaming_hostname))}"
 }
 
 resource "aws_cloudfront_origin_access_identity" "avr_origin_access_identity" {
@@ -39,7 +40,7 @@ resource "aws_cloudfront_distribution" "avr_streaming" {
   enabled          = true
   is_ipv6_enabled  = true
   retain_on_delete = true
-  aliases          = ["${local.stream_fqdn}"]
+  aliases          = ["${local.streaming_aliases}"]
   price_class      = "PriceClass_100"
 
   origin {
@@ -75,7 +76,8 @@ resource "aws_cloudfront_distribution" "avr_streaming" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = true
+    cloudfront_default_certificate = "${var.streaming_certificate == "" ? true : false}"
+    acm_certificate_arn            = "${var.streaming_certificate}"
   }
 }
 

@@ -1,5 +1,11 @@
 locals {
   app_name = "avr"
+  default_host_parts = [
+    "${local.app_name}",
+    "${data.terraform_remote_state.stack.stack_name}",
+    "${data.terraform_remote_state.stack.hosted_zone_name}"
+  ]
+  domain_host = "${coalesce(var.public_hostname, join(".", local.default_host_parts))}"
 }
 
 resource "random_id" "secret_key_base" {
@@ -241,6 +247,7 @@ resource "aws_s3_bucket_notification" "batch_ingest_notification" {
 
 data "null_data_source" "ssm_parameters" {
   inputs = "${map(
+    "domain/host",               "${local.domain_host}",
     "dropbox/path",              "s3://${aws_s3_bucket.avr_masterfiles.id}/dropbox/",
     "dropbox/upload_uri",        "s3://${aws_s3_bucket.avr_masterfiles.id}/dropbox/",
     "email/comments",            "${var.email["comments"]}",
@@ -250,7 +257,7 @@ data "null_data_source" "ssm_parameters" {
     "encoding/sns_topic",        "${aws_sns_topic.avr_transcode_notification.arn}",
     "initial_user",              "${var.initial_user}",
     "solr/url",                  "${data.terraform_remote_state.stack.index_endpoint}avr",
-    "streaming/http_base",       "http://${aws_route53_record.avr_cloudfront.fqdn}/",
+    "streaming/http_base",       "http${var.ssl_certificate == "" ? "" : "s"}://${coalesce(var.streaming_hostname, aws_route53_record.avr_cloudfront.fqdn)}/",
     "zookeeper/connection_str",  "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
   )}"
 }
