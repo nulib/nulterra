@@ -78,6 +78,7 @@ resource "aws_cloudfront_distribution" "avr_streaming" {
   viewer_certificate {
     cloudfront_default_certificate = "${var.streaming_certificate == "" ? true : false}"
     acm_certificate_arn            = "${var.streaming_certificate}"
+    ssl_support_method             = "sni-only"
   }
 }
 
