@@ -116,7 +116,7 @@ resource "aws_s3_bucket" "avr_masterfiles" {
 }
 
 resource "aws_s3_bucket" "avr_derivatives" {
-  bucket = "${local.namespace}-avr-derivatives"
+#  bucket = "${local.namespace}-avr-derivatives"
   acl    = "private"
   tags   = "${local.common_tags}"
   cors_rule {
@@ -128,7 +128,7 @@ resource "aws_s3_bucket" "avr_derivatives" {
 }
 
 resource "aws_s3_bucket" "avr_preservation" {
-  bucket = "${local.namespace}-avr-preservation"
+#  bucket = "${local.namespace}-avr-preservation"
   acl    = "private"
   tags   = "${local.common_tags}"
 }
