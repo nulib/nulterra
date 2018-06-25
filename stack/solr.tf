@@ -63,24 +63,25 @@ resource "aws_security_group_rule" "allow_solr_self_access" {
 module "solr_environment" {
   source = "../modules/beanstalk"
 
-  app                    = "${aws_elastic_beanstalk_application.solrcloud.name}"
-  version_label          = "${aws_elastic_beanstalk_application_version.solr.name}"
-  namespace              = "${var.stack_name}"
-  name                   = "solr"
-  stage                  = "${var.environment}"
-  solution_stack_name    = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
-  vpc_id                 = "${module.vpc.vpc_id}"
-  private_subnets        = "${module.vpc.private_subnets}"
-  public_subnets         = "${module.vpc.private_subnets}"
-  loadbalancer_scheme    = "internal"
-  instance_port          = "8983"
-  healthcheck_url        = "/solr/"
-  keypair                = "${var.ec2_keyname}"
-  instance_type          = "t2.medium"
-  autoscale_min          = 3
-  autoscale_max          = 4
-  health_check_threshold = "Severe"
-  tags                   = "${local.common_tags}"
+  app                     = "${aws_elastic_beanstalk_application.solrcloud.name}"
+  version_label           = "${aws_elastic_beanstalk_application_version.solr.name}"
+  namespace               = "${var.stack_name}"
+  name                    = "solr"
+  stage                   = "${var.environment}"
+  solution_stack_name     = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
+  vpc_id                  = "${module.vpc.vpc_id}"
+  private_subnets         = "${module.vpc.private_subnets}"
+  public_subnets          = "${module.vpc.private_subnets}"
+  loadbalancer_scheme     = "internal"
+  managed_actions_enabled = "false"
+  instance_port           = "8983"
+  healthcheck_url         = "/solr/"
+  keypair                 = "${var.ec2_keyname}"
+  instance_type           = "t2.medium"
+  autoscale_min           = 3
+  autoscale_max           = 4
+  health_check_threshold  = "Severe"
+  tags                    = "${local.common_tags}"
 
   env_vars = {
     MOUNT_UID       = "8983",

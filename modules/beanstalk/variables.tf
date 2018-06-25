@@ -95,6 +95,11 @@ variable "preferred_start_time" {
   description = "Configure a maintenance window for managed actions in UTC"
 }
 
+variable "managed_actions_enabled" {
+  default     = "true"
+  description = "Enable managed platform updates"
+}
+
 variable "update_level" {
   default     = "minor"
   description = "The highest level of update to apply with managed platform updates"
