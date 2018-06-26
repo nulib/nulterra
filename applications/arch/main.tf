@@ -130,6 +130,21 @@ resource "aws_sqs_queue" "arch_ui_fifo_queue" {
   tags                        = "${local.common_tags}"
 }
 
+resource "aws_s3_bucket" "arch_archives" {
+  bucket = "${local.namespace}-${local.app_name}-archives"
+  acl    = "private"
+  tags   = "${local.common_tags}"
+
+  lifecycle_rule {
+    id = "auto-delete-after-15-days"
+    enabled = true
+    abort_incomplete_multipart_upload_days = 3
+    expiration {
+      days = 7
+    }
+  }
+}
+
 resource "aws_s3_bucket" "arch_dropbox" {
   bucket = "${local.namespace}-${local.app_name}-dropbox"
   acl    = "private"
@@ -159,6 +174,7 @@ data "aws_iam_policy_document" "arch_bucket_access" {
       "s3:GetBucketLocation"
     ]
     resources = [
+      "${aws_s3_bucket.arch_archives.arn}",
       "${aws_s3_bucket.arch_dropbox.arn}"
     ]
   }
@@ -171,6 +187,7 @@ data "aws_iam_policy_document" "arch_bucket_access" {
       "s3:DeleteObject"
     ]
     resources = [
+      "${aws_s3_bucket.arch_archives.arn}/*",
       "${aws_s3_bucket.arch_dropbox.arn}/*"
     ]
   }
@@ -193,6 +210,7 @@ resource "aws_iam_policy" "arch_bucket_policy" {
 
 data "null_data_source" "ssm_parameters" {
   inputs = "${map(
+    "aws/buckets/archives",     "${aws_s3_bucket.arch_archives.id}",
     "aws/buckets/dropbox",      "${aws_s3_bucket.arch_dropbox.id}",
     "domain/host",              "${local.app_name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}",
     "geonames_username",        "nul_rdc",
@@ -202,7 +220,7 @@ data "null_data_source" "ssm_parameters" {
 }
 
 resource "aws_ssm_parameter" "arch_config_setting" {
-  count = 5
+  count = 6
   name  = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
   type  = "String"
   value = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"
