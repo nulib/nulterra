@@ -89,7 +89,7 @@ data "archive_file" "donut_source" {
   depends_on  = ["local_file.dockerrun_aws_json"]
   type        = "zip"
   source_dir  = "${path.module}/application"
-  output_path = "${path.module}/build/${local.app_name}.zip"
+  output_path = "${path.module}/build/${local.app_name}-${terraform.workspace}.zip"
 }
 
 resource "aws_s3_bucket_object" "donut_source" {

@@ -148,6 +148,10 @@ output "repo_endpoint" {
   value = "http://${aws_route53_record.fcrepo.name}/rest"
 }
 
+output "send_email_policy_arn" {
+  value = "${aws_iam_policy.send_email.arn}"
+}
+
 output "vpc_id" {
   value = "${module.vpc.vpc_id}"
 }

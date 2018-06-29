@@ -1,5 +1,5 @@
 locals {
-  database_url  = "postgresql://${local.app_name}:${module.archdb.password}@${data.terraform_remote_state.stack.db_address}:${data.terraform_remote_state.stack.db_port}/${local.app_name}"
+  database_url  = "postgresql://${local.app_name}:${module.archdb.password}@${data.terraform_remote_state.stack.db_address}:${data.terraform_remote_state.stack.db_port}/${local.app_name}?pool=50"
   mount_volumes = "/var/app/arch-derivatives=${module.arch_derivative_volume.dns_name}:/var/app/arch-working=${module.arch_working_volume.dns_name}"
 }
 
