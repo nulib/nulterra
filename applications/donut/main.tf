@@ -1,15 +1,27 @@
 locals {
   app_name = "donut"
+  default_host_parts = [
+    "${local.app_name}",
+    "${data.terraform_remote_state.stack.stack_name}",
+    "${data.terraform_remote_state.stack.hosted_zone_name}"
+  ]
+  domain_host = "${coalesce(var.public_hostname, join(".", local.default_host_parts))}"
 }
 
-resource "random_id" "secret_key_base" {
-  byte_length = 32
+data "aws_acm_certificate" "ssl_certificate" {
+  count       = "${var.public_hostname == "" ? 0 : 1}"
+  domain      = "${local.domain_host}"
+  most_recent = true
 }
 
 resource "random_pet" "app_version_name" {
   keepers = {
     source = "${data.archive_file.donut_source.output_md5}"
   }
+}
+
+resource "random_id" "secret_key_base" {
+  byte_length = 32
 }
 
 module "donut_derivative_volume" {
@@ -96,7 +108,7 @@ resource "aws_elastic_beanstalk_application_version" "donut" {
   description     = "application version created by terraform"
   bucket          = "${data.terraform_remote_state.stack.application_source_bucket}"
   application     = "${local.namespace}-${local.app_name}"
-  key             = "${local.app_name}-${random_pet.app_version_name.id}.zip"
+  key             = "${aws_s3_bucket_object.donut_source.id}"
   name            = "${random_pet.app_version_name.id}"
 }
 
@@ -309,7 +321,7 @@ data "null_data_source" "ssm_parameters" {
     "aws/buckets/dropbox",      "${aws_s3_bucket.donut_dropbox.id}",
     "aws/buckets/pyramids",     "${data.terraform_remote_state.stack.iiif_pyramid_bucket}",
     "aws/buckets/uploads",      "${aws_s3_bucket.donut_uploads.id}",
-    "domain/host",              "${local.app_name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}",
+    "domain/host",              "${local.domain_host}",
     "geonames_username",        "nul_rdc",
     "iiif/endpoint",            "${data.terraform_remote_state.stack.iiif_endpoint}",
     "solr/url",                 "${data.terraform_remote_state.stack.index_endpoint}donut",

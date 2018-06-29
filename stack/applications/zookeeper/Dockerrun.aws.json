@@ -3,7 +3,7 @@
   "containerDefinitions": [
     {
       "name": "zookeeper-app",
-      "image": "nulib/zookeeper-exhibitor",
+      "image": "nulib/zookeeper-exhibitor:latest",
       "essential": true,
       "memoryReservation": 3000,
       "portMappings": [
@@ -11,7 +11,8 @@
         { "hostPort": 2181, "containerPort": 2181 },
         { "hostPort": 2888, "containerPort": 2888 },
         { "hostPort": 3888, "containerPort": 3888 }
-      ]
+      ],
+      "readonlyRootFilesystem": false
     }
   ]
 }

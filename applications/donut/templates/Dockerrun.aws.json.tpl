@@ -41,6 +41,7 @@
         { "name": "SETTINGS__SOLR__COLLECTION_OPTIONS__RULE",                "value": "shard:*,replica:<2,cores:<5~" },
         { "name": "TMPDIR",                                                  "value": "/var/donut-working/temp" }
       ],
+      "readonlyRootFilesystem": false,
       "mountPoints": [
         { "sourceVolume": "awseb-logs-donut-app",  "containerPath": "/home/app/current/log"  },
         { "sourceVolume": "donut-working",         "containerPath": "/var/donut-working"     },

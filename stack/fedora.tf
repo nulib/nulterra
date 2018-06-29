@@ -92,7 +92,7 @@ data "archive_file" "fcrepo_source" {
 
 resource "aws_s3_bucket_object" "fcrepo_source" {
   bucket = "${aws_s3_bucket.app_sources.id}"
-  key    = "fcrepo.zip"
+  key    = "fcrepo-${data.archive_file.fcrepo_source.output_md5}.zip"
   source = "${path.module}/build/fcrepo.zip"
   etag   = "${data.archive_file.fcrepo_source.output_md5}"
 }
@@ -128,7 +128,7 @@ module "fcrepo_environment" {
   instance_type          = "t2.xlarge"
   autoscale_min          = 1
   autoscale_max          = 2
-  health_check_threshold = "Severe"
+  health_check_threshold = "Ok"
   tags                   = "${local.common_tags}"
 
   env_vars = {

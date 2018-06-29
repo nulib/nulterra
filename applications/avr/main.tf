@@ -8,14 +8,20 @@ locals {
   domain_host = "${coalesce(var.public_hostname, join(".", local.default_host_parts))}"
 }
 
-resource "random_id" "secret_key_base" {
-  byte_length = 32
+data "aws_acm_certificate" "ssl_certificate" {
+  count       = "${var.public_hostname == "" ? 0 : 1}"
+  domain      = "${local.domain_host == "media.northwestern.edu" ? "avalon.repo.rdc.library.northwestern.edu" : local.domain_host}"
+  most_recent = true
 }
 
 resource "random_pet" "app_version_name" {
   keepers = {
     source = "${data.archive_file.avr_source.output_md5}"
   }
+}
+
+resource "random_id" "secret_key_base" {
+  byte_length = 32
 }
 
 data "template_file" "dockerrun_aws_json" {
@@ -56,7 +62,7 @@ resource "aws_elastic_beanstalk_application_version" "avr" {
   description     = "application version created by terraform"
   bucket          = "${data.terraform_remote_state.stack.application_source_bucket}"
   application     = "${local.namespace}-${local.app_name}"
-  key             = "${local.app_name}-${random_pet.app_version_name.id}.zip"
+  key             = "${aws_s3_bucket_object.avr_source.id}"
   name            = "${random_pet.app_version_name.id}"
 }
 
@@ -265,7 +271,7 @@ data "null_data_source" "ssm_parameters" {
     "encoding/sns_topic",        "${aws_sns_topic.avr_transcode_notification.arn}",
     "initial_user",              "${var.initial_user}",
     "solr/url",                  "${data.terraform_remote_state.stack.index_endpoint}avr",
-    "streaming/http_base",       "http${var.ssl_certificate == "" ? "" : "s"}://${coalesce(var.streaming_hostname, aws_route53_record.avr_cloudfront.fqdn)}/",
+    "streaming/http_base",       "http${length(data.aws_acm_certificate.ssl_certificate.*.arn) == 0 ? "" : "s"}://${coalesce(var.streaming_hostname, aws_route53_record.avr_cloudfront.fqdn)}/",
     "zookeeper/connection_str",  "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
   )}"
 }

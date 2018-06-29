@@ -34,6 +34,7 @@
         { "name": "SETTINGS__BIB_RETRIEVER__ATTRIBUTE",                     "value": "12" },
         { "name": "SETTINGS__CONTROLLED_VOCABULARY__PATH",                  "value": "config/nu_vocab.yml" }
       ],
+      "readonlyRootFilesystem": false,
       "mountPoints": [
         { "sourceVolume": "awseb-logs-avr-app",  "containerPath": "/home/app/current/log"  }
       ]

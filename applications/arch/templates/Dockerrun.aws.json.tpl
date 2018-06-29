@@ -40,6 +40,7 @@
         { "name": "SETTINGS__SOLR__COLLECTION_OPTIONS__RULE",                "value": "shard:*,replica:<2,cores:<5~" },
         { "name": "TMPDIR",                                                  "value": "/var/arch-working/temp" }
       ],
+      "readonlyRootFilesystem": false,
       "mountPoints": [
         { "sourceVolume": "awseb-logs-arch-app",  "containerPath": "/home/app/current/log"  },
         { "sourceVolume": "arch-working",         "containerPath": "/var/arch-working"     },

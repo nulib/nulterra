@@ -1,15 +1,27 @@
 locals {
   app_name = "arch"
+  default_host_parts = [
+    "${local.app_name}",
+    "${data.terraform_remote_state.stack.stack_name}",
+    "${data.terraform_remote_state.stack.hosted_zone_name}"
+  ]
+  domain_host = "${coalesce(var.public_hostname, join(".", local.default_host_parts))}"
 }
 
-resource "random_id" "secret_key_base" {
-  byte_length = 32
+data "aws_acm_certificate" "ssl_certificate" {
+  count       = "${var.public_hostname == "" ? 0 : 1}"
+  domain      = "${local.domain_host}"
+  most_recent = true
 }
 
 resource "random_pet" "app_version_name" {
   keepers = {
     source = "${data.archive_file.arch_source.output_md5}"
   }
+}
+
+resource "random_id" "secret_key_base" {
+  byte_length = 32
 }
 
 module "arch_derivative_volume" {
@@ -94,7 +106,7 @@ resource "aws_elastic_beanstalk_application_version" "arch" {
   description     = "application version created by terraform"
   bucket          = "${data.terraform_remote_state.stack.application_source_bucket}"
   application     = "${local.namespace}-${local.app_name}"
-  key             = "${local.app_name}-${random_pet.app_version_name.id}.zip"
+  key             = "${aws_s3_bucket_object.arch_source.id}"
   name            = "${random_pet.app_version_name.id}"
 }
 
@@ -210,9 +222,10 @@ resource "aws_iam_policy" "arch_bucket_policy" {
 
 data "null_data_source" "ssm_parameters" {
   inputs = "${map(
+    "arch/contact_email",       "digitalscholarship@northwestern.edu",
     "aws/buckets/archives",     "${aws_s3_bucket.arch_archives.id}",
     "aws/buckets/dropbox",      "${aws_s3_bucket.arch_dropbox.id}",
-    "domain/host",              "${local.app_name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}",
+    "domain/host",              "${local.domain_host}",
     "geonames_username",        "nul_rdc",
     "solr/url",                 "${data.terraform_remote_state.stack.index_endpoint}arch",
     "zookeeper/connection_str", "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
@@ -220,7 +233,7 @@ data "null_data_source" "ssm_parameters" {
 }
 
 resource "aws_ssm_parameter" "arch_config_setting" {
-  count = 6
+  count = 7
   name  = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
   type  = "String"
   value = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"

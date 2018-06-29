@@ -72,7 +72,7 @@ module "webapp" {
   name                = "${local.app_name}"
   namespace           = "${local.namespace}"
   preservation_bucket = "${aws_s3_bucket.avr_preservation.id}"
-  ssl_certificate     = "${var.ssl_certificate}"
+  ssl_certificate     = "${join("", data.aws_acm_certificate.ssl_certificate.*.arn)}"
   worker_queue        = "${aws_sqs_queue.avr_ui_queue.name}"
   worker_queue_url    = "${aws_sqs_queue.avr_ui_queue.id}"
   secret_key_base     = "${random_id.secret_key_base.hex}"

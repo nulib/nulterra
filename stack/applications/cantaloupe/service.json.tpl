@@ -13,6 +13,7 @@
       { "name": "AWS_ACCESS_KEY_ID", "value": "${aws_access_key_id}" },
       { "name": "AWS_SECRET_KEY",    "value": "${aws_secret_key}" }
     ],
+    "readonlyRootFilesystem": false,
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {

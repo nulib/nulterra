@@ -99,7 +99,7 @@ module "avr_environment" {
   instance_type                = "t2.medium"
   autoscale_min                = "${var.autoscale_min}"
   autoscale_max                = "${var.autoscale_max}"
-  health_check_threshold       = "Severe"
+  health_check_threshold       = "Ok"
   sqsd_worker_queue_url        = "${var.worker_queue_url}"
   tags                         = "${var.tags}"
 

@@ -17,15 +17,17 @@ module "db" {
   engine_version    = "9.6.6"
 
   instance_class    = "db.t2.medium"
-  allocated_storage = 5
+  allocated_storage = 100
 
   name     = "${var.stack_name}db"
   username = "${var.db_master_username}"
   password = "${module.db_master_password.result}"
   port     = 5432
 
-  maintenance_window = "Mon:00:00-Mon:03:00"
-  backup_window      = "03:00-06:00"
+  maintenance_window      = "Mon:00:00-Mon:03:00"
+  backup_window           = "03:00-06:00"
+  backup_retention_period = 35
+  copy_tags_to_snapshot   = true
 
   vpc_security_group_ids = ["${aws_security_group.db.id}"]
 

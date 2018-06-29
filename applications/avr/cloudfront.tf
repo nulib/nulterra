@@ -3,6 +3,12 @@ locals {
   streaming_aliases = "${compact(list(local.stream_fqdn, var.streaming_hostname))}"
 }
 
+data "aws_acm_certificate" "streaming_certificate" {
+  count       = "${var.streaming_hostname == "" ? 0 : 1}"
+  domain      = "${var.streaming_hostname}"
+  most_recent = true
+}
+
 resource "aws_cloudfront_origin_access_identity" "avr_origin_access_identity" {
   comment = "${local.namespace}-${local.app_name}"
 }
@@ -76,8 +82,8 @@ resource "aws_cloudfront_distribution" "avr_streaming" {
   }
 
   viewer_certificate {
-    cloudfront_default_certificate = "${var.streaming_certificate == "" ? true : false}"
-    acm_certificate_arn            = "${var.streaming_certificate}"
+    cloudfront_default_certificate = "${length(data.aws_acm_certificate.streaming_certificate.*.arn) == 0 ? true : false}"
+    acm_certificate_arn            = "${join("", data.aws_acm_certificate.streaming_certificate.*.arn)}"
     ssl_support_method             = "sni-only"
   }
 }

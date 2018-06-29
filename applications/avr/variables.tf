@@ -10,14 +10,6 @@ variable "streaming_hostname" {
   type = "string"
   default = ""
 }
-variable "ssl_certificate" {
-  type = "string"
-  default = ""
-}
-variable "streaming_certificate" {
-  type = "string"
-  default = ""
-}
 variable "email" {
   type = "map"
 }

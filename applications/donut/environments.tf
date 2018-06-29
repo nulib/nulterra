@@ -14,6 +14,7 @@ module "webapp" {
   mount_volumes     = "${local.mount_volumes}"
   name              = "${local.app_name}"
   namespace         = "${local.namespace}"
+  ssl_certificate   = "${join("", data.aws_acm_certificate.ssl_certificate.*.arn)}"
   worker_queue      = "${aws_sqs_queue.donut_ui_fifo_queue.name}"
   worker_queue_url  = "${aws_sqs_queue.donut_ui_fifo_queue.id}"
   secret_key_base   = "${random_id.secret_key_base.hex}"

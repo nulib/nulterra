@@ -11,6 +11,16 @@ variable "app_image" {
   default = "nulib/donut"
 }
 
+variable "public_hostname" {
+  type = "string"
+  default = ""
+}
+
+variable "ssl_certificate" {
+  type = "string"
+  default = ""
+}
+
 variable "stack_bucket" { type = "string" }
 variable "stack_key"    { type = "string" }
 variable "stack_region" { type = "string" }

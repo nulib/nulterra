@@ -50,7 +50,7 @@ data "archive_file" "zookeeper_source" {
 
 resource "aws_s3_bucket_object" "zookeeper_source" {
   bucket = "${aws_s3_bucket.app_sources.id}"
-  key    = "zookeeper.zip"
+  key    = "zookeeper-${data.archive_file.zookeeper_source.output_md5}"
   source = "${path.module}/build/zookeeper.zip"
   etag   = "${data.archive_file.zookeeper_source.output_md5}"
 }
@@ -82,7 +82,7 @@ module "zookeeper_environment" {
   instance_type          = "t2.medium"
   autoscale_min          = 2
   autoscale_max          = 3
-  health_check_threshold = "Severe"
+  health_check_threshold = "Ok"
   tags                   = "${local.common_tags}"
 
   env_vars = {

@@ -27,7 +27,7 @@ data "archive_file" "solr_source" {
 
 resource "aws_s3_bucket_object" "solr_source" {
   bucket = "${aws_s3_bucket.app_sources.id}"
-  key    = "solr.zip"
+  key    = "solr-${data.archive_file.solr_source.output_md5}.zip"
   source = "${path.module}/build/solr.zip"
   etag   = "${data.archive_file.solr_source.output_md5}"
 }
@@ -80,7 +80,7 @@ module "solr_environment" {
   instance_type           = "t2.medium"
   autoscale_min           = 3
   autoscale_max           = 4
-  health_check_threshold  = "Severe"
+  health_check_threshold  = "Ok"
   tags                    = "${local.common_tags}"
 
   env_vars = {

@@ -24,10 +24,11 @@
         { "hostPort": 8983, "containerPort": 8983 }
       ],
       "environment": [
-        { "name": "SOLR_MODE",      "value": "solrcloud"  },
-        { "name": "SOLR_HOME",      "value": "/data/solr" },
-        { "name": "INIT_SOLR_HOME", "value": "yes"        }
+        { "name": "SOLR_MODE",       "value": "solrcloud"  },
+        { "name": "SOLR_HOME",       "value": "/data/solr" },
+        { "name": "INIT_SOLR_HOME",  "value": "yes"        }
       ],
+      "readonlyRootFilesystem": false,
       "mountPoints": [
         { "sourceVolume": "awseb-logs-solr-app", "containerPath": "/opt/solr/server/logs"       },
         { "sourceVolume": "solr-data",           "containerPath": "/data/solr"                  },
