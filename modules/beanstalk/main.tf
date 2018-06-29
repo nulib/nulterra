@@ -497,6 +497,11 @@ resource "aws_elastic_beanstalk_environment" "default" {
   }
   setting {
     namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elb:listener:443"}"
+    name      = "${var.tier == "Worker" ? "awselblistener443InstanceProtocol" : "InstanceProtocol"}"
+    value     = "HTTP"
+  }
+  setting {
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:customoption" : "aws:elb:listener:443"}"
     name      = "${var.tier == "Worker" ? "awselblistener443SSLCertificateId" : "SSLCertificateId"}"
     value     = "${var.loadbalancer_certificate_arn}"
   }
