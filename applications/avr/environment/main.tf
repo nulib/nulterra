@@ -1,22 +1,78 @@
-variable "app_name"            { type = "string" }
-variable "app_version"         { type = "string" }
-variable "autoscale_min"       { type = "string" }
-variable "autoscale_max"       { type = "string" }
-variable "bucket_policy_arn"   { type = "string" }
-variable "database_url"        { type = "string" }
-variable "lti_key"             { type = "string" }
-variable "lti_secret"          { type = "string" }
-variable "mount_volumes"       { type = "string" }
-variable "name"                { type = "string" }
-variable "namespace"           { type = "string" }
-variable "preservation_bucket" { type = "string" }
-variable "secret_key_base"     { type = "string" }
-variable "stack_state"         { type = "map"    }
-variable "tags"                { type = "map"    }
-variable "tier"                { type = "string" }
-variable "tier_name"           { type = "string" }
-variable "worker_queue"        { type = "string" }
-variable "worker_queue_url"    { type = "string" }
+variable "app_name" {
+  type = "string"
+}
+
+variable "app_version" {
+  type = "string"
+}
+
+variable "autoscale_min" {
+  type = "string"
+}
+
+variable "autoscale_max" {
+  type = "string"
+}
+
+variable "bucket_policy_arn" {
+  type = "string"
+}
+
+variable "database_url" {
+  type = "string"
+}
+
+variable "lti_key" {
+  type = "string"
+}
+
+variable "lti_secret" {
+  type = "string"
+}
+
+variable "mount_volumes" {
+  type = "string"
+}
+
+variable "name" {
+  type = "string"
+}
+
+variable "namespace" {
+  type = "string"
+}
+
+variable "preservation_bucket" {
+  type = "string"
+}
+
+variable "secret_key_base" {
+  type = "string"
+}
+
+variable "stack_state" {
+  type = "map"
+}
+
+variable "tags" {
+  type = "map"
+}
+
+variable "tier" {
+  type = "string"
+}
+
+variable "tier_name" {
+  type = "string"
+}
+
+variable "worker_queue" {
+  type = "string"
+}
+
+variable "worker_queue_url" {
+  type = "string"
+}
 
 variable "ssl_certificate" {
   type    = "string"
@@ -25,6 +81,7 @@ variable "ssl_certificate" {
 
 data "terraform_remote_state" "stack" {
   backend = "s3"
+
   config {
     bucket = "${var.stack_state["bucket"]}"
     key    = "${var.stack_state["key"]}"
@@ -33,8 +90,8 @@ data "terraform_remote_state" "stack" {
 }
 
 data "aws_elastic_beanstalk_solution_stack" "multi_docker" {
-  most_recent   = true
-  name_regex    = "^64bit Amazon Linux (.*) Multi-container Docker (.*)$"
+  most_recent = true
+  name_regex  = "^64bit Amazon Linux (.*) Multi-container Docker (.*)$"
 }
 
 resource "aws_security_group_rule" "allow_avrs_fcrepo_access" {
@@ -65,7 +122,7 @@ resource "aws_security_group_rule" "allow_avrs_redis_access" {
 }
 
 resource "aws_iam_role_policy_attachment" "avr_bucket_role_access" {
-  role = "${module.avr_environment.ec2_instance_profile_role_name}"
+  role       = "${module.avr_environment.ec2_instance_profile_role_name}"
   policy_arn = "${var.bucket_policy_arn}"
 }
 
@@ -139,6 +196,7 @@ resource "aws_route53_record" "avr" {
   zone_id = "${data.terraform_remote_state.stack.public_zone_id}"
   name    = "${var.name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}"
   type    = "A"
+
   alias {
     name                   = "${module.avr_environment.elb_dns_name}"
     zone_id                = "${module.avr_environment.elb_zone_id}"

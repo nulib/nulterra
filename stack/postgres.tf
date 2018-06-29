@@ -1,5 +1,5 @@
 variable "db_master_username" {
-  type = "string"
+  type    = "string"
   default = "dbadmin"
 }
 
@@ -8,13 +8,13 @@ module "db_master_password" {
 }
 
 module "db" {
-  source = "terraform-aws-modules/rds/aws"
+  source  = "terraform-aws-modules/rds/aws"
   version = "1.9.0"
 
   identifier = "${local.namespace}-db"
 
-  engine            = "postgres"
-  engine_version    = "9.6.6"
+  engine         = "postgres"
+  engine_version = "9.6.6"
 
   instance_class    = "db.t2.medium"
   allocated_storage = 100
@@ -39,24 +39,24 @@ module "db" {
 
   parameters = [
     {
-      name = "client_encoding"
+      name  = "client_encoding"
       value = "UTF8"
-    }
+    },
   ]
 }
 
 resource "aws_security_group" "db_client" {
-  name = "${local.namespace}-db-client"
+  name        = "${local.namespace}-db-client"
   description = "RDS Client Security Group"
-  vpc_id = "${module.vpc.vpc_id}"
-  tags = "${local.common_tags}"
+  vpc_id      = "${module.vpc.vpc_id}"
+  tags        = "${local.common_tags}"
 }
 
 resource "aws_security_group" "db" {
-  name = "${local.namespace}-db"
+  name        = "${local.namespace}-db"
   description = "RDS Security Group"
-  vpc_id = "${module.vpc.vpc_id}"
-  tags = "${local.common_tags}"
+  vpc_id      = "${module.vpc.vpc_id}"
+  tags        = "${local.common_tags}"
 }
 
 resource "aws_security_group_rule" "db_client_access" {

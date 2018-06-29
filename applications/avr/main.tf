@@ -1,10 +1,12 @@
 locals {
   app_name = "avr"
+
   default_host_parts = [
     "${local.app_name}",
     "${data.terraform_remote_state.stack.stack_name}",
-    "${data.terraform_remote_state.stack.hosted_zone_name}"
+    "${data.terraform_remote_state.stack.hosted_zone_name}",
   ]
+
   domain_host = "${coalesce(var.public_hostname, join(".", local.default_host_parts))}"
 }
 
@@ -57,13 +59,14 @@ resource "aws_elastic_beanstalk_application" "avr" {
 
 resource "aws_elastic_beanstalk_application_version" "avr" {
   depends_on = [
-    "aws_elastic_beanstalk_application.avr"
+    "aws_elastic_beanstalk_application.avr",
   ]
-  description     = "application version created by terraform"
-  bucket          = "${data.terraform_remote_state.stack.application_source_bucket}"
-  application     = "${local.namespace}-${local.app_name}"
-  key             = "${aws_s3_bucket_object.avr_source.id}"
-  name            = "${random_pet.app_version_name.id}"
+
+  description = "application version created by terraform"
+  bucket      = "${data.terraform_remote_state.stack.application_source_bucket}"
+  application = "${local.namespace}-${local.app_name}"
+  key         = "${aws_s3_bucket_object.avr_source.id}"
+  name        = "${random_pet.app_version_name.id}"
 }
 
 module "avrdb" {
@@ -82,39 +85,40 @@ module "avrdb" {
 }
 
 resource "aws_sqs_queue" "avr_ui_deadletter_queue" {
-  name                        = "${data.terraform_remote_state.stack.stack_name}-avr-ui-dead-letter-queue"
-  fifo_queue                  = false
-  tags                        = "${local.common_tags}"
+  name       = "${data.terraform_remote_state.stack.stack_name}-avr-ui-dead-letter-queue"
+  fifo_queue = false
+  tags       = "${local.common_tags}"
 }
 
 resource "aws_sqs_queue" "avr_ui_queue" {
-  name                        = "${data.terraform_remote_state.stack.stack_name}-avr-ui-queue"
-  fifo_queue                  = false
-  delay_seconds               = 0
-  visibility_timeout_seconds  = 3600
-  redrive_policy              = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.avr_ui_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
-  tags                        = "${local.common_tags}"
+  name                       = "${data.terraform_remote_state.stack.stack_name}-avr-ui-queue"
+  fifo_queue                 = false
+  delay_seconds              = 0
+  visibility_timeout_seconds = 3600
+  redrive_policy             = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.avr_ui_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
+  tags                       = "${local.common_tags}"
 }
 
 resource "aws_sqs_queue" "avr_batch_deadletter_queue" {
-  name                        = "${data.terraform_remote_state.stack.stack_name}-avr-batch-dead-letter-queue"
-  fifo_queue                  = false
-  tags                        = "${local.common_tags}"
+  name       = "${data.terraform_remote_state.stack.stack_name}-avr-batch-dead-letter-queue"
+  fifo_queue = false
+  tags       = "${local.common_tags}"
 }
 
 resource "aws_sqs_queue" "avr_batch_queue" {
-  name                        = "${data.terraform_remote_state.stack.stack_name}-avr-batch-queue"
-  fifo_queue                  = false
-  delay_seconds               = 0
-  visibility_timeout_seconds  = 3600
-  redrive_policy              = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.avr_batch_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
-  tags                        = "${local.common_tags}"
+  name                       = "${data.terraform_remote_state.stack.stack_name}-avr-batch-queue"
+  fifo_queue                 = false
+  delay_seconds              = 0
+  visibility_timeout_seconds = 3600
+  redrive_policy             = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.avr_batch_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
+  tags                       = "${local.common_tags}"
 }
 
 resource "aws_s3_bucket" "avr_masterfiles" {
   bucket = "${local.namespace}-avr-masterfiles"
   acl    = "private"
   tags   = "${local.common_tags}"
+
   cors_rule {
     allowed_origins = ["*"]
     allowed_methods = ["GET", "PUT", "POST"]
@@ -122,9 +126,10 @@ resource "aws_s3_bucket" "avr_masterfiles" {
 }
 
 resource "aws_s3_bucket" "avr_derivatives" {
-#  bucket = "${local.namespace}-avr-derivatives"
-  acl    = "private"
-  tags   = "${local.common_tags}"
+  #  bucket = "${local.namespace}-avr-derivatives"
+  acl  = "private"
+  tags = "${local.common_tags}"
+
   cors_rule {
     allowed_origins = ["*.northwestern.edu"]
     allowed_methods = ["GET"]
@@ -134,58 +139,64 @@ resource "aws_s3_bucket" "avr_derivatives" {
 }
 
 resource "aws_s3_bucket" "avr_preservation" {
-#  bucket = "${local.namespace}-avr-preservation"
-  acl    = "private"
-  tags   = "${local.common_tags}"
+  #  bucket = "${local.namespace}-avr-preservation"
+  acl  = "private"
+  tags = "${local.common_tags}"
 }
 
 data "aws_iam_policy_document" "avr_bucket_access" {
   statement {
-    effect = "Allow"
-    actions = ["s3:ListAllMyBuckets"]
+    effect    = "Allow"
+    actions   = ["s3:ListAllMyBuckets"]
     resources = ["arn:aws:s3:::*"]
   }
 
   statement {
     effect = "Allow"
+
     actions = [
       "s3:ListBucket",
-      "s3:GetBucketLocation"
+      "s3:GetBucketLocation",
     ]
+
     resources = [
       "${aws_s3_bucket.avr_masterfiles.arn}",
       "${aws_s3_bucket.avr_derivatives.arn}",
-      "${aws_s3_bucket.avr_preservation.arn}"
+      "${aws_s3_bucket.avr_preservation.arn}",
     ]
   }
 
   statement {
     effect = "Allow"
+
     actions = [
       "s3:PutObject",
       "s3:GetObject",
-      "s3:DeleteObject"
+      "s3:DeleteObject",
     ]
+
     resources = [
       "${aws_s3_bucket.avr_masterfiles.arn}/*",
       "${aws_s3_bucket.avr_derivatives.arn}/*",
-      "${aws_s3_bucket.avr_preservation.arn}/*"
+      "${aws_s3_bucket.avr_preservation.arn}/*",
     ]
   }
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "sqs:ListQueues",
       "sqs:GetQueueUrl",
-      "sqs:GetQueueAttributes"
+      "sqs:GetQueueAttributes",
     ]
+
     resources = ["*"]
   }
 }
 
 resource "aws_iam_policy" "avr_bucket_policy" {
-  name = "${data.terraform_remote_state.stack.stack_name}-${local.app_name}-bucket-access"
+  name   = "${data.terraform_remote_state.stack.stack_name}-${local.app_name}-bucket-access"
   policy = "${data.aws_iam_policy_document.avr_bucket_access.json}"
 }
 
@@ -216,11 +227,12 @@ module "avr_batch_ingest" {
   policy        = "${data.aws_iam_policy_document.avr_batch_ingest_access.json}"
 
   source_path = "${path.module}/lambdas/batch_ingest_notification"
+
   environment {
     variables {
       JobClassName = "BatchIngestJob"
-      Secret = "${random_id.secret_key_base.hex}"
-      QueueUrl = "${aws_sqs_queue.avr_batch_queue.id}"
+      Secret       = "${random_id.secret_key_base.hex}"
+      QueueUrl     = "${aws_sqs_queue.avr_batch_queue.id}"
     }
   }
 }
@@ -234,16 +246,17 @@ resource "aws_lambda_permission" "allow_trigger" {
 }
 
 resource "aws_s3_bucket_notification" "batch_ingest_notification" {
-  bucket     = "${aws_s3_bucket.avr_masterfiles.id}"
+  bucket = "${aws_s3_bucket.avr_masterfiles.id}"
 
   lambda_function {
     lambda_function_arn = "${module.avr_batch_ingest.function_arn}"
     filter_prefix       = "dropbox/"
     filter_suffix       = ".xls"
+
     events = [
       "s3:ObjectCreated:Put",
       "s3:ObjectCreated:Post",
-      "s3:ObjectCreated:CompleteMultipartUpload"
+      "s3:ObjectCreated:CompleteMultipartUpload",
     ]
   }
 
@@ -251,10 +264,11 @@ resource "aws_s3_bucket_notification" "batch_ingest_notification" {
     lambda_function_arn = "${module.avr_batch_ingest.function_arn}"
     filter_prefix       = "dropbox/"
     filter_suffix       = ".xlsx"
+
     events = [
       "s3:ObjectCreated:Put",
       "s3:ObjectCreated:Post",
-      "s3:ObjectCreated:CompleteMultipartUpload"
+      "s3:ObjectCreated:CompleteMultipartUpload",
     ]
   }
 }

@@ -1,5 +1,5 @@
 module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
+  source  = "terraform-aws-modules/vpc/aws"
   version = "1.29.0"
 
   name = "${local.namespace}-vpc"
@@ -19,7 +19,7 @@ module "vpc" {
 }
 
 module "dns" {
-  source = "infrablocks/dns-zones/aws"
+  source  = "infrablocks/dns-zones/aws"
   version = "0.2.0-rc.2"
 
   domain_name         = "${local.public_zone_name}"
@@ -36,8 +36,8 @@ data "aws_route53_zone" "hosted_zone" {
 
 resource "aws_route53_record" "public_zone" {
   zone_id = "${data.aws_route53_zone.hosted_zone.id}"
-  type = "NS"
-  name = "${local.public_zone_name}"
+  type    = "NS"
+  name    = "${local.public_zone_name}"
   records = ["${module.dns.public_zone_name_servers}"]
-  ttl = 300
+  ttl     = 300
 }

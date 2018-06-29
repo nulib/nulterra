@@ -5,44 +5,50 @@ locals {
 
 data "aws_iam_policy_document" "avr_instance_pipeline_access_policy" {
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "s3:ListBucket",
       "s3:Get*",
       "s3:Put*",
       "s3:*MultipartUpload*",
-      "s3:Delete*"
+      "s3:Delete*",
     ]
+
     resources = [
       "${aws_s3_bucket.avr_masterfiles.arn}",
       "${aws_s3_bucket.avr_derivatives.arn}",
       "${aws_s3_bucket.avr_masterfiles.arn}/*",
-      "${aws_s3_bucket.avr_derivatives.arn}/*"
+      "${aws_s3_bucket.avr_derivatives.arn}/*",
     ]
   }
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "elastictranscoder:List*",
-      "elastictranscoder:Read*"
+      "elastictranscoder:Read*",
     ]
+
     resources = [
-      "${aws_elastictranscoder_pipeline.avr_pipeline.arn}"
+      "${aws_elastictranscoder_pipeline.avr_pipeline.arn}",
     ]
   }
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "elastictranscoder:CreatePreset",
       "elastictranscoder:ListPresets",
       "elastictranscoder:ReadPreset",
       "elastictranscoder:ListJobs",
       "elastictranscoder:CreateJob",
       "elastictranscoder:ReadJob",
-      "elastictranscoder:CancelJob"
+      "elastictranscoder:CancelJob",
     ]
+
     resources = ["*"]
   }
 
@@ -54,7 +60,7 @@ data "aws_iam_policy_document" "avr_instance_pipeline_access_policy" {
 }
 
 resource "aws_iam_policy" "avr_instance_pipeline_access_policy" {
-  name = "${local.namespace}-${local.app_name}-instance-pipeline-access-policy"
+  name   = "${local.namespace}-${local.app_name}-instance-pipeline-access-policy"
   policy = "${data.aws_iam_policy_document.avr_instance_pipeline_access_policy.json}"
 }
 
@@ -129,16 +135,16 @@ module "batch_worker" {
 }
 
 resource "aws_iam_role_policy_attachment" "webapp_pipeline_access" {
-  role = "${module.webapp.instance_profile_role_name}"
+  role       = "${module.webapp.instance_profile_role_name}"
   policy_arn = "${aws_iam_policy.avr_instance_pipeline_access_policy.arn}"
 }
 
 resource "aws_iam_role_policy_attachment" "worker_pipeline_access" {
-  role = "${module.worker.instance_profile_role_name}"
+  role       = "${module.worker.instance_profile_role_name}"
   policy_arn = "${aws_iam_policy.avr_instance_pipeline_access_policy.arn}"
 }
 
 resource "aws_iam_role_policy_attachment" "batch_worker_pipeline_access" {
-  role = "${module.batch_worker.instance_profile_role_name}"
+  role       = "${module.batch_worker.instance_profile_role_name}"
   policy_arn = "${aws_iam_policy.avr_instance_pipeline_access_policy.arn}"
 }

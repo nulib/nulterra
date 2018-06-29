@@ -1,15 +1,44 @@
 # Variable Passthroughs
 
-output "aws_region"             { value = "${var.aws_region}"             }
-output "azs"                    { value = "${var.azs}"                    }
-output "ec2_keyname"            { value = "${var.ec2_keyname}"            }
-output "ec2_private_keyfile"    { value = "${var.ec2_private_keyfile}"    }
-output "environment"            { value = "${var.environment}"            }
-output "hosted_zone_name"       { value = "${var.hosted_zone_name}"       }
-output "stack_name"             { value = "${var.stack_name}"             }
-output "subnet_config"          { value = "${var.subnet_config}"          }
-output "tags"                   { value = "${var.tags}"                   }
-output "vpc_cidr_block"         { value = "${var.vpc_cidr_block}"         }
+output "aws_region" {
+  value = "${var.aws_region}"
+}
+
+output "azs" {
+  value = "${var.azs}"
+}
+
+output "ec2_keyname" {
+  value = "${var.ec2_keyname}"
+}
+
+output "ec2_private_keyfile" {
+  value = "${var.ec2_private_keyfile}"
+}
+
+output "environment" {
+  value = "${var.environment}"
+}
+
+output "hosted_zone_name" {
+  value = "${var.hosted_zone_name}"
+}
+
+output "stack_name" {
+  value = "${var.stack_name}"
+}
+
+output "subnet_config" {
+  value = "${var.subnet_config}"
+}
+
+output "tags" {
+  value = "${var.tags}"
+}
+
+output "vpc_cidr_block" {
+  value = "${var.vpc_cidr_block}"
+}
 
 # Security Groups
 
@@ -32,7 +61,6 @@ output "index_security_group" {
 output "zookeeper_security_group" {
   value = "${module.zookeeper_environment.security_group_id}"
 }
-
 
 # Resource Outputs
 

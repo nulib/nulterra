@@ -751,7 +751,6 @@ resource "aws_elastic_beanstalk_environment" "default" {
     name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 25))), 25)}"
     value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 25))), 25), var.env_default_value)}"
   }
-
   ###===================== Application Load Balancer Health check settings =====================================================###
   # The Application Load Balancer health check does not take into account the Elastic Beanstalk health check path
   # http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/environments-cfg-applicationloadbalancer.html
@@ -774,59 +773,50 @@ resource "aws_elastic_beanstalk_environment" "default" {
 
   ###===================== SQS Settings =====================================================###
 
-
   setting {
-      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
-      name      = "${var.tier == "Worker" ? "ConnectTimeout" : "awselasticbeanstalksqsdConnectTimeout"}"
-      value     = "${var.sqsd_connect_timeout}"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+    name      = "${var.tier == "Worker" ? "ConnectTimeout" : "awselasticbeanstalksqsdConnectTimeout"}"
+    value     = "${var.sqsd_connect_timeout}"
   }
-
   setting {
-      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
-      name      = "${var.tier == "Worker" ? "HttpConnections" : "awselasticbeanstalksqsdHttpConnections"}"
-      value     = "${var.sqsd_http_connections}"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+    name      = "${var.tier == "Worker" ? "HttpConnections" : "awselasticbeanstalksqsdHttpConnections"}"
+    value     = "${var.sqsd_http_connections}"
   }
-
   setting {
-      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
-      name      = "${var.tier == "Worker" ? "HttpPath" : "awselasticbeanstalksqsdHttpPath"}"
-      value     = "${var.sqsd_http_path}"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+    name      = "${var.tier == "Worker" ? "HttpPath" : "awselasticbeanstalksqsdHttpPath"}"
+    value     = "${var.sqsd_http_path}"
   }
-
   setting {
-      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
-      name      = "${var.tier == "Worker" ? "InactivityTimeout" : "awselasticbeanstalksqsdInactivityTimeout"}"
-      value     = "${var.sqsd_inactivity_timeout}"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+    name      = "${var.tier == "Worker" ? "InactivityTimeout" : "awselasticbeanstalksqsdInactivityTimeout"}"
+    value     = "${var.sqsd_inactivity_timeout}"
   }
-
   setting {
-      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
-      name      = "${var.tier == "Worker" ? "MaxRetries" : "awselasticbeanstalksqsdMaxRetries"}"
-      value     = "${var.sqsd_max_retries}"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+    name      = "${var.tier == "Worker" ? "MaxRetries" : "awselasticbeanstalksqsdMaxRetries"}"
+    value     = "${var.sqsd_max_retries}"
   }
-
   setting {
-      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
-      name      = "${var.tier == "Worker" ? "MimeType" : "awselasticbeanstalksqsdMimeType"}"
-      value     = "${var.sqsd_mime_type}"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+    name      = "${var.tier == "Worker" ? "MimeType" : "awselasticbeanstalksqsdMimeType"}"
+    value     = "${var.sqsd_mime_type}"
   }
-
   setting {
-      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
-      name      = "${var.tier == "Worker" ? "RetentionPeriod" : "awselasticbeanstalksqsdRetentionPeriod"}"
-      value     = "${var.sqsd_retention_period}"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+    name      = "${var.tier == "Worker" ? "RetentionPeriod" : "awselasticbeanstalksqsdRetentionPeriod"}"
+    value     = "${var.sqsd_retention_period}"
   }
-
   setting {
-      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
-      name      = "${var.tier == "Worker" ? "VisibilityTimeout" : "awselasticbeanstalksqsdVisibilityTimeout"}"
-      value     = "${var.sqsd_visibility_timeout}"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+    name      = "${var.tier == "Worker" ? "VisibilityTimeout" : "awselasticbeanstalksqsdVisibilityTimeout"}"
+    value     = "${var.sqsd_visibility_timeout}"
   }
-
   setting {
-      namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
-      name      = "${var.tier == "Worker" ? "WorkerQueueURL" : "awselasticbeanstalksqsdWorkerQueueURL"}"
-      value     = "${var.sqsd_worker_queue_url}"
+    namespace = "${var.tier == "Worker" ? "aws:elasticbeanstalk:sqsd" : "aws:elasticbeanstalk:customoption"}"
+    name      = "${var.tier == "Worker" ? "WorkerQueueURL" : "awselasticbeanstalksqsdWorkerQueueURL"}"
+    value     = "${var.sqsd_worker_queue_url}"
   }
 
   ###===================== Notification =====================================================###
@@ -892,3 +882,4 @@ resource "aws_s3_bucket" "elb_logs" {
 #  zone_id   = "${var.zone_id}"
 #  records   = ["${aws_elastic_beanstalk_environment.default.cname}"]
 #}
+

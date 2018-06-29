@@ -48,8 +48,8 @@ resource "aws_iam_role" "bastion" {
 
 data "aws_iam_policy_document" "bastion_describe_instances" {
   statement {
-    effect = "Allow"
-    actions = ["ec2:DescribeInstances"]
+    effect    = "Allow"
+    actions   = ["ec2:DescribeInstances"]
     resources = ["*"]
   }
 }
@@ -65,10 +65,10 @@ resource "aws_iam_role_policy_attachment" "bastion_describe_instances" {
 }
 
 resource "aws_security_group" "bastion" {
-  name = "${local.namespace}-bastion"
+  name        = "${local.namespace}-bastion"
   description = "Bastion Host Security Group"
-  vpc_id = "${module.vpc.vpc_id}"
-  tags = "${local.common_tags}"
+  vpc_id      = "${module.vpc.vpc_id}"
+  tags        = "${local.common_tags}"
 }
 
 resource "aws_security_group_rule" "bastion_ingress" {
@@ -100,14 +100,14 @@ resource "aws_instance" "bastion" {
 
   vpc_security_group_ids = [
     "${aws_security_group.bastion.id}",
-    "${aws_security_group.db_client.id}"
+    "${aws_security_group.db_client.id}",
   ]
 
   provisioner "file" {
     connection {
-      user = "ec2-user"
-      agent = true
-      timeout = "3m"
+      user        = "ec2-user"
+      agent       = true
+      timeout     = "3m"
       private_key = "${file(var.ec2_private_keyfile)}"
     }
 
@@ -117,16 +117,16 @@ resource "aws_instance" "bastion" {
 
   provisioner "remote-exec" {
     connection {
-      user = "ec2-user"
-      agent = true
-      timeout = "3m"
+      user        = "ec2-user"
+      agent       = true
+      timeout     = "3m"
       private_key = "${file(var.ec2_private_keyfile)}"
     }
 
     inline = [
       "sudo mv /tmp/awssh /usr/local/bin/awssh",
       "sudo chmod 0755 /usr/local/bin/awssh",
-      "sudo yum install -y postgresql96 jq tmux"
+      "sudo yum install -y postgresql96 jq tmux",
     ]
   }
 }

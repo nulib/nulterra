@@ -1,9 +1,26 @@
-variable "schema"           { type = "string" }
-variable "host"             { type = "string" }
-variable "port"             { type = "string" }
-variable "master_username"  { type = "string" }
-variable "master_password"  { type = "string" }
-variable "connection"       { type = "map"    }
+variable "schema" {
+  type = "string"
+}
+
+variable "host" {
+  type = "string"
+}
+
+variable "port" {
+  type = "string"
+}
+
+variable "master_username" {
+  type = "string"
+}
+
+variable "master_password" {
+  type = "string"
+}
+
+variable "connection" {
+  type = "map"
+}
 
 module "role_password" {
   source = "../password"
@@ -30,6 +47,7 @@ END
 \$do\$;
 CREATE DATABASE ${var.schema} OWNER ${var.schema};
 EOF
+
   destroy_script = <<EOF
 DO
 $do$
@@ -39,7 +57,8 @@ BEGIN
 END
 $do$;
 EOF
-  psql = "PGPASSWORD='${var.master_password}' psql -U ${var.master_username} -h ${var.host} -p ${var.port} postgres"
+
+  psql            = "PGPASSWORD='${var.master_password}' psql -U ${var.master_username} -h ${var.host} -p ${var.port} postgres"
   create_command  = "echo \"${local.create_script}\" | ${local.psql}"
   destroy_command = "echo \"${local.destroy_script}\" | ${local.psql}"
 }
@@ -61,10 +80,10 @@ resource "null_resource" "this_database" {
     inline = ["${local.create_command}"]
   }
 
-#  provisioner "remote-exec" {
-#    inline = ["${local.destroy_command}"]
-#    when   = "destroy"
-#  }
+  #  provisioner "remote-exec" {
+  #    inline = ["${local.destroy_command}"]
+  #    when   = "destroy"
+  #  }
 
   lifecycle {
     create_before_destroy = true

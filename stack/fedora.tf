@@ -1,14 +1,15 @@
 locals {
   app_name         = "fcrepo"
   fcrepo_db_schema = "fcrepo"
-  java_options     = [
+
+  java_options = [
     "-Dfcrepo.postgresql.host=${module.db.this_db_instance_address}",
     "-Dfcrepo.postgresql.port=${module.db.this_db_instance_port}",
     "-Dfcrepo.postgresql.username=${local.fcrepo_db_schema}",
     "-Dfcrepo.postgresql.password=${module.fcrepodb.password}",
     "-Daws.accessKeyId=${aws_iam_access_key.fcrepo_binary_bucket_access_key.id}",
     "-Daws.secretKey=${aws_iam_access_key.fcrepo_binary_bucket_access_key.secret}",
-    "-Daws.bucket=${aws_s3_bucket.fcrepo_binary_bucket.id}"
+    "-Daws.bucket=${aws_s3_bucket.fcrepo_binary_bucket.id}",
   ]
 }
 
@@ -59,21 +60,25 @@ data "aws_iam_policy_document" "fcrepo_binary_bucket_access" {
   }
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "s3:ListBucket",
-      "s3:GetBucketLocation"
+      "s3:GetBucketLocation",
     ]
+
     resources = ["${aws_s3_bucket.fcrepo_binary_bucket.arn}"]
   }
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "s3:PutObject",
       "s3:GetObject",
-      "s3:DeleteObject"
+      "s3:DeleteObject",
     ]
+
     resources = ["${aws_s3_bucket.fcrepo_binary_bucket.arn}/*"]
   }
 }
@@ -132,10 +137,10 @@ module "fcrepo_environment" {
   tags                   = "${local.common_tags}"
 
   env_vars = {
-    MOUNT_VOLUMES   = "/var/backup=${module.solr_backup_volume.dns_name}",
-    JAVA_OPTIONS    = "${join(" ", local.java_options)}",
-    STACK_NAMESPACE = "${local.namespace}",
-    STACK_NAME      = "fcr",
+    MOUNT_VOLUMES   = "/var/backup=${module.solr_backup_volume.dns_name}"
+    JAVA_OPTIONS    = "${join(" ", local.java_options)}"
+    STACK_NAMESPACE = "${local.namespace}"
+    STACK_NAME      = "fcr"
     STACK_TIER      = "app"
   }
 }

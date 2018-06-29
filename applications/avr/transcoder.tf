@@ -4,12 +4,14 @@ resource "aws_sns_topic" "avr_transcode_notification" {
 
 data "aws_iam_policy_document" "transcoder" {
   statement {
-    sid = ""
+    sid     = ""
     actions = ["sts:AssumeRole"]
+
     principals {
       type        = "Service"
       identifiers = ["elastictranscoder.amazonaws.com"]
     }
+
     effect = "Allow"
   }
 }
@@ -21,18 +23,20 @@ resource "aws_iam_role" "avr_pipeline_role" {
 
 data "aws_iam_policy_document" "avr_pipeline_policy" {
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "s3:Put*",
       "s3:ListBucket",
       "s3:*MultipartUpload*",
-      "s3:Get*"
+      "s3:Get*",
     ]
+
     resources = [
       "${aws_s3_bucket.avr_masterfiles.arn}",
       "${aws_s3_bucket.avr_derivatives.arn}",
       "${aws_s3_bucket.avr_masterfiles.arn}/*",
-      "${aws_s3_bucket.avr_derivatives.arn}/*"
+      "${aws_s3_bucket.avr_derivatives.arn}/*",
     ]
   }
 
@@ -43,25 +47,27 @@ data "aws_iam_policy_document" "avr_pipeline_policy" {
   }
 
   statement {
-    effect    = "Deny"
-    actions   = [
+    effect = "Deny"
+
+    actions = [
       "s3:*Delete*",
       "s3:*Policy*",
       "sns:*Remove*",
       "sns:*Delete*",
-      "sns:*Permission*"
+      "sns:*Permission*",
     ]
+
     resources = ["*"]
   }
 }
 
 resource "aws_iam_policy" "avr_pipeline_policy" {
-  name = "${local.namespace}-${local.app_name}-pipeline-policy"
+  name   = "${local.namespace}-${local.app_name}-pipeline-policy"
   policy = "${data.aws_iam_policy_document.avr_pipeline_policy.json}"
 }
 
 resource "aws_iam_role_policy_attachment" "avr_pipeline" {
-  role = "${aws_iam_role.avr_pipeline_role.name}"
+  role       = "${aws_iam_role.avr_pipeline_role.name}"
   policy_arn = "${aws_iam_policy.avr_pipeline_policy.arn}"
 }
 

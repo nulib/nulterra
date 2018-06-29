@@ -1,10 +1,12 @@
 locals {
   app_name = "arch"
+
   default_host_parts = [
     "${local.app_name}",
     "${data.terraform_remote_state.stack.stack_name}",
-    "${data.terraform_remote_state.stack.hosted_zone_name}"
+    "${data.terraform_remote_state.stack.hosted_zone_name}",
   ]
+
   domain_host = "${coalesce(var.public_hostname, join(".", local.default_host_parts))}"
 }
 
@@ -35,9 +37,10 @@ module "arch_derivative_volume" {
   vpc_id             = "${data.terraform_remote_state.stack.vpc_id}"
   subnets            = "${data.terraform_remote_state.stack.private_subnets}"
   availability_zones = ["${data.terraform_remote_state.stack.azs}"]
-  security_groups    = [
+
+  security_groups = [
     "${module.webapp.security_group_id}",
-    "${module.worker.security_group_id}"
+    "${module.worker.security_group_id}",
   ]
 
   zone_id = "${data.terraform_remote_state.stack.private_zone_id}"
@@ -56,9 +59,10 @@ module "arch_working_volume" {
   vpc_id             = "${data.terraform_remote_state.stack.vpc_id}"
   subnets            = "${data.terraform_remote_state.stack.private_subnets}"
   availability_zones = ["${data.terraform_remote_state.stack.azs}"]
-  security_groups    = [
+
+  security_groups = [
     "${module.webapp.security_group_id}",
-    "${module.worker.security_group_id}"
+    "${module.worker.security_group_id}",
   ]
 
   zone_id = "${data.terraform_remote_state.stack.private_zone_id}"
@@ -101,13 +105,14 @@ resource "aws_elastic_beanstalk_application_version" "arch" {
   depends_on = [
     "aws_elastic_beanstalk_application.arch",
     "module.arch_derivative_volume",
-    "module.arch_working_volume"
+    "module.arch_working_volume",
   ]
-  description     = "application version created by terraform"
-  bucket          = "${data.terraform_remote_state.stack.application_source_bucket}"
-  application     = "${local.namespace}-${local.app_name}"
-  key             = "${aws_s3_bucket_object.arch_source.id}"
-  name            = "${random_pet.app_version_name.id}"
+
+  description = "application version created by terraform"
+  bucket      = "${data.terraform_remote_state.stack.application_source_bucket}"
+  application = "${local.namespace}-${local.app_name}"
+  key         = "${aws_s3_bucket_object.arch_source.id}"
+  name        = "${random_pet.app_version_name.id}"
 }
 
 module "archdb" {
@@ -148,9 +153,10 @@ resource "aws_s3_bucket" "arch_archives" {
   tags   = "${local.common_tags}"
 
   lifecycle_rule {
-    id = "auto-delete-after-15-days"
-    enabled = true
+    id                                     = "auto-delete-after-15-days"
+    enabled                                = true
     abort_incomplete_multipart_upload_days = 3
+
     expiration {
       days = 7
     }
@@ -163,9 +169,10 @@ resource "aws_s3_bucket" "arch_dropbox" {
   tags   = "${local.common_tags}"
 
   lifecycle_rule {
-    id = "auto-delete-after-15-days"
-    enabled = true
+    id                                     = "auto-delete-after-15-days"
+    enabled                                = true
     abort_incomplete_multipart_upload_days = 3
+
     expiration {
       days = 15
     }
@@ -174,49 +181,55 @@ resource "aws_s3_bucket" "arch_dropbox" {
 
 data "aws_iam_policy_document" "arch_bucket_access" {
   statement {
-    effect = "Allow"
-    actions = ["s3:ListAllMyBuckets"]
+    effect    = "Allow"
+    actions   = ["s3:ListAllMyBuckets"]
     resources = ["arn:aws:s3:::*"]
   }
 
   statement {
     effect = "Allow"
+
     actions = [
       "s3:ListBucket",
-      "s3:GetBucketLocation"
+      "s3:GetBucketLocation",
     ]
+
     resources = [
       "${aws_s3_bucket.arch_archives.arn}",
-      "${aws_s3_bucket.arch_dropbox.arn}"
+      "${aws_s3_bucket.arch_dropbox.arn}",
     ]
   }
 
   statement {
     effect = "Allow"
+
     actions = [
       "s3:PutObject",
       "s3:GetObject",
-      "s3:DeleteObject"
+      "s3:DeleteObject",
     ]
+
     resources = [
       "${aws_s3_bucket.arch_archives.arn}/*",
-      "${aws_s3_bucket.arch_dropbox.arn}/*"
+      "${aws_s3_bucket.arch_dropbox.arn}/*",
     ]
   }
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "sqs:ListQueues",
       "sqs:GetQueueUrl",
-      "sqs:GetQueueAttributes"
+      "sqs:GetQueueAttributes",
     ]
+
     resources = ["*"]
   }
 }
 
 resource "aws_iam_policy" "arch_bucket_policy" {
-  name = "${data.terraform_remote_state.stack.stack_name}-${local.app_name}-bucket-access"
+  name   = "${data.terraform_remote_state.stack.stack_name}-${local.app_name}-bucket-access"
   policy = "${data.aws_iam_policy_document.arch_bucket_access.json}"
 }
 

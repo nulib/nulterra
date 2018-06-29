@@ -1,23 +1,27 @@
 data "aws_iam_policy_document" "ecs_logging" {
   statement {
     sid = ""
+
     actions = [
       "logs:CreateLogStream",
-      "logs:PutLogEvents"
+      "logs:PutLogEvents",
     ]
-    effect = "Allow"
+
+    effect    = "Allow"
     resources = ["*"]
   }
 }
 
 data "aws_iam_policy_document" "ecs_assume_role" {
   statement {
-    sid = ""
+    sid     = ""
     actions = ["sts:AssumeRole"]
+
     principals {
       type        = "Service"
       identifiers = ["ecs.amazonaws.com", "ecs-tasks.amazonaws.com"]
     }
+
     effect = "Allow"
   }
 }
@@ -28,8 +32,8 @@ resource "aws_iam_role" "task_role" {
 }
 
 resource "aws_iam_policy" "execution_policy" {
-  name               = "${var.namespace}-${var.family}-exec-policy"
-  policy             = "${data.aws_iam_policy_document.ecs_logging.json}"
+  name   = "${var.namespace}-${var.family}-exec-policy"
+  policy = "${data.aws_iam_policy_document.ecs_logging.json}"
 }
 
 resource "aws_iam_role" "execution_role" {
@@ -88,11 +92,11 @@ resource "aws_ecs_cluster" "this_cluster" {
 }
 
 resource "aws_lb" "this_load_balancer" {
-  count            = "${var.load_balanced == "true" ? 1 : 0}"
-  name             = "${var.namespace}-${var.family}-lb"
-  internal         = "${var.internal == "true" ? true : false}"
-  security_groups  = ["${aws_security_group.this_lb_security_group.id}"]
-  subnets          = ["${split(",", var.internal == "true" ? join(",", var.private_subnets) : join(",", var.public_subnets))}"]
+  count           = "${var.load_balanced == "true" ? 1 : 0}"
+  name            = "${var.namespace}-${var.family}-lb"
+  internal        = "${var.internal == "true" ? true : false}"
+  security_groups = ["${aws_security_group.this_lb_security_group.id}"]
+  subnets         = ["${split(",", var.internal == "true" ? join(",", var.private_subnets) : join(",", var.public_subnets))}"]
 
   tags = "${var.tags}"
 }
@@ -128,8 +132,8 @@ resource "aws_ecs_service" "this_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets = ["${var.private_subnets}"]
-    security_groups = ["${concat(var.security_groups, aws_security_group.this_instance_security_group.*.id)}"]
+    subnets          = ["${var.private_subnets}"]
+    security_groups  = ["${concat(var.security_groups, aws_security_group.this_instance_security_group.*.id)}"]
     assign_public_ip = false
   }
 }
@@ -150,8 +154,8 @@ resource "aws_ecs_service" "this_lb_service" {
   }
 
   network_configuration {
-    subnets = ["${var.private_subnets}"]
-    security_groups = ["${concat(var.security_groups, aws_security_group.this_instance_security_group.*.id)}"]
+    subnets          = ["${var.private_subnets}"]
+    security_groups  = ["${concat(var.security_groups, aws_security_group.this_instance_security_group.*.id)}"]
     assign_public_ip = false
   }
 }

@@ -1,5 +1,5 @@
 locals {
-  stream_fqdn = "httpstream.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}"
+  stream_fqdn       = "httpstream.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}"
   streaming_aliases = "${compact(list(local.stream_fqdn, var.streaming_hostname))}"
 }
 
@@ -68,6 +68,7 @@ resource "aws_cloudfront_distribution" "avr_streaming" {
       cookies {
         forward = "none"
       }
+
       query_string = false
       headers      = ["Origin"]
     }

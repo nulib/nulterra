@@ -21,21 +21,25 @@ data "aws_iam_policy_document" "pyramid_tiff_bucket_access" {
   }
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "s3:ListBucket",
-      "s3:GetBucketLocation"
+      "s3:GetBucketLocation",
     ]
+
     resources = ["${aws_s3_bucket.pyramid_tiff_bucket.arn}"]
   }
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "s3:PutObject",
       "s3:GetObject",
-      "s3:DeleteObject"
+      "s3:DeleteObject",
     ]
+
     resources = ["${aws_s3_bucket.pyramid_tiff_bucket.arn}/*"]
   }
 }
@@ -59,7 +63,7 @@ data "template_file" "cantaloupe_task_definition" {
 }
 
 module "cantaloupe_service" {
-  source                = "../modules/fargate"
+  source = "../modules/fargate"
 
   container_definitions = "${data.template_file.cantaloupe_task_definition.rendered}"
   container_name        = "cantaloupe-app"
@@ -113,6 +117,7 @@ resource "aws_cloudfront_distribution" "cantaloupe" {
       cookies {
         forward = "none"
       }
+
       query_string = false
       headers      = ["Origin"]
     }

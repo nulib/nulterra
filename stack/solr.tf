@@ -9,9 +9,10 @@ module "solr_backup_volume" {
   vpc_id             = "${module.vpc.vpc_id}"
   subnets            = "${module.vpc.private_subnets}"
   availability_zones = ["${var.azs}"]
-  security_groups    = [
+
+  security_groups = [
     "${module.solr_environment.security_group_id}",
-    "${module.fcrepo_environment.security_group_id}"
+    "${module.fcrepo_environment.security_group_id}",
   ]
 
   zone_id = "${module.dns.private_zone_id}"
@@ -84,11 +85,11 @@ module "solr_environment" {
   tags                    = "${local.common_tags}"
 
   env_vars = {
-    MOUNT_UID       = "8983",
-    MOUNT_VOLUMES   = "/var/app/solr-backup=${module.solr_backup_volume.dns_name}",
-    STACK_NAMESPACE = "${local.namespace}",
-    STACK_NAME      = "solr",
-    STACK_TIER      = "app",
+    MOUNT_UID       = "8983"
+    MOUNT_VOLUMES   = "/var/app/solr-backup=${module.solr_backup_volume.dns_name}"
+    STACK_NAMESPACE = "${local.namespace}"
+    STACK_NAME      = "solr"
+    STACK_TIER      = "app"
     ZK_HOST         = "zk.${local.private_zone_name}"
   }
 }
