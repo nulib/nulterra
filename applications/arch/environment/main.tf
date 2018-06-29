@@ -114,6 +114,11 @@ resource "aws_iam_role_policy_attachment" "arch_bucket_role_access" {
   policy_arn = "${var.bucket_policy_arn}"
 }
 
+resource "aws_iam_role_policy_attachment" "send_email" {
+  role       = "${module.arch_environment.ec2_instance_profile_role_name}"
+  policy_arn = "${data.terraform_remote_state.stack.send_email_policy_arn}"
+}
+
 resource "aws_security_group_rule" "allow_zk_arch_access" {
   security_group_id        = "${data.terraform_remote_state.stack.zookeeper_security_group}"
   type                     = "ingress"

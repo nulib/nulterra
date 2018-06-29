@@ -30,6 +30,7 @@
 	      { "name": "RAILS_SKIP_ASSET_COMPILATION",                            "value": "false" },
         { "name": "RAILS_SKIP_MIGRATIONS",                                   "value": "false" },
         { "name": "SETTINGS__ACTIVE_JOB__QUEUE_ADAPTER",                     "value": "active_elastic_job" },
+        { "name": "SETTINGS__EMAIL__MAILER",                                 "value": "aws_sdk" },
         { "name": "SETTINGS__FFMPEG__PATH",                                  "value": "/usr/local/bin/ffmpeg" },
         { "name": "SETTINGS__FITS__PATH",                                    "value": "/usr/local/fits/fits.sh" },
         { "name": "SETTINGS__GROUPS__SYSTEM_GROUPS",                         "value": "administrator,group_manager,manager" },
