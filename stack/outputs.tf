@@ -42,24 +42,16 @@ output "vpc_cidr_block" {
 
 # Security Groups
 
-output "cache_security_group" {
-  value = "${aws_security_group.redis.id}"
-}
-
-output "cantaloupe_security_group" {
-  value = "${module.cantaloupe_service.lb_security_group}"
-}
-
-output "fcrepo_security_group" {
-  value = "${module.fcrepo_environment.security_group_id}"
-}
-
-output "index_security_group" {
-  value = "${module.solr_environment.security_group_id}"
-}
-
-output "zookeeper_security_group" {
-  value = "${module.zookeeper_environment.security_group_id}"
+output "security_groups" {
+  value = {
+    bastion    = "${aws_security_group.bastion.id}"
+    cache      = "${aws_security_group.redis.id}"
+    cantaloupe = "${module.cantaloupe_service.lb_security_group}"
+    db         = "${aws_security_group.db.id}"
+    fcrepo     = "${module.fcrepo_environment.security_group_id}"
+    index      = "${module.solr_environment.security_group_id}"
+    zookeeper  = "${module.zookeeper_environment.security_group_id}"
+  }
 }
 
 # Resource Outputs
@@ -102,10 +94,6 @@ output "db_master_username" {
 
 output "db_master_password" {
   value = "${module.db.this_db_instance_password}"
-}
-
-output "db_security_group_id" {
-  value = "${aws_security_group.db.id}"
 }
 
 output "exhibitor_endpoint" {

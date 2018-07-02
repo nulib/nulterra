@@ -41,6 +41,7 @@ module "arch_derivative_volume" {
   security_groups = [
     "${module.webapp.security_group_id}",
     "${module.worker.security_group_id}",
+    "${data.terraform_remote_state.stack.security_groups.bastion}",
   ]
 
   zone_id = "${data.terraform_remote_state.stack.private_zone_id}"
@@ -63,6 +64,7 @@ module "arch_working_volume" {
   security_groups = [
     "${module.webapp.security_group_id}",
     "${module.worker.security_group_id}",
+    "${data.terraform_remote_state.stack.security_groups.bastion}",
   ]
 
   zone_id = "${data.terraform_remote_state.stack.private_zone_id}"

@@ -83,7 +83,7 @@ data "aws_elastic_beanstalk_solution_stack" "multi_docker" {
 }
 
 resource "aws_security_group_rule" "allow_donuts_fcrepo_access" {
-  security_group_id        = "${data.terraform_remote_state.stack.fcrepo_security_group}"
+  security_group_id        = "${data.terraform_remote_state.stack.security_groups.fcrepo}"
   type                     = "ingress"
   from_port                = "80"
   to_port                  = "80"
@@ -92,7 +92,7 @@ resource "aws_security_group_rule" "allow_donuts_fcrepo_access" {
 }
 
 resource "aws_security_group_rule" "allow_donuts_postgres_access" {
-  security_group_id        = "${data.terraform_remote_state.stack.db_security_group_id}"
+  security_group_id        = "${data.terraform_remote_state.stack.security_groups.db}"
   type                     = "ingress"
   from_port                = "${data.terraform_remote_state.stack.db_port}"
   to_port                  = "${data.terraform_remote_state.stack.db_port}"
@@ -101,7 +101,7 @@ resource "aws_security_group_rule" "allow_donuts_postgres_access" {
 }
 
 resource "aws_security_group_rule" "allow_donuts_redis_access" {
-  security_group_id        = "${data.terraform_remote_state.stack.cache_security_group}"
+  security_group_id        = "${data.terraform_remote_state.stack.security_groups.cache}"
   type                     = "ingress"
   from_port                = "${data.terraform_remote_state.stack.cache_port}"
   to_port                  = "${data.terraform_remote_state.stack.cache_port}"
@@ -115,7 +115,7 @@ resource "aws_iam_role_policy_attachment" "donut_bucket_role_access" {
 }
 
 resource "aws_security_group_rule" "allow_zk_donut_access" {
-  security_group_id        = "${data.terraform_remote_state.stack.zookeeper_security_group}"
+  security_group_id        = "${data.terraform_remote_state.stack.security_groups.zookeeper}"
   type                     = "ingress"
   from_port                = "2181"
   to_port                  = "2181"

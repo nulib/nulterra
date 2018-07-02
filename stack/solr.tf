@@ -12,7 +12,7 @@ module "solr_backup_volume" {
 
   security_groups = [
     "${module.solr_environment.security_group_id}",
-    "${module.fcrepo_environment.security_group_id}",
+    "${aws_security_group.bastion.id}",
   ]
 
   zone_id = "${module.dns.private_zone_id}"
