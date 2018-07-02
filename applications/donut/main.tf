@@ -42,6 +42,7 @@ module "donut_derivative_volume" {
     "${module.webapp.security_group_id}",
     "${module.worker.security_group_id}",
     "${module.batch_worker.security_group_id}",
+    "${data.terraform_remote_state.stack.security_groups.bastion}",
   ]
 
   zone_id = "${data.terraform_remote_state.stack.private_zone_id}"
@@ -65,6 +66,7 @@ module "donut_working_volume" {
     "${module.webapp.security_group_id}",
     "${module.worker.security_group_id}",
     "${module.batch_worker.security_group_id}",
+    "${data.terraform_remote_state.stack.security_groups.bastion}",
   ]
 
   zone_id = "${data.terraform_remote_state.stack.private_zone_id}"

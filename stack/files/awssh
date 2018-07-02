@@ -41,14 +41,6 @@ shift $((OPTIND-1))
 env=$1
 shift
 
-if [[ $AWS_PROFILE =~ 'staging' ]]; then
-  keyfile='id_stagebox_rsa'
-  proxy_host="vpn.repo.rdc-staging.library.northwestern.edu"
-else
-  keyfile='id_haybox_rsa'
-  proxy_host="vpn.repo.rdc.library.northwestern.edu"
-fi
-
 if [[ $list_mode == 1 ]]; then
   display_ips $env
   exit 1
@@ -78,7 +70,6 @@ Host ${ip}
 HostName ${ip}
 Port 22
 User ec2-user
-IdentityFile ~/.ssh/${keyfile}
 UserKnownHostsFile /dev/null
 StrictHostKeyChecking no
 EOF

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+aws efs describe-file-systems | jq -r '.FileSystems[] | [.FileSystemId, .Name] | @tsv' |
+  while IFS=$'\t' read -r fs name; do
+    mkdir -p "/mnt/efs/${name}"
+    mount -t nfs -o ro "${fs}.efs.us-east-1.amazonaws.com:/" "/mnt/efs/${name}"
+  done

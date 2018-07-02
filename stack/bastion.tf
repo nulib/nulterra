@@ -114,21 +114,29 @@ resource "aws_instance" "bastion" {
     "${aws_security_group.bastion.id}",
     "${aws_security_group.db_client.id}",
   ]
+}
+
+resource "null_resource" "provision_bastion" {
+  triggers {
+    host = "${aws_instance.bastion.id}"
+  }
 
   provisioner "file" {
     connection {
+      host        = "${aws_instance.bastion.public_dns}"
       user        = "ec2-user"
       agent       = true
       timeout     = "3m"
       private_key = "${file(var.ec2_private_keyfile)}"
     }
 
-    source      = "${path.module}/files/awssh"
-    destination = "/tmp/awssh"
+    source      = "${path.module}/files/"
+    destination = "/tmp/"
   }
 
   provisioner "remote-exec" {
     connection {
+      host        = "${aws_instance.bastion.public_dns}"
       user        = "ec2-user"
       agent       = true
       timeout     = "3m"
@@ -136,8 +144,9 @@ resource "aws_instance" "bastion" {
     }
 
     inline = [
+      "sudo mv /tmp/mount_all_efs /usr/local/sbin/mount_all_efs",
       "sudo mv /tmp/awssh /usr/local/bin/awssh",
-      "sudo chmod 0755 /usr/local/bin/awssh",
+      "sudo chmod 0755 /usr/local/bin/awssh /usr/local/sbin/mount_all_efs",
       "sudo yum install -y postgresql96 jq tmux",
     ]
   }
