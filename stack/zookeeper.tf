@@ -70,24 +70,25 @@ resource "aws_elastic_beanstalk_application_version" "zookeeper" {
 module "zookeeper_environment" {
   source = "../modules/beanstalk"
 
-  app                    = "${aws_elastic_beanstalk_application.solrcloud.name}"
-  version_label          = "${aws_elastic_beanstalk_application_version.zookeeper.name}"
-  namespace              = "${var.stack_name}"
-  name                   = "zookeeper"
-  stage                  = "${var.environment}"
-  solution_stack_name    = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
-  vpc_id                 = "${module.vpc.vpc_id}"
-  private_subnets        = "${module.vpc.private_subnets}"
-  public_subnets         = "${module.vpc.private_subnets}"
-  loadbalancer_scheme    = "internal"
-  instance_port          = "8181"
-  healthcheck_url        = "/exhibitor/v1/ui/index.html"
-  keypair                = "${var.ec2_keyname}"
-  instance_type          = "t2.medium"
-  autoscale_min          = 2
-  autoscale_max          = 3
-  health_check_threshold = "Ok"
-  tags                   = "${local.common_tags}"
+  app                     = "${aws_elastic_beanstalk_application.solrcloud.name}"
+  version_label           = "${aws_elastic_beanstalk_application_version.zookeeper.name}"
+  namespace               = "${var.stack_name}"
+  name                    = "zookeeper"
+  stage                   = "${var.environment}"
+  solution_stack_name     = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
+  vpc_id                  = "${module.vpc.vpc_id}"
+  private_subnets         = "${module.vpc.private_subnets}"
+  public_subnets          = "${module.vpc.private_subnets}"
+  loadbalancer_scheme     = "internal"
+  managed_actions_enabled = "false"
+  instance_port           = "8181"
+  healthcheck_url         = "/exhibitor/v1/ui/index.html"
+  keypair                 = "${var.ec2_keyname}"
+  instance_type           = "t2.medium"
+  autoscale_min           = 2
+  autoscale_max           = 3
+  health_check_threshold  = "Ok"
+  tags                    = "${local.common_tags}"
 
   env_vars = {
     S3_BUCKET        = "${aws_s3_bucket.zookeeper_config_bucket.id}"
