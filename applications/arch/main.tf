@@ -237,19 +237,23 @@ resource "aws_iam_policy" "arch_bucket_policy" {
 
 data "null_data_source" "ssm_parameters" {
   inputs = "${map(
-    "arch/contact_email",       "digitalscholarship@northwestern.edu",
-    "aws/buckets/archives",     "${aws_s3_bucket.arch_archives.id}",
-    "aws/buckets/dropbox",      "${aws_s3_bucket.arch_dropbox.id}",
-    "domain/host",              "${local.domain_host}",
-    "geonames_username",        "nul_rdc",
-    "solr/url",                 "${data.terraform_remote_state.stack.index_endpoint}arch",
-    "zookeeper/connection_str", "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
+    "arch/contact_email",               "digitalscholarship@northwestern.edu",
+    "aws/buckets/archives",             "${aws_s3_bucket.arch_archives.id}",
+    "aws/buckets/dropbox",              "${aws_s3_bucket.arch_dropbox.id}",
+    "doi_credentials/host",             "ezid.lib.purdue.edu",
+    "doi_credentials/port",             443,
+    "doi_credentials/use_ssl",          true,
+    "domain/host",                      "${local.domain_host}",
+    "geonames_username",                "nul_rdc",
+    "solr/url",                         "${data.terraform_remote_state.stack.index_endpoint}arch",
+    "zookeeper/connection_str",         "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
   )}"
 }
 
 resource "aws_ssm_parameter" "arch_config_setting" {
-  count = 7
-  name  = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
-  type  = "String"
-  value = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"
+  count     = 10
+  name      = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
+  type      = "String"
+  value     = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"
+  overwrite = true
 }
