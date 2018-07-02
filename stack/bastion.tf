@@ -46,22 +46,34 @@ resource "aws_iam_role" "bastion" {
   assume_role_policy = "${data.aws_iam_policy_document.bastion.json}"
 }
 
-data "aws_iam_policy_document" "bastion_describe_instances" {
+data "aws_iam_policy_document" "bastion_api_access" {
   statement {
     effect    = "Allow"
     actions   = ["ec2:DescribeInstances"]
     resources = ["*"]
   }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["elasticfilesystem:*"]
+    resources = ["*"]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:*"]
+    resources = ["*"]
+  }
 }
 
-resource "aws_iam_policy" "bastion_describe_instances" {
-  name   = "${local.namespace}-bastion-describe-instances"
-  policy = "${data.aws_iam_policy_document.bastion_describe_instances.json}"
+resource "aws_iam_policy" "bastion_api_access" {
+  name   = "${local.namespace}-bastion-api-access"
+  policy = "${data.aws_iam_policy_document.bastion_api_access.json}"
 }
 
-resource "aws_iam_role_policy_attachment" "bastion_describe_instances" {
+resource "aws_iam_role_policy_attachment" "bastion_api_access" {
   role       = "${aws_iam_role.bastion.name}"
-  policy_arn = "${aws_iam_policy.bastion_describe_instances.arn}"
+  policy_arn = "${aws_iam_policy.bastion_api_access.arn}"
 }
 
 resource "aws_security_group" "bastion" {
