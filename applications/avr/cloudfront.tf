@@ -9,7 +9,7 @@ data "aws_acm_certificate" "streaming_certificate" {
   most_recent = true
 }
 
-resource "aws_cloudfront_origin_access_identity" "avr_origin_access_identity" {
+resource "aws_cloudfront_origin_access_identity" "this_origin_access_identity" {
   comment = "${local.namespace}-${local.app_name}"
 }
 
@@ -17,32 +17,32 @@ data "aws_iam_policy_document" "derivative_bucket_policy" {
   statement {
     effect    = "Allow"
     actions   = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.avr_derivatives.arn}/*"]
+    resources = ["${aws_s3_bucket.this_derivatives.arn}/*"]
 
     principals {
       type        = "AWS"
-      identifiers = ["${aws_cloudfront_origin_access_identity.avr_origin_access_identity.iam_arn}"]
+      identifiers = ["${aws_cloudfront_origin_access_identity.this_origin_access_identity.iam_arn}"]
     }
   }
 
   statement {
     effect    = "Allow"
     actions   = ["s3:ListBucket"]
-    resources = ["${aws_s3_bucket.avr_derivatives.arn}"]
+    resources = ["${aws_s3_bucket.this_derivatives.arn}"]
 
     principals {
       type        = "AWS"
-      identifiers = ["${aws_cloudfront_origin_access_identity.avr_origin_access_identity.iam_arn}"]
+      identifiers = ["${aws_cloudfront_origin_access_identity.this_origin_access_identity.iam_arn}"]
     }
   }
 }
 
 resource "aws_s3_bucket_policy" "allow_cloudfront_derivative_access" {
-  bucket = "${aws_s3_bucket.avr_derivatives.id}"
+  bucket = "${aws_s3_bucket.this_derivatives.id}"
   policy = "${data.aws_iam_policy_document.derivative_bucket_policy.json}"
 }
 
-resource "aws_cloudfront_distribution" "avr_streaming" {
+resource "aws_cloudfront_distribution" "this_streaming" {
   enabled          = true
   is_ipv6_enabled  = true
   retain_on_delete = true
@@ -50,11 +50,11 @@ resource "aws_cloudfront_distribution" "avr_streaming" {
   price_class      = "PriceClass_100"
 
   origin {
-    domain_name = "${aws_s3_bucket.avr_derivatives.bucket_domain_name}"
+    domain_name = "${aws_s3_bucket.this_derivatives.bucket_domain_name}"
     origin_id   = "${local.namespace}-${local.app_name}-origin-hls"
 
     s3_origin_config {
-      origin_access_identity = "${aws_cloudfront_origin_access_identity.avr_origin_access_identity.cloudfront_access_identity_path}"
+      origin_access_identity = "${aws_cloudfront_origin_access_identity.this_origin_access_identity.cloudfront_access_identity_path}"
     }
   }
 
@@ -89,10 +89,10 @@ resource "aws_cloudfront_distribution" "avr_streaming" {
   }
 }
 
-resource "aws_route53_record" "avr_cloudfront" {
+resource "aws_route53_record" "this_cloudfront" {
   zone_id = "${data.terraform_remote_state.stack.public_zone_id}"
   name    = "${local.stream_fqdn}"
   type    = "CNAME"
   ttl     = "900"
-  records = ["${aws_cloudfront_distribution.avr_streaming.domain_name}"]
+  records = ["${aws_cloudfront_distribution.this_streaming.domain_name}"]
 }

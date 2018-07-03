@@ -82,53 +82,53 @@ data "aws_elastic_beanstalk_solution_stack" "multi_docker" {
   name_regex  = "^64bit Amazon Linux (.*) Multi-container Docker (.*)$"
 }
 
-resource "aws_security_group_rule" "allow_archs_fcrepo_access" {
+resource "aws_security_group_rule" "allow_this_fcrepo_access" {
   security_group_id        = "${data.terraform_remote_state.stack.security_groups.fcrepo}"
   type                     = "ingress"
   from_port                = "80"
   to_port                  = "80"
   protocol                 = "tcp"
-  source_security_group_id = "${module.arch_environment.security_group_id}"
+  source_security_group_id = "${module.this_environment.security_group_id}"
 }
 
-resource "aws_security_group_rule" "allow_archs_postgres_access" {
+resource "aws_security_group_rule" "allow_this_postgres_access" {
   security_group_id        = "${data.terraform_remote_state.stack.security_groups.db}"
   type                     = "ingress"
   from_port                = "${data.terraform_remote_state.stack.db_port}"
   to_port                  = "${data.terraform_remote_state.stack.db_port}"
   protocol                 = "tcp"
-  source_security_group_id = "${module.arch_environment.security_group_id}"
+  source_security_group_id = "${module.this_environment.security_group_id}"
 }
 
-resource "aws_security_group_rule" "allow_archs_redis_access" {
+resource "aws_security_group_rule" "allow_this_redis_access" {
   security_group_id        = "${data.terraform_remote_state.stack.security_groups.cache}"
   type                     = "ingress"
   from_port                = "${data.terraform_remote_state.stack.cache_port}"
   to_port                  = "${data.terraform_remote_state.stack.cache_port}"
   protocol                 = "tcp"
-  source_security_group_id = "${module.arch_environment.security_group_id}"
+  source_security_group_id = "${module.this_environment.security_group_id}"
 }
 
-resource "aws_iam_role_policy_attachment" "arch_bucket_role_access" {
-  role       = "${module.arch_environment.ec2_instance_profile_role_name}"
+resource "aws_iam_role_policy_attachment" "this_bucket_role_access" {
+  role       = "${module.this_environment.ec2_instance_profile_role_name}"
   policy_arn = "${var.bucket_policy_arn}"
 }
 
 resource "aws_iam_role_policy_attachment" "send_email" {
-  role       = "${module.arch_environment.ec2_instance_profile_role_name}"
+  role       = "${module.this_environment.ec2_instance_profile_role_name}"
   policy_arn = "${data.terraform_remote_state.stack.send_email_policy_arn}"
 }
 
-resource "aws_security_group_rule" "allow_zk_arch_access" {
+resource "aws_security_group_rule" "allow_zk_this_access" {
   security_group_id        = "${data.terraform_remote_state.stack.security_groups.zookeeper}"
   type                     = "ingress"
   from_port                = "2181"
   to_port                  = "2181"
   protocol                 = "tcp"
-  source_security_group_id = "${module.arch_environment.security_group_id}"
+  source_security_group_id = "${module.this_environment.security_group_id}"
 }
 
-module "arch_environment" {
+module "this_environment" {
   source                       = "../../../modules/beanstalk"
   app                          = "${var.app_name}"
   version_label                = "${var.app_version}"
@@ -180,23 +180,23 @@ module "arch_environment" {
   }
 }
 
-resource "aws_route53_record" "arch" {
+resource "aws_route53_record" "this" {
   count   = "${lower(var.tier) == "worker" ? 0 : 1 }"
   zone_id = "${data.terraform_remote_state.stack.public_zone_id}"
   name    = "${var.name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}"
   type    = "A"
 
   alias {
-    name                   = "${module.arch_environment.elb_dns_name}"
-    zone_id                = "${module.arch_environment.elb_zone_id}"
+    name                   = "${module.this_environment.elb_dns_name}"
+    zone_id                = "${module.this_environment.elb_zone_id}"
     evaluate_target_health = "true"
   }
 }
 
 output "endpoint" {
-  value = "${aws_route53_record.arch.*.name}"
+  value = "${aws_route53_record.this.*.name}"
 }
 
 output "security_group_id" {
-  value = "${module.arch_environment.security_group_id}"
+  value = "${module.this_environment.security_group_id}"
 }

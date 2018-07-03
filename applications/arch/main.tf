@@ -18,7 +18,7 @@ data "aws_acm_certificate" "ssl_certificate" {
 
 resource "random_pet" "app_version_name" {
   keepers = {
-    source = "${data.archive_file.arch_source.output_md5}"
+    source = "${data.archive_file.this_source.output_md5}"
   }
 }
 
@@ -26,7 +26,7 @@ resource "random_id" "secret_key_base" {
   byte_length = 32
 }
 
-module "arch_derivative_volume" {
+module "this_derivative_volume" {
   source  = "cloudposse/efs/aws"
   version = "0.3.3"
 
@@ -49,7 +49,7 @@ module "arch_derivative_volume" {
   tags = "${local.common_tags}"
 }
 
-module "arch_working_volume" {
+module "this_working_volume" {
   source  = "cloudposse/efs/aws"
   version = "0.3.3"
 
@@ -85,39 +85,39 @@ resource "local_file" "dockerrun_aws_json" {
   filename = "./application/Dockerrun.aws.json"
 }
 
-data "archive_file" "arch_source" {
+data "archive_file" "this_source" {
   depends_on  = ["local_file.dockerrun_aws_json"]
   type        = "zip"
   source_dir  = "${path.module}/application"
   output_path = "${path.module}/build/${local.app_name}-${terraform.workspace}.zip"
 }
 
-resource "aws_s3_bucket_object" "arch_source" {
+resource "aws_s3_bucket_object" "this_source" {
   bucket = "${data.terraform_remote_state.stack.application_source_bucket}"
   key    = "${local.app_name}-${random_pet.app_version_name.id}.zip"
-  source = "${data.archive_file.arch_source.output_path}"
-  etag   = "${data.archive_file.arch_source.output_md5}"
+  source = "${data.archive_file.this_source.output_path}"
+  etag   = "${data.archive_file.this_source.output_md5}"
 }
 
-resource "aws_elastic_beanstalk_application" "arch" {
+resource "aws_elastic_beanstalk_application" "this" {
   name = "${local.namespace}-${local.app_name}"
 }
 
-resource "aws_elastic_beanstalk_application_version" "arch" {
+resource "aws_elastic_beanstalk_application_version" "this" {
   depends_on = [
-    "aws_elastic_beanstalk_application.arch",
-    "module.arch_derivative_volume",
-    "module.arch_working_volume",
+    "aws_elastic_beanstalk_application.this",
+    "module.this_derivative_volume",
+    "module.this_working_volume",
   ]
 
   description = "application version created by terraform"
   bucket      = "${data.terraform_remote_state.stack.application_source_bucket}"
   application = "${local.namespace}-${local.app_name}"
-  key         = "${aws_s3_bucket_object.arch_source.id}"
+  key         = "${aws_s3_bucket_object.this_source.id}"
   name        = "${random_pet.app_version_name.id}"
 }
 
-module "archdb" {
+module "this_db" {
   source          = "../../modules/database"
   schema          = "${local.app_name}"
   host            = "${data.terraform_remote_state.stack.db_address}"
@@ -132,24 +132,24 @@ module "archdb" {
   }
 }
 
-resource "aws_sqs_queue" "arch_ui_fifo_deadletter_queue" {
+resource "aws_sqs_queue" "this_ui_fifo_deadletter_queue" {
   name                        = "${data.terraform_remote_state.stack.stack_name}-arch-ui-dead-letter-queue.fifo"
   fifo_queue                  = true
   content_based_deduplication = false
   tags                        = "${local.common_tags}"
 }
 
-resource "aws_sqs_queue" "arch_ui_fifo_queue" {
+resource "aws_sqs_queue" "this_ui_fifo_queue" {
   name                        = "${data.terraform_remote_state.stack.stack_name}-arch-ui-queue.fifo"
   fifo_queue                  = true
   content_based_deduplication = false
   delay_seconds               = 0
   visibility_timeout_seconds  = 3600
-  redrive_policy              = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.arch_ui_fifo_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
+  redrive_policy              = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.this_ui_fifo_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
   tags                        = "${local.common_tags}"
 }
 
-resource "aws_s3_bucket" "arch_archives" {
+resource "aws_s3_bucket" "this_archives" {
   bucket = "${local.namespace}-${local.app_name}-archives"
   acl    = "private"
   tags   = "${local.common_tags}"
@@ -165,7 +165,7 @@ resource "aws_s3_bucket" "arch_archives" {
   }
 }
 
-resource "aws_s3_bucket" "arch_dropbox" {
+resource "aws_s3_bucket" "this_dropbox" {
   bucket = "${local.namespace}-${local.app_name}-dropbox"
   acl    = "private"
   tags   = "${local.common_tags}"
@@ -181,7 +181,7 @@ resource "aws_s3_bucket" "arch_dropbox" {
   }
 }
 
-data "aws_iam_policy_document" "arch_bucket_access" {
+data "aws_iam_policy_document" "this_bucket_access" {
   statement {
     effect    = "Allow"
     actions   = ["s3:ListAllMyBuckets"]
@@ -197,8 +197,8 @@ data "aws_iam_policy_document" "arch_bucket_access" {
     ]
 
     resources = [
-      "${aws_s3_bucket.arch_archives.arn}",
-      "${aws_s3_bucket.arch_dropbox.arn}",
+      "${aws_s3_bucket.this_archives.arn}",
+      "${aws_s3_bucket.this_dropbox.arn}",
     ]
   }
 
@@ -212,8 +212,8 @@ data "aws_iam_policy_document" "arch_bucket_access" {
     ]
 
     resources = [
-      "${aws_s3_bucket.arch_archives.arn}/*",
-      "${aws_s3_bucket.arch_dropbox.arn}/*",
+      "${aws_s3_bucket.this_archives.arn}/*",
+      "${aws_s3_bucket.this_dropbox.arn}/*",
     ]
   }
 
@@ -230,16 +230,16 @@ data "aws_iam_policy_document" "arch_bucket_access" {
   }
 }
 
-resource "aws_iam_policy" "arch_bucket_policy" {
+resource "aws_iam_policy" "this_bucket_policy" {
   name   = "${data.terraform_remote_state.stack.stack_name}-${local.app_name}-bucket-access"
-  policy = "${data.aws_iam_policy_document.arch_bucket_access.json}"
+  policy = "${data.aws_iam_policy_document.this_bucket_access.json}"
 }
 
 data "null_data_source" "ssm_parameters" {
   inputs = "${map(
     "arch/contact_email",               "digitalscholarship@northwestern.edu",
-    "aws/buckets/archives",             "${aws_s3_bucket.arch_archives.id}",
-    "aws/buckets/dropbox",              "${aws_s3_bucket.arch_dropbox.id}",
+    "aws/buckets/archives",             "${aws_s3_bucket.this_archives.id}",
+    "aws/buckets/dropbox",              "${aws_s3_bucket.this_dropbox.id}",
     "doi_credentials/host",             "ezid.lib.purdue.edu",
     "doi_credentials/port",             443,
     "doi_credentials/use_ssl",          true,
@@ -250,7 +250,7 @@ data "null_data_source" "ssm_parameters" {
   )}"
 }
 
-resource "aws_ssm_parameter" "arch_config_setting" {
+resource "aws_ssm_parameter" "this_config_setting" {
   count     = 10
   name      = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
   type      = "String"
