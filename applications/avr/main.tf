@@ -18,7 +18,7 @@ data "aws_acm_certificate" "ssl_certificate" {
 
 resource "random_pet" "app_version_name" {
   keepers = {
-    source = "${data.archive_file.avr_source.output_md5}"
+    source = "${data.archive_file.this_source.output_md5}"
   }
 }
 
@@ -39,37 +39,37 @@ resource "local_file" "dockerrun_aws_json" {
   filename = "./application/Dockerrun.aws.json"
 }
 
-data "archive_file" "avr_source" {
+data "archive_file" "this_source" {
   depends_on  = ["local_file.dockerrun_aws_json"]
   type        = "zip"
   source_dir  = "${path.module}/application"
   output_path = "${path.module}/build/${local.app_name}-${terraform.workspace}.zip"
 }
 
-resource "aws_s3_bucket_object" "avr_source" {
+resource "aws_s3_bucket_object" "this_source" {
   bucket = "${data.terraform_remote_state.stack.application_source_bucket}"
   key    = "${local.app_name}-${random_pet.app_version_name.id}.zip"
-  source = "${data.archive_file.avr_source.output_path}"
-  etag   = "${data.archive_file.avr_source.output_md5}"
+  source = "${data.archive_file.this_source.output_path}"
+  etag   = "${data.archive_file.this_source.output_md5}"
 }
 
-resource "aws_elastic_beanstalk_application" "avr" {
+resource "aws_elastic_beanstalk_application" "this" {
   name = "${local.namespace}-${local.app_name}"
 }
 
-resource "aws_elastic_beanstalk_application_version" "avr" {
+resource "aws_elastic_beanstalk_application_version" "this" {
   depends_on = [
-    "aws_elastic_beanstalk_application.avr",
+    "aws_elastic_beanstalk_application.this",
   ]
 
   description = "application version created by terraform"
   bucket      = "${data.terraform_remote_state.stack.application_source_bucket}"
   application = "${local.namespace}-${local.app_name}"
-  key         = "${aws_s3_bucket_object.avr_source.id}"
+  key         = "${aws_s3_bucket_object.this_source.id}"
   name        = "${random_pet.app_version_name.id}"
 }
 
-module "avrdb" {
+module "this_db" {
   source          = "../../modules/database"
   schema          = "${local.app_name}"
   host            = "${data.terraform_remote_state.stack.db_address}"
@@ -84,37 +84,37 @@ module "avrdb" {
   }
 }
 
-resource "aws_sqs_queue" "avr_ui_deadletter_queue" {
+resource "aws_sqs_queue" "this_ui_deadletter_queue" {
   name       = "${data.terraform_remote_state.stack.stack_name}-avr-ui-dead-letter-queue"
   fifo_queue = false
   tags       = "${local.common_tags}"
 }
 
-resource "aws_sqs_queue" "avr_ui_queue" {
+resource "aws_sqs_queue" "this_ui_queue" {
   name                       = "${data.terraform_remote_state.stack.stack_name}-avr-ui-queue"
   fifo_queue                 = false
   delay_seconds              = 0
   visibility_timeout_seconds = 3600
-  redrive_policy             = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.avr_ui_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
+  redrive_policy             = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.this_ui_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
   tags                       = "${local.common_tags}"
 }
 
-resource "aws_sqs_queue" "avr_batch_deadletter_queue" {
+resource "aws_sqs_queue" "this_batch_deadletter_queue" {
   name       = "${data.terraform_remote_state.stack.stack_name}-avr-batch-dead-letter-queue"
   fifo_queue = false
   tags       = "${local.common_tags}"
 }
 
-resource "aws_sqs_queue" "avr_batch_queue" {
+resource "aws_sqs_queue" "this_batch_queue" {
   name                       = "${data.terraform_remote_state.stack.stack_name}-avr-batch-queue"
   fifo_queue                 = false
   delay_seconds              = 0
   visibility_timeout_seconds = 3600
-  redrive_policy             = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.avr_batch_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
+  redrive_policy             = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.this_batch_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
   tags                       = "${local.common_tags}"
 }
 
-resource "aws_s3_bucket" "avr_masterfiles" {
+resource "aws_s3_bucket" "this_masterfiles" {
   bucket = "${local.namespace}-avr-masterfiles"
   acl    = "private"
   tags   = "${local.common_tags}"
@@ -125,7 +125,7 @@ resource "aws_s3_bucket" "avr_masterfiles" {
   }
 }
 
-resource "aws_s3_bucket" "avr_derivatives" {
+resource "aws_s3_bucket" "this_derivatives" {
   #  bucket = "${local.namespace}-avr-derivatives"
   acl  = "private"
   tags = "${local.common_tags}"
@@ -138,13 +138,13 @@ resource "aws_s3_bucket" "avr_derivatives" {
   }
 }
 
-resource "aws_s3_bucket" "avr_preservation" {
+resource "aws_s3_bucket" "this_preservation" {
   #  bucket = "${local.namespace}-avr-preservation"
   acl  = "private"
   tags = "${local.common_tags}"
 }
 
-data "aws_iam_policy_document" "avr_bucket_access" {
+data "aws_iam_policy_document" "this_bucket_access" {
   statement {
     effect    = "Allow"
     actions   = ["s3:ListAllMyBuckets"]
@@ -160,9 +160,9 @@ data "aws_iam_policy_document" "avr_bucket_access" {
     ]
 
     resources = [
-      "${aws_s3_bucket.avr_masterfiles.arn}",
-      "${aws_s3_bucket.avr_derivatives.arn}",
-      "${aws_s3_bucket.avr_preservation.arn}",
+      "${aws_s3_bucket.this_masterfiles.arn}",
+      "${aws_s3_bucket.this_derivatives.arn}",
+      "${aws_s3_bucket.this_preservation.arn}",
     ]
   }
 
@@ -176,9 +176,9 @@ data "aws_iam_policy_document" "avr_bucket_access" {
     ]
 
     resources = [
-      "${aws_s3_bucket.avr_masterfiles.arn}/*",
-      "${aws_s3_bucket.avr_derivatives.arn}/*",
-      "${aws_s3_bucket.avr_preservation.arn}/*",
+      "${aws_s3_bucket.this_masterfiles.arn}/*",
+      "${aws_s3_bucket.this_derivatives.arn}/*",
+      "${aws_s3_bucket.this_preservation.arn}/*",
     ]
   }
 
@@ -195,12 +195,12 @@ data "aws_iam_policy_document" "avr_bucket_access" {
   }
 }
 
-resource "aws_iam_policy" "avr_bucket_policy" {
+resource "aws_iam_policy" "this_bucket_policy" {
   name   = "${data.terraform_remote_state.stack.stack_name}-${local.app_name}-bucket-access"
-  policy = "${data.aws_iam_policy_document.avr_bucket_access.json}"
+  policy = "${data.aws_iam_policy_document.this_bucket_access.json}"
 }
 
-data "aws_iam_policy_document" "avr_batch_ingest_access" {
+data "aws_iam_policy_document" "this_batch_ingest_access" {
   statement {
     effect    = "Allow"
     actions   = ["iam:Passrole"]
@@ -210,11 +210,11 @@ data "aws_iam_policy_document" "avr_batch_ingest_access" {
   statement {
     effect    = "Allow"
     actions   = ["sqs:*"]
-    resources = ["${aws_sqs_queue.avr_batch_queue.arn}"]
+    resources = ["${aws_sqs_queue.this_batch_queue.arn}"]
   }
 }
 
-module "avr_batch_ingest" {
+module "this_batch_ingest" {
   source = "git://github.com/claranet/terraform-aws-lambda"
 
   function_name = "${data.terraform_remote_state.stack.stack_name}-${local.app_name}-batch-ingest"
@@ -224,7 +224,7 @@ module "avr_batch_ingest" {
   timeout       = 300
 
   attach_policy = true
-  policy        = "${data.aws_iam_policy_document.avr_batch_ingest_access.json}"
+  policy        = "${data.aws_iam_policy_document.this_batch_ingest_access.json}"
 
   source_path = "${path.module}/lambdas/batch_ingest_notification"
 
@@ -232,7 +232,7 @@ module "avr_batch_ingest" {
     variables {
       JobClassName = "BatchIngestJob"
       Secret       = "${random_id.secret_key_base.hex}"
-      QueueUrl     = "${aws_sqs_queue.avr_batch_queue.id}"
+      QueueUrl     = "${aws_sqs_queue.this_batch_queue.id}"
     }
   }
 }
@@ -240,16 +240,16 @@ module "avr_batch_ingest" {
 resource "aws_lambda_permission" "allow_trigger" {
   statement_id  = "AllowExecutionFromS3Bucket"
   action        = "lambda:InvokeFunction"
-  function_name = "${module.avr_batch_ingest.function_arn}"
+  function_name = "${module.this_batch_ingest.function_arn}"
   principal     = "s3.amazonaws.com"
-  source_arn    = "${aws_s3_bucket.avr_masterfiles.arn}"
+  source_arn    = "${aws_s3_bucket.this_masterfiles.arn}"
 }
 
 resource "aws_s3_bucket_notification" "batch_ingest_notification" {
-  bucket = "${aws_s3_bucket.avr_masterfiles.id}"
+  bucket = "${aws_s3_bucket.this_masterfiles.id}"
 
   lambda_function {
-    lambda_function_arn = "${module.avr_batch_ingest.function_arn}"
+    lambda_function_arn = "${module.this_batch_ingest.function_arn}"
     filter_prefix       = "dropbox/"
     filter_suffix       = ".xls"
 
@@ -261,7 +261,7 @@ resource "aws_s3_bucket_notification" "batch_ingest_notification" {
   }
 
   lambda_function {
-    lambda_function_arn = "${module.avr_batch_ingest.function_arn}"
+    lambda_function_arn = "${module.this_batch_ingest.function_arn}"
     filter_prefix       = "dropbox/"
     filter_suffix       = ".xlsx"
 
@@ -276,21 +276,21 @@ resource "aws_s3_bucket_notification" "batch_ingest_notification" {
 data "null_data_source" "ssm_parameters" {
   inputs = "${map(
     "domain/host",               "${local.domain_host}",
-    "dropbox/path",              "s3://${aws_s3_bucket.avr_masterfiles.id}/dropbox/",
-    "dropbox/upload_uri",        "s3://${aws_s3_bucket.avr_masterfiles.id}/dropbox/",
+    "dropbox/path",              "s3://${aws_s3_bucket.this_masterfiles.id}/dropbox/",
+    "dropbox/upload_uri",        "s3://${aws_s3_bucket.this_masterfiles.id}/dropbox/",
     "email/comments",            "${var.email["comments"]}",
     "email/notification",        "${var.email["notification"]}",
     "email/support",             "${var.email["support"]}",
-    "encoding/pipeline",         "${aws_elastictranscoder_pipeline.avr_pipeline.id}",
-    "encoding/sns_topic",        "${aws_sns_topic.avr_transcode_notification.arn}",
+    "encoding/pipeline",         "${aws_elastictranscoder_pipeline.this_pipeline.id}",
+    "encoding/sns_topic",        "${aws_sns_topic.this_transcode_notification.arn}",
     "initial_user",              "${var.initial_user}",
     "solr/url",                  "${data.terraform_remote_state.stack.index_endpoint}avr",
-    "streaming/http_base",       "http${length(data.aws_acm_certificate.ssl_certificate.*.arn) == 0 ? "" : "s"}://${coalesce(var.streaming_hostname, aws_route53_record.avr_cloudfront.fqdn)}/",
+    "streaming/http_base",       "http${length(data.aws_acm_certificate.ssl_certificate.*.arn) == 0 ? "" : "s"}://${coalesce(var.streaming_hostname, aws_route53_record.this_cloudfront.fqdn)}/",
     "zookeeper/connection_str",  "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
   )}"
 }
 
-resource "aws_ssm_parameter" "avr_config_setting" {
+resource "aws_ssm_parameter" "this_config_setting" {
   count     = 12
   name      = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
   type      = "String"

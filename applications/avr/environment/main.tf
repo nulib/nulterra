@@ -94,48 +94,48 @@ data "aws_elastic_beanstalk_solution_stack" "multi_docker" {
   name_regex  = "^64bit Amazon Linux (.*) Multi-container Docker (.*)$"
 }
 
-resource "aws_security_group_rule" "allow_avrs_fcrepo_access" {
+resource "aws_security_group_rule" "allow_this_fcrepo_access" {
   security_group_id        = "${data.terraform_remote_state.stack.security_groups.fcrepo}"
   type                     = "ingress"
   from_port                = "80"
   to_port                  = "80"
   protocol                 = "tcp"
-  source_security_group_id = "${module.avr_environment.security_group_id}"
+  source_security_group_id = "${module.this_environment.security_group_id}"
 }
 
-resource "aws_security_group_rule" "allow_avrs_postgres_access" {
+resource "aws_security_group_rule" "allow_this_postgres_access" {
   security_group_id        = "${data.terraform_remote_state.stack.security_groups.db}"
   type                     = "ingress"
   from_port                = "${data.terraform_remote_state.stack.db_port}"
   to_port                  = "${data.terraform_remote_state.stack.db_port}"
   protocol                 = "tcp"
-  source_security_group_id = "${module.avr_environment.security_group_id}"
+  source_security_group_id = "${module.this_environment.security_group_id}"
 }
 
-resource "aws_security_group_rule" "allow_avrs_redis_access" {
+resource "aws_security_group_rule" "allow_this_redis_access" {
   security_group_id        = "${data.terraform_remote_state.stack.security_groups.cache}"
   type                     = "ingress"
   from_port                = "${data.terraform_remote_state.stack.cache_port}"
   to_port                  = "${data.terraform_remote_state.stack.cache_port}"
   protocol                 = "tcp"
-  source_security_group_id = "${module.avr_environment.security_group_id}"
+  source_security_group_id = "${module.this_environment.security_group_id}"
 }
 
-resource "aws_iam_role_policy_attachment" "avr_bucket_role_access" {
-  role       = "${module.avr_environment.ec2_instance_profile_role_name}"
+resource "aws_iam_role_policy_attachment" "this_bucket_role_access" {
+  role       = "${module.this_environment.ec2_instance_profile_role_name}"
   policy_arn = "${var.bucket_policy_arn}"
 }
 
-resource "aws_security_group_rule" "allow_zk_avr_access" {
+resource "aws_security_group_rule" "allow_zk_this_access" {
   security_group_id        = "${data.terraform_remote_state.stack.security_groups.zookeeper}"
   type                     = "ingress"
   from_port                = "2181"
   to_port                  = "2181"
   protocol                 = "tcp"
-  source_security_group_id = "${module.avr_environment.security_group_id}"
+  source_security_group_id = "${module.this_environment.security_group_id}"
 }
 
-module "avr_environment" {
+module "this_environment" {
   source                       = "../../../modules/beanstalk"
   app                          = "${var.app_name}"
   version_label                = "${var.app_version}"
@@ -191,27 +191,27 @@ module "avr_environment" {
   }
 }
 
-resource "aws_route53_record" "avr" {
+resource "aws_route53_record" "this" {
   count   = "${lower(var.tier) == "worker" ? 0 : 1 }"
   zone_id = "${data.terraform_remote_state.stack.public_zone_id}"
   name    = "${var.name}.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}"
   type    = "A"
 
   alias {
-    name                   = "${module.avr_environment.elb_dns_name}"
-    zone_id                = "${module.avr_environment.elb_zone_id}"
+    name                   = "${module.this_environment.elb_dns_name}"
+    zone_id                = "${module.this_environment.elb_zone_id}"
     evaluate_target_health = "true"
   }
 }
 
 output "endpoint" {
-  value = "${aws_route53_record.avr.*.name}"
+  value = "${aws_route53_record.this.*.name}"
 }
 
 output "instance_profile_role_name" {
-  value = "${module.avr_environment.ec2_instance_profile_role_name}"
+  value = "${module.this_environment.ec2_instance_profile_role_name}"
 }
 
 output "security_group_id" {
-  value = "${module.avr_environment.security_group_id}"
+  value = "${module.this_environment.security_group_id}"
 }
