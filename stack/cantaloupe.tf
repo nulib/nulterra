@@ -90,7 +90,7 @@ resource "aws_security_group_rule" "allow_all_access_to_cantaloupe" {
 }
 
 resource "aws_cloudfront_distribution" "cantaloupe" {
-  count            = "${var.enable_iiif_cloudfront ? 1 : 0}"
+  count            = "${local.enable_iiif_cloudfront ? 1 : 0}"
   enabled          = true
   is_ipv6_enabled  = true
   retain_on_delete = true

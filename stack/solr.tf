@@ -8,7 +8,7 @@ module "solr_backup_volume" {
   aws_region         = "${var.aws_region}"
   vpc_id             = "${module.vpc.vpc_id}"
   subnets            = "${module.vpc.private_subnets}"
-  availability_zones = ["${var.azs}"]
+  availability_zones = ["${local.azs}"]
 
   security_groups = [
     "${module.solr_environment.security_group_id}",
@@ -68,7 +68,7 @@ module "solr_environment" {
   version_label           = "${aws_elastic_beanstalk_application_version.solr.name}"
   namespace               = "${var.stack_name}"
   name                    = "solr"
-  stage                   = "${var.environment}"
+  stage                   = "${local.environment}"
   solution_stack_name     = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
   vpc_id                  = "${module.vpc.vpc_id}"
   private_subnets         = "${module.vpc.private_subnets}"
@@ -77,7 +77,7 @@ module "solr_environment" {
   managed_actions_enabled = "false"
   instance_port           = "8983"
   healthcheck_url         = "/solr/"
-  keypair                 = "${var.ec2_keyname}"
+  keypair                 = "${local.ec2_keyname}"
   instance_type           = "t2.medium"
   autoscale_min           = 3
   autoscale_max           = 4

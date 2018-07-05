@@ -74,7 +74,7 @@ module "zookeeper_environment" {
   version_label           = "${aws_elastic_beanstalk_application_version.zookeeper.name}"
   namespace               = "${var.stack_name}"
   name                    = "zookeeper"
-  stage                   = "${var.environment}"
+  stage                   = "${local.environment}"
   solution_stack_name     = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
   vpc_id                  = "${module.vpc.vpc_id}"
   private_subnets         = "${module.vpc.private_subnets}"
@@ -83,7 +83,7 @@ module "zookeeper_environment" {
   managed_actions_enabled = "false"
   instance_port           = "8181"
   healthcheck_url         = "/exhibitor/v1/ui/index.html"
-  keypair                 = "${var.ec2_keyname}"
+  keypair                 = "${local.ec2_keyname}"
   instance_type           = "t2.medium"
   autoscale_min           = 2
   autoscale_max           = 3

@@ -1,8 +1,3 @@
-variable "db_master_username" {
-  type    = "string"
-  default = "dbadmin"
-}
-
 module "db_master_password" {
   source = "../modules/password"
 }
@@ -20,7 +15,7 @@ module "db" {
   allocated_storage = 100
 
   name     = "${var.stack_name}db"
-  username = "${var.db_master_username}"
+  username = "${local.db_master_username}"
   password = "${module.db_master_password.result}"
   port     = 5432
 

@@ -4,10 +4,10 @@ module "vpc" {
 
   name = "${local.namespace}-vpc"
 
-  azs             = "${var.azs}"
-  cidr            = "${var.vpc_cidr_block}"
-  private_subnets = "${var.subnet_config["private_subnets"]}"
-  public_subnets  = "${var.subnet_config["public_subnets"]}"
+  azs             = "${local.azs}"
+  cidr            = "${local.vpc_cidr_block}"
+  private_subnets = "${local.subnet_config["private_subnets"]}"
+  public_subnets  = "${local.subnet_config["public_subnets"]}"
 
   enable_dns_hostnames         = true
   enable_dns_support           = true
@@ -31,7 +31,7 @@ module "dns" {
 }
 
 data "aws_route53_zone" "hosted_zone" {
-  name = "${var.hosted_zone_name}"
+  name = "${local.hosted_zone_name}"
 }
 
 resource "aws_route53_record" "public_zone" {

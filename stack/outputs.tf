@@ -5,23 +5,23 @@ output "aws_region" {
 }
 
 output "azs" {
-  value = "${var.azs}"
+  value = "${local.azs}"
 }
 
 output "ec2_keyname" {
-  value = "${var.ec2_keyname}"
+  value = "${local.ec2_keyname}"
 }
 
 output "ec2_private_keyfile" {
-  value = "${var.ec2_private_keyfile}"
+  value = "${local.ec2_private_keyfile}"
 }
 
 output "environment" {
-  value = "${var.environment}"
+  value = "${local.environment}"
 }
 
 output "hosted_zone_name" {
-  value = "${var.hosted_zone_name}"
+  value = "${local.hosted_zone_name}"
 }
 
 output "stack_name" {
@@ -29,15 +29,15 @@ output "stack_name" {
 }
 
 output "subnet_config" {
-  value = "${var.subnet_config}"
+  value = "${local.subnet_config}"
 }
 
 output "tags" {
-  value = "${var.tags}"
+  value = "${local.tags}"
 }
 
 output "vpc_cidr_block" {
-  value = "${var.vpc_cidr_block}"
+  value = "${local.vpc_cidr_block}"
 }
 
 # Security Groups
