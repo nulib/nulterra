@@ -1,11 +1,11 @@
 locals {
   stream_fqdn       = "httpstream.${data.terraform_remote_state.stack.stack_name}.${data.terraform_remote_state.stack.hosted_zone_name}"
-  streaming_aliases = "${compact(list(local.stream_fqdn, var.streaming_hostname))}"
+  streaming_aliases = "${compact(list(local.stream_fqdn, local.streaming_hostname))}"
 }
 
 data "aws_acm_certificate" "streaming_certificate" {
-  count       = "${var.streaming_hostname == "" ? 0 : 1}"
-  domain      = "${var.streaming_hostname}"
+  count       = "${local.streaming_hostname == "" ? 0 : 1}"
+  domain      = "${local.streaming_hostname}"
   most_recent = true
 }
 
@@ -73,7 +73,7 @@ resource "aws_cloudfront_distribution" "this_streaming" {
       headers      = ["Origin"]
     }
 
-    trusted_signers = "${var.trusted_signers}"
+    trusted_signers = ["${local.trusted_signers}"]
   }
 
   restrictions {

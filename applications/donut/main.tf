@@ -7,11 +7,11 @@ locals {
     "${data.terraform_remote_state.stack.hosted_zone_name}",
   ]
 
-  domain_host = "${coalesce(var.public_hostname, join(".", local.default_host_parts))}"
+  domain_host = "${coalesce(local.public_hostname, join(".", local.default_host_parts))}"
 }
 
 data "aws_acm_certificate" "ssl_certificate" {
-  count       = "${var.public_hostname == "" ? 0 : 1}"
+  count       = "${local.public_hostname == "" ? 0 : 1}"
   domain      = "${local.domain_host}"
   most_recent = true
 }
@@ -78,7 +78,7 @@ data "template_file" "dockerrun_aws_json" {
   template = "${file("./templates/Dockerrun.aws.json.tpl")}"
 
   vars {
-    app_image = "${var.app_image}"
+    app_image = "${local.app_image}"
   }
 }
 
@@ -130,7 +130,7 @@ module "this_db" {
   connection = {
     user        = "ec2-user"
     host        = "${data.terraform_remote_state.stack.bastion_address}"
-    private_key = "${file(data.terraform_remote_state.stack.ec2_private_keyfile)}"
+    private_key = "${file(local.ec2_private_keyfile)}"
   }
 }
 

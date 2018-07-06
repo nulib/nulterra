@@ -20,11 +20,11 @@ data "aws_iam_policy_document" "send_email" {
     sid = "1"
 
     actions = [
-      "ses:Send*"
+      "ses:Send*",
     ]
 
     resources = [
-      "*"
+      "*",
     ]
   }
 }

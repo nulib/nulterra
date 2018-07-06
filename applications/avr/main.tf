@@ -7,11 +7,11 @@ locals {
     "${data.terraform_remote_state.stack.hosted_zone_name}",
   ]
 
-  domain_host = "${coalesce(var.public_hostname, join(".", local.default_host_parts))}"
+  domain_host = "${coalesce(local.public_hostname, join(".", local.default_host_parts))}"
 }
 
 data "aws_acm_certificate" "ssl_certificate" {
-  count       = "${var.public_hostname == "" ? 0 : 1}"
+  count       = "${local.public_hostname == "" ? 0 : 1}"
   domain      = "${local.domain_host == "media.northwestern.edu" ? "avalon.repo.rdc.library.northwestern.edu" : local.domain_host}"
   most_recent = true
 }
@@ -30,7 +30,7 @@ data "template_file" "dockerrun_aws_json" {
   template = "${file("./templates/Dockerrun.aws.json.tpl")}"
 
   vars {
-    app_image = "${var.app_image}"
+    app_image = "${local.app_image}"
   }
 }
 
@@ -80,7 +80,7 @@ module "this_db" {
   connection = {
     user        = "ec2-user"
     host        = "${data.terraform_remote_state.stack.bastion_address}"
-    private_key = "${file(data.terraform_remote_state.stack.ec2_private_keyfile)}"
+    private_key = "${file(local.ec2_private_keyfile)}"
   }
 }
 
@@ -278,14 +278,14 @@ data "null_data_source" "ssm_parameters" {
     "domain/host",               "${local.domain_host}",
     "dropbox/path",              "s3://${aws_s3_bucket.this_masterfiles.id}/dropbox/",
     "dropbox/upload_uri",        "s3://${aws_s3_bucket.this_masterfiles.id}/dropbox/",
-    "email/comments",            "${var.email["comments"]}",
-    "email/notification",        "${var.email["notification"]}",
-    "email/support",             "${var.email["support"]}",
+    "email/comments",            "${local.email["comments"]}",
+    "email/notification",        "${local.email["notification"]}",
+    "email/support",             "${local.email["support"]}",
     "encoding/pipeline",         "${aws_elastictranscoder_pipeline.this_pipeline.id}",
     "encoding/sns_topic",        "${aws_sns_topic.this_transcode_notification.arn}",
-    "initial_user",              "${var.initial_user}",
+    "initial_user",              "${local.initial_user}",
     "solr/url",                  "${data.terraform_remote_state.stack.index_endpoint}avr",
-    "streaming/http_base",       "http${length(data.aws_acm_certificate.ssl_certificate.*.arn) == 0 ? "" : "s"}://${coalesce(var.streaming_hostname, aws_route53_record.this_cloudfront.fqdn)}/",
+    "streaming/http_base",       "http${length(data.aws_acm_certificate.ssl_certificate.*.arn) == 0 ? "" : "s"}://${coalesce(local.streaming_hostname, aws_route53_record.this_cloudfront.fqdn)}/",
     "zookeeper/connection_str",  "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
   )}"
 }
