@@ -4,15 +4,6 @@ resource "aws_s3_bucket" "pyramid_tiff_bucket" {
   tags   = "${local.common_tags}"
 }
 
-resource "aws_iam_user" "pyramid_tiff_bucket_user" {
-  name = "${local.namespace}-cantaloupe"
-  path = "/system/"
-}
-
-resource "aws_iam_access_key" "pyramid_tiff_bucket_access_key" {
-  user = "${aws_iam_user.pyramid_tiff_bucket_user.name}"
-}
-
 data "aws_iam_policy_document" "pyramid_tiff_bucket_access" {
   statement {
     effect    = "Allow"
@@ -44,9 +35,9 @@ data "aws_iam_policy_document" "pyramid_tiff_bucket_access" {
   }
 }
 
-resource "aws_iam_user_policy" "pyramid_tiff_bucket_policy" {
+resource "aws_iam_role_policy" "pyramid_tiff_bucket_policy" {
   name   = "${local.namespace}-cantaloupe-s3-bucket-access"
-  user   = "${aws_iam_user.pyramid_tiff_bucket_user.name}"
+  role   = "${module.cantaloupe_service.container_role}"
   policy = "${data.aws_iam_policy_document.pyramid_tiff_bucket_access.json}"
 }
 
@@ -56,8 +47,6 @@ data "template_file" "cantaloupe_task_definition" {
   vars = {
     aws_region        = "${var.aws_region}"
     tiff_bucket       = "${aws_s3_bucket.pyramid_tiff_bucket.id}"
-    aws_access_key_id = "${aws_iam_access_key.pyramid_tiff_bucket_access_key.id}"
-    aws_secret_key    = "${aws_iam_access_key.pyramid_tiff_bucket_access_key.secret}"
     namespace         = "${local.namespace}"
   }
 }
