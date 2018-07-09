@@ -40,6 +40,11 @@ data "aws_ssm_parameter" "tag_values" {
   name = "/terraform/${data.terraform_remote_state.stack.stack_name}/donut/tag_values"
 }
 
+module "environment" {
+  source = "git::https://github.com/nulib/terraform-local-environment.git?ref=master"
+  vars   = "HOME"
+}
+
 locals {
   app_image           = "${data.aws_ssm_parameter.app_image.value}"
   public_hostname     = "${data.aws_ssm_parameter.public_hostname.value == "__EMPTY__" ? "" : data.aws_ssm_parameter.public_hostname.value}"
