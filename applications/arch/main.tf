@@ -110,6 +110,10 @@ resource "aws_elastic_beanstalk_application_version" "this" {
     "module.this_working_volume",
   ]
 
+  lifecycle {
+    create_before_destroy = true
+  }
+
   description = "application version created by terraform"
   bucket      = "${data.terraform_remote_state.stack.application_source_bucket}"
   application = "${local.namespace}-${local.app_name}"
