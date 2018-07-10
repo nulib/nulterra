@@ -89,6 +89,24 @@ resource "aws_iam_user_policy" "fcrepo_binary_bucket_policy" {
   policy = "${data.aws_iam_policy_document.fcrepo_binary_bucket_access.json}"
 }
 
+resource "aws_sns_topic" "fcrepo_change_notifications" {
+  name   = "${local.namespace}-fcrepo-updates"
+}
+
+data "aws_iam_policy_document" "fcrepo_change_notification_access" {
+  statement {
+    effect    = "Allow"
+    actions   = ["sns:*"]
+    resources = ["${aws_sns_topic.fcrepo_change_notifications.arn}"]
+  }
+}
+
+resource "aws_iam_role_policy" "fcrepo_change_notification_access" {
+  name   = "${local.namespace}-fcrepo-change-notification-access"
+  role   = "${module.fcrepo_environment.ec2_instance_profile_role_name}"
+  policy = "${data.aws_iam_policy_document.fcrepo_change_notification_access.json}"
+}
+
 data "archive_file" "fcrepo_source" {
   type        = "zip"
   source_dir  = "${path.module}/applications/fcrepo"
@@ -137,11 +155,11 @@ module "fcrepo_environment" {
   tags                   = "${local.common_tags}"
 
   env_vars = {
-    MOUNT_VOLUMES   = "/var/backup=${module.solr_backup_volume.dns_name}"
     JAVA_OPTIONS    = "${join(" ", local.java_options)}"
     STACK_NAMESPACE = "${local.namespace}"
     STACK_NAME      = "fcr"
     STACK_TIER      = "app"
+    SNS_TOPIC       = "${aws_sns_topic.fcrepo_change_notifications.arn}"
   }
 }
 

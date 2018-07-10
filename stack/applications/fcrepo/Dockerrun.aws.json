@@ -2,8 +2,8 @@
   "AWSEBDockerrunVersion": 2,
   "volumes": [
     {
-      "name": "backup",
-      "host": { "sourcePath": "/var/backup/fedora" }
+      "name": "aws_config",
+      "host": { "sourcePath": "/etc/aws/config" }
     }
   ],
   "containerDefinitions": [
@@ -17,9 +17,19 @@
       "environment": [
         { "name": "MODESHAPE_CONFIG", "value": "classpath:/config/jdbc-postgresql-s3/repository.json" }
       ],
-      "readonlyRootFilesystem": false,
+      "readonlyRootFilesystem": false
+    },
+    {
+      "name": "fcrepo-listener",
+      "image": "nulib/fcrepo-notifier",
+      "memoryReservation": 1000,
+      "links": ["fcrepo-app"],
+      "environment": [
+        { "name": "STOMP_HOST", "value": "fcrepo-app" },
+        { "name": "STOMP_TOPIC", "value": "/topic/fedora" }
+      ],
       "mountPoints": [
-        { "sourceVolume": "backup", "containerPath": "/var/backup" }
+        { "sourceVolume": "aws_config", "containerPath": "/home/app/.aws/config" }
       ]
     }
   ]
