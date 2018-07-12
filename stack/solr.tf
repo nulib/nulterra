@@ -82,6 +82,7 @@ module "solr_environment" {
   autoscale_min           = 3
   autoscale_max           = 4
   health_check_threshold  = "Ok"
+  wait_for_ready_timeout  = "40m"
   tags                    = "${local.common_tags}"
 
   env_vars = {
