@@ -4,7 +4,7 @@
 #}
 
 output "name" {
-  value       = "${aws_elastic_beanstalk_environment.default.name}"
+  value       = "${element(coalescelist(aws_elastic_beanstalk_environment.default.*.name, aws_elastic_beanstalk_environment.worker.*.name), 0)}"
   description = "Name"
 }
 
@@ -14,7 +14,7 @@ output "security_group_id" {
 }
 
 output "elb_dns_name" {
-  value       = "${aws_elastic_beanstalk_environment.default.cname}"
+  value       = "${element(coalescelist(aws_elastic_beanstalk_environment.default.*.cname, aws_elastic_beanstalk_environment.worker.*.cname), 0)}"
   description = "ELB technical host"
 }
 
@@ -29,6 +29,6 @@ output "ec2_instance_profile_role_name" {
 }
 
 output "autoscaling_groups" {
-  value       = "${aws_elastic_beanstalk_environment.default.autoscaling_groups}"
+  value       = "${flatten(coalescelist(aws_elastic_beanstalk_environment.default.*.autoscaling_groups, aws_elastic_beanstalk_environment.worker.*.autoscaling_groups))}"
   description = "Auto Scaling Group"
 }
