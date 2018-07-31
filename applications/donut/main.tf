@@ -344,6 +344,7 @@ data "null_data_source" "ssm_parameters" {
     "aws/buckets/dropbox",      "${aws_s3_bucket.this_dropbox.id}",
     "aws/buckets/pyramids",     "${data.terraform_remote_state.stack.iiif_pyramid_bucket}",
     "aws/buckets/uploads",      "${aws_s3_bucket.this_uploads.id}",
+    "common_indexer/endpoint",  "${data.terraform_remote_state.stack.elasticsearch_endpoint}",
     "domain/host",              "${local.domain_host}",
     "geonames_username",        "nul_rdc",
     "iiif/endpoint",            "${data.terraform_remote_state.stack.iiif_endpoint}",
@@ -353,8 +354,9 @@ data "null_data_source" "ssm_parameters" {
 }
 
 resource "aws_ssm_parameter" "this_config_setting" {
-  count = 9
-  name  = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
-  type  = "String"
-  value = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"
+  count     = 10
+  name      = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
+  type      = "String"
+  value     = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"
+  overwrite = true
 }

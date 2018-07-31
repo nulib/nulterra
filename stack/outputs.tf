@@ -96,6 +96,10 @@ output "db_master_password" {
   value = "${module.db.this_db_instance_password}"
 }
 
+output "elasticsearch_endpoint" {
+  value = "https://${aws_elasticsearch_domain.elasticsearch.endpoint}/"
+}
+
 output "exhibitor_endpoint" {
   value = "http://${aws_route53_record.zookeeper.name}/exhibitor/v1/ui/index.html"
 }
