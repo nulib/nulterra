@@ -43,6 +43,10 @@ resource "aws_elasticsearch_domain" "elasticsearch" {
   cluster_config {
     instance_type = "t2.medium.elasticsearch"
   }
+  ebs_options {
+    ebs_enabled = "true"
+    volume_size = 10
+  }
 }
 
 resource "aws_iam_service_linked_role" "elasticsearch" {
