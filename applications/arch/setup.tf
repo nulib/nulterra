@@ -7,7 +7,7 @@ terraform {
 }
 
 variable "stack_bucket" {
-  type = "string"
+  type   = "string"
 }
 
 variable "stack_key" {
@@ -20,36 +20,22 @@ variable "stack_region" {
   default = "us-east-1"
 }
 
-data "aws_ssm_parameter" "app_image" {
-  name = "/terraform/${data.terraform_remote_state.stack.stack_name}/arch/app_image"
+variable "app_image" {
+  type    = "string"
 }
 
-data "aws_ssm_parameter" "public_hostname" {
-  name = "/terraform/${data.terraform_remote_state.stack.stack_name}/arch/public_hostname"
+variable "public_hostname" {
+  type    = "string"
+  default = ""
 }
 
-data "aws_ssm_parameter" "tag_names" {
-  name = "/terraform/${data.terraform_remote_state.stack.stack_name}/arch/tag_names"
+variable "ec2_private_keyfile" {
+  type    = "string"
 }
 
-data "aws_ssm_parameter" "tag_values" {
-  name = "/terraform/${data.terraform_remote_state.stack.stack_name}/arch/tag_values"
-}
-
-data "aws_ssm_parameter" "ec2_private_keyfile" {
-  name = "/terraform/${data.terraform_remote_state.stack.stack_name}/ec2_private_keyfile"
-}
-
-module "environment" {
-  source = "git::https://github.com/nulib/terraform-local-environment.git?ref=master"
-  vars   = "HOME"
-}
-
-locals {
-  app_image            = "${data.aws_ssm_parameter.app_image.value}"
-  public_hostname      = "${data.aws_ssm_parameter.public_hostname.value == "__EMPTY__" ? "" : data.aws_ssm_parameter.public_hostname.value}"
-  ec2_private_keyfile  = "${replace(data.aws_ssm_parameter.ec2_private_keyfile.value, "~/", "${module.environment.result["HOME"]}/")}"
-  tags                 = "${zipmap(split(",", data.aws_ssm_parameter.tag_names.value), split(",", data.aws_ssm_parameter.tag_values.value))}"
+variable "tags" {
+  type    = "map"
+  default = {}
 }
 
 data "terraform_remote_state" "stack" {
@@ -68,7 +54,7 @@ locals {
   private_zone_name = "${data.terraform_remote_state.stack.stack_name}.vpc.${data.terraform_remote_state.stack.hosted_zone_name}"
 
   common_tags = "${merge(
-    local.tags,
+    var.tags,
     map(
       "Terraform", "true",
       "Environment", "${local.namespace}",

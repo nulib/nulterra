@@ -1,0 +1,14 @@
+TF=$(which terraform)
+
+if [[ "$1" == "select" ]]; then
+  AWS_PROFILE=$2 $TF workspace select $2
+  exit 0
+fi
+
+workspace=$($TF workspace show)
+extra=""
+$TF $1 --help 2>&1 | grep 'var-file' > /dev/null
+if [[ $? == 0 && -f ${workspace}.tfvars ]]; then
+  extra="-var-file=${workspace}.tfvars"
+fi
+AWS_PROFILE=${workspace} $TF $@ $extra

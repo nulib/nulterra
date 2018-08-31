@@ -24,7 +24,7 @@ module "fcrepodb" {
   connection = {
     user        = "ec2-user"
     host        = "${aws_instance.bastion.public_ip}"
-    private_key = "${file(local.ec2_private_keyfile)}"
+    private_key = "${file(var.ec2_private_keyfile)}"
   }
 }
 
@@ -139,7 +139,7 @@ module "fcrepo_environment" {
   version_label          = "${aws_elastic_beanstalk_application_version.fcrepo.name}"
   namespace              = "${var.stack_name}"
   name                   = "fcrepo"
-  stage                  = "${local.environment}"
+  stage                  = "${var.environment}"
   solution_stack_name    = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
   vpc_id                 = "${module.vpc.vpc_id}"
   private_subnets        = "${module.vpc.private_subnets}"
@@ -147,7 +147,7 @@ module "fcrepo_environment" {
   loadbalancer_scheme    = "internal"
   instance_port          = "8080"
   healthcheck_url        = "/rest/alive"
-  keypair                = "${local.ec2_keyname}"
+  keypair                = "${var.ec2_keyname}"
   instance_type          = "t2.xlarge"
   autoscale_min          = 1
   autoscale_max          = 2

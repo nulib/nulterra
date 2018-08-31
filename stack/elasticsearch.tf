@@ -17,7 +17,7 @@ resource "aws_security_group_rule" "elasticsearch_ingress" {
   from_port          = "443"
   to_port            = "443"
   protocol           = "tcp"
-  cidr_blocks        = ["${local.vpc_cidr_block}"]
+  cidr_blocks        = ["${var.vpc_cidr_block}"]
 }
 
 data "aws_iam_policy_document" "elasticsearch_access" {

@@ -15,7 +15,7 @@ module "db" {
   allocated_storage = 100
 
   name     = "${var.stack_name}db"
-  username = "${local.db_master_username}"
+  username = "${var.db_master_username}"
   password = "${module.db_master_password.result}"
   port     = 5432
 

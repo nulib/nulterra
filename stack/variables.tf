@@ -3,93 +3,74 @@ variable "aws_region" {
   default = "us-east-1"
 }
 
+variable "azs" {
+  type    = "list"
+  default = ["us-east-1a", "us-east-1b", "us-east-1c"]
+}
+
+variable "bastion_instance_type" {
+  type    = "string"
+  default = "t2.small"
+}
+
+variable "db_master_username" {
+  type    = "string"
+  default = "dbadmin"
+}
+
+variable "ec2_keyname" {
+  type    = "string"
+}
+
+variable "ec2_private_keyfile" {
+  type    = "string"
+}
+
+variable "enable_iiif_cloudfront" {
+  type    = "string"
+  default = false
+}
+
+variable "environment" {
+  type    = "string"
+}
+
+variable "hosted_zone_name" {
+  type    = "string"
+}
+
 variable "stack_name" {
   type    = "string"
   default = "stack"
 }
 
-data "aws_ssm_parameter" "db_master_username" {
-  name = "/terraform/${var.stack_name}/db_master_username"
+variable "tags" {
+  type    = "map"
+  default = {}
 }
 
-data "aws_ssm_parameter" "environment" {
-  name = "/terraform/${var.stack_name}/environment"
+variable "vpc_cidr_block" {
+  type    = "string"
+  default = "10.1.0.0/16"
 }
 
-data "aws_ssm_parameter" "vpc_cidr_block" {
-  name = "/terraform/${var.stack_name}/vpc_cidr_block"
+variable "vpc_public_subnets" {
+  type    = "list"
+  default = ["10.1.2.0/24", "10.1.4.0/24", "10.1.6.0/24"]
 }
 
-data "aws_ssm_parameter" "subnet_config_public_subnets" {
-  name = "/terraform/${var.stack_name}/subnet_config_public_subnets"
-}
-
-data "aws_ssm_parameter" "subnet_config_private_subnets" {
-  name = "/terraform/${var.stack_name}/subnet_config_private_subnets"
-}
-
-data "aws_ssm_parameter" "azs" {
-  name = "/terraform/${var.stack_name}/azs"
-}
-
-data "aws_ssm_parameter" "bastion_instance_type" {
-  name = "/terraform/${var.stack_name}/bastion_instance_type"
-}
-
-data "aws_ssm_parameter" "hosted_zone_name" {
-  name = "/terraform/${var.stack_name}/hosted_zone_name"
-}
-
-data "aws_ssm_parameter" "ec2_keyname" {
-  name = "/terraform/${var.stack_name}/ec2_keyname"
-}
-
-data "aws_ssm_parameter" "ec2_private_keyfile" {
-  name = "/terraform/${var.stack_name}/ec2_private_keyfile"
-}
-
-data "aws_ssm_parameter" "enable_iiif_cloudfront" {
-  name = "/terraform/${var.stack_name}/enable_iiif_cloudfront"
-}
-
-data "aws_ssm_parameter" "tag_names" {
-  name = "/terraform/${var.stack_name}/tag_names"
-}
-
-data "aws_ssm_parameter" "tag_values" {
-  name = "/terraform/${var.stack_name}/tag_values"
-}
-
-module "environment" {
-  source = "git::https://github.com/nulib/terraform-local-environment.git?ref=master"
-  vars   = "HOME"
+variable "vpc_private_subnets" {
+  type    = "list"
+  default = ["10.1.1.0/24", "10.1.3.0/24", "10.1.5.0/24"]
 }
 
 locals {
-  environment            = "${data.aws_ssm_parameter.environment.value}"
-  vpc_cidr_block         = "${data.aws_ssm_parameter.vpc_cidr_block.value}"
-  azs                    = "${split(",", data.aws_ssm_parameter.azs.value)}"
-  bastion_instance_type  = "${data.aws_ssm_parameter.bastion_instance_type.value}"
-  db_master_username     = "${data.aws_ssm_parameter.db_master_username.value}"
-  hosted_zone_name       = "${data.aws_ssm_parameter.hosted_zone_name.value}"
-  ec2_keyname            = "${data.aws_ssm_parameter.ec2_keyname.value}"
-  ec2_private_keyfile    = "${replace(data.aws_ssm_parameter.ec2_private_keyfile.value, "~/", "${module.environment.result["HOME"]}/")}"
-  enable_iiif_cloudfront = "${data.aws_ssm_parameter.enable_iiif_cloudfront.value}"
-  tags                   = "${zipmap(split(",", data.aws_ssm_parameter.tag_names.value), split(",", data.aws_ssm_parameter.tag_values.value))}"
-
-  subnet_config = {
-    public_subnets  = "${split(",", data.aws_ssm_parameter.subnet_config_public_subnets.value)}"
-    private_subnets = "${split(",", data.aws_ssm_parameter.subnet_config_private_subnets.value)}"
-  }
-}
-
-locals {
-  namespace         = "${var.stack_name}-${local.environment}"
-  public_zone_name  = "${var.stack_name}.${local.hosted_zone_name}"
-  private_zone_name = "${var.stack_name}.vpc.${local.hosted_zone_name}"
+  namespace         = "${var.stack_name}-${var.environment}"
+  public_zone_name  = "${var.stack_name}.${var.hosted_zone_name}"
+  private_zone_name = "${var.stack_name}.vpc.${var.hosted_zone_name}"
 
   common_tags = "${merge(
-    local.tags,
+    var.tags,
     map(
       "Terraform", "true",
       "Environment", "${local.namespace}",

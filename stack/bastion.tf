@@ -103,8 +103,8 @@ resource "aws_security_group_rule" "bastion_egress" {
 
 resource "aws_instance" "bastion" {
   ami                         = "${data.aws_ami.amzn.id}"
-  instance_type               = "${local.bastion_instance_type}"
-  key_name                    = "${local.ec2_keyname}"
+  instance_type               = "${var.bastion_instance_type}"
+  key_name                    = "${var.ec2_keyname}"
   subnet_id                   = "${module.vpc.public_subnets[0]}"
   associate_public_ip_address = true
   iam_instance_profile        = "${aws_iam_instance_profile.bastion.name}"
@@ -127,7 +127,7 @@ resource "null_resource" "provision_bastion" {
       user        = "ec2-user"
       agent       = true
       timeout     = "3m"
-      private_key = "${file(local.ec2_private_keyfile)}"
+      private_key = "${file(var.ec2_private_keyfile)}"
     }
 
     source      = "${path.module}/files/"
@@ -140,7 +140,7 @@ resource "null_resource" "provision_bastion" {
       user        = "ec2-user"
       agent       = true
       timeout     = "3m"
-      private_key = "${file(local.ec2_private_keyfile)}"
+      private_key = "${file(var.ec2_private_keyfile)}"
     }
 
     inline = [
