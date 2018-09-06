@@ -1,5 +1,6 @@
 resource "aws_security_group" "elasticsearch" {
-  name = "${local.namespace}-elasticsearch"
+  name   = "${local.namespace}-elasticsearch"
+  vpc_id = "${module.vpc.vpc_id}"
 }
 
 resource "aws_security_group_rule" "elasticsearch_egress" {
