@@ -1,6 +1,6 @@
 module "solr_backup_volume" {
   source  = "cloudposse/efs/aws"
-  version = "0.3.3"
+  version = "0.3.6"
 
   namespace          = "${var.stack_name}"
   stage              = "solr"

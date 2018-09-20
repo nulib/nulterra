@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "${data.terraform_remote_state.stack.aws_region}"
+  region = "${var.stack_region}"
 }
 
 terraform {
@@ -22,6 +22,11 @@ variable "stack_region" {
 
 variable "app_image" {
   type    = "string"
+}
+
+variable "honeybadger_api_key" {
+  type    = "string"
+  default = ""
 }
 
 variable "public_hostname" {

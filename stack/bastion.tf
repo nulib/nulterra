@@ -114,6 +114,10 @@ resource "aws_instance" "bastion" {
     "${aws_security_group.bastion.id}",
     "${aws_security_group.db_client.id}",
   ]
+
+  lifecycle {
+    ignore_changes = ["ami"]
+  }
 }
 
 resource "null_resource" "provision_bastion" {

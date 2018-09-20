@@ -22,6 +22,10 @@ variable "database_url" {
   type = "string"
 }
 
+variable "honeybadger_api_key" {
+  type = "string"
+}
+
 variable "lti_key" {
   type = "string"
 }
@@ -165,6 +169,8 @@ module "this_environment" {
     DATABASE_URL                               = "${var.database_url}"
     FEDORA_BASE_PATH                           = "/${var.name}"
     FEDORA_URL                                 = "${data.terraform_remote_state.stack.repo_endpoint}"
+    HONEYBADGER_API_KEY                        = "${var.honeybadger_api_key}"
+    HONEYBADGER_ENV                            = "${terraform.workspace}"
     LTI_AUTH_KEY                               = "${var.lti_key}"
     LTI_AUTH_SECRET                            = "${var.lti_secret}"
     MOUNT_GID                                  = "1000"

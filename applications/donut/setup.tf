@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "${data.terraform_remote_state.stack.aws_region}"
+  region = "${var.stack_region}"
 }
 
 terraform {
@@ -31,6 +31,11 @@ variable "public_hostname" {
 
 variable "ec2_private_keyfile" {
   type    = "string"
+}
+
+variable "honeybadger_api_key" {
+  type    = "string"
+  default = ""
 }
 
 variable "tags" {

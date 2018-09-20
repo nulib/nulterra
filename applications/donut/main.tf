@@ -28,7 +28,7 @@ resource "random_id" "secret_key_base" {
 
 module "this_derivative_volume" {
   source  = "cloudposse/efs/aws"
-  version = "0.3.3"
+  version = "0.3.6"
 
   namespace          = "${data.terraform_remote_state.stack.stack_name}"
   stage              = "${local.app_name}"
@@ -52,7 +52,7 @@ module "this_derivative_volume" {
 
 module "this_working_volume" {
   source  = "cloudposse/efs/aws"
-  version = "0.3.3"
+  version = "0.3.6"
 
   namespace          = "${data.terraform_remote_state.stack.stack_name}"
   stage              = "${local.app_name}"

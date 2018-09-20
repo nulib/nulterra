@@ -72,6 +72,7 @@ module "webapp" {
   autoscale_max       = 2
   bucket_policy_arn   = "${aws_iam_policy.this_bucket_policy.arn}"
   database_url        = "${local.database_url}"
+  honeybadger_api_key = "${var.honeybadger_api_key}"
   lti_key             = "${var.lti_key}"
   lti_secret          = "${var.lti_secret}"
   mount_volumes       = "${local.mount_volumes}"
@@ -96,6 +97,7 @@ module "worker" {
   autoscale_max       = 2
   bucket_policy_arn   = "${aws_iam_policy.this_bucket_policy.arn}"
   database_url        = "${local.database_url}"
+  honeybadger_api_key = "${var.honeybadger_api_key}"
   lti_key             = "${var.lti_key}"
   lti_secret          = "${var.lti_secret}"
   mount_volumes       = "${local.mount_volumes}"
@@ -119,6 +121,7 @@ module "batch_worker" {
   autoscale_max       = 2
   bucket_policy_arn   = "${aws_iam_policy.this_bucket_policy.arn}"
   database_url        = "${local.database_url}"
+  honeybadger_api_key = "${var.honeybadger_api_key}"
   lti_key             = "${var.lti_key}"
   lti_secret          = "${var.lti_secret}"
   mount_volumes       = "${local.mount_volumes}"

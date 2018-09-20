@@ -1,7 +1,6 @@
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "1.29.0"
-
+  
   name = "${local.namespace}-vpc"
 
   azs             = "${var.azs}"
@@ -20,7 +19,6 @@ module "vpc" {
 
 module "dns" {
   source  = "infrablocks/dns-zones/aws"
-  version = "0.2.0-rc.2"
 
   domain_name         = "${local.public_zone_name}"
   private_domain_name = "${local.private_zone_name}"

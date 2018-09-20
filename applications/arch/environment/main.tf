@@ -22,6 +22,10 @@ variable "database_url" {
   type = "string"
 }
 
+variable "honeybadger_api_key" {
+  type = "string"
+}
+
 variable "mount_volumes" {
   type = "string"
 }
@@ -160,6 +164,8 @@ module "this_environment" {
     DATABASE_URL                    = "${var.database_url}"
     FEDORA_BASE_PATH                = "/nuf"
     FEDORA_URL                      = "${data.terraform_remote_state.stack.repo_endpoint}"
+    HONEYBADGER_API_KEY             = "${var.honeybadger_api_key}"
+    HONEYBADGER_ENV                 = "${terraform.workspace}"
     MOUNT_GID                       = "1000"
     MOUNT_VOLUMES                   = "${var.mount_volumes}"
     PROCESS_ACTIVE_ELASTIC_JOBS     = "${lower(var.tier) == "worker" ? "true" : "false" }"
