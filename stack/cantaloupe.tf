@@ -41,6 +41,35 @@ resource "aws_iam_role_policy" "pyramid_tiff_bucket_policy" {
   policy = "${data.aws_iam_policy_document.pyramid_tiff_bucket_access.json}"
 }
 
+data "aws_iam_policy_document" "pyramid_bucket_public_policy" {
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.pyramid_tiff_bucket.arn}/public/*"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["${aws_cloudfront_origin_access_identity.iiif_origin_access_identity.iam_arn}"]
+    }
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
+    resources = ["${aws_s3_bucket.pyramid_tiff_bucket.arn}"]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["${aws_cloudfront_origin_access_identity.iiif_origin_access_identity.iam_arn}"]
+    }
+  }
+}
+
+resource "aws_s3_bucket_policy" "allow_cloudfront_pyramid_public_access" {
+  bucket = "${aws_s3_bucket.pyramid_tiff_bucket.id}"
+  policy = "${data.aws_iam_policy_document.pyramid_bucket_public_policy.json}"
+}
+
 data "template_file" "cantaloupe_task_definition" {
   template = "${file("${path.module}/applications/cantaloupe/service.json.tpl")}"
 
@@ -78,6 +107,10 @@ resource "aws_security_group_rule" "allow_all_access_to_cantaloupe" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
+resource "aws_cloudfront_origin_access_identity" "iiif_origin_access_identity" {
+  comment = "${local.namespace}-cantaloupe"
+}
+
 resource "aws_cloudfront_distribution" "cantaloupe" {
   count            = "${var.enable_iiif_cloudfront ? 1 : 0}"
   enabled          = true
@@ -93,6 +126,32 @@ resource "aws_cloudfront_distribution" "cantaloupe" {
       https_port             = 443
       origin_protocol_policy = "http-only"
       origin_ssl_protocols   = ["TLSv1", "TLSv1.1", "TLSv1.2"]
+    }
+  }
+
+  origin {
+    domain_name = "${aws_s3_bucket.pyramid_tiff_bucket.bucket_domain_name}"
+    origin_id   = "${local.namespace}-public"
+
+    s3_origin_config {
+      origin_access_identity = "${aws_cloudfront_origin_access_identity.iiif_origin_access_identity.cloudfront_access_identity_path}"
+    }
+  }
+
+  ordered_cache_behavior {
+    path_pattern           = "/public/*"
+    allowed_methods        = ["GET", "HEAD"]
+    cached_methods         = ["GET", "HEAD"]
+    target_origin_id       = "${local.namespace}-public"
+    viewer_protocol_policy = "allow-all"
+
+    forwarded_values {
+      cookies {
+        forward = "none"
+      }
+
+      query_string = false
+      headers      = ["Origin"]
     }
   }
 
