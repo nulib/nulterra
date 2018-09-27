@@ -1,0 +1,21 @@
+{
+  "dependencies": {
+    "aws-sdk": "^2.229.1",
+    "crypto-js": "latest",
+    "uuid": "^3.2.1"
+  },
+  "description": "AWS Lambda function to have Avalon invoke its batch status report jobs.",
+  "directories": {},
+  "license": "Apache-2.0",
+  "main": "./index.js",
+  "maintainers": [
+    {
+      "name": "mbklein",
+      "email": "mbklein@gmail.com"
+    }
+  ],
+  "name": "avalon-batch-status",
+  "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
+  "version": "0.0.1"
+}
