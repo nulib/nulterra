@@ -17,7 +17,7 @@
   "containerDefinitions": [
     {
       "name": "solr-app",
-      "image": "solr:6.6",
+      "image": "solr:7.5",
       "essential": true,
       "memoryReservation": 3000,
       "portMappings": [
