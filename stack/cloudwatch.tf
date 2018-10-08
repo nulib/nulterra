@@ -14,6 +14,7 @@ resource "aws_cloudwatch_metric_alarm" "fcrepo-poor" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "fcrepo" {
   alarm_name                = "${var.stack_name}-${var.environment}-fcrepo"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -30,6 +31,7 @@ resource "aws_cloudwatch_metric_alarm" "fcrepo" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "solr-poor" {
   alarm_name                = "${var.stack_name}-${var.environment}-solr-poor"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -46,6 +48,7 @@ resource "aws_cloudwatch_metric_alarm" "solr-poor" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "solr" {
   alarm_name                = "${var.stack_name}-${var.environment}-solr"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -62,6 +65,7 @@ resource "aws_cloudwatch_metric_alarm" "solr" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "zookeeper-poor" {
   alarm_name                = "${var.stack_name}-${var.environment}-zookeeper-poor"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -78,6 +82,7 @@ resource "aws_cloudwatch_metric_alarm" "zookeeper-poor" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "zookeeper" {
   alarm_name                = "${var.stack_name}-${var.environment}-zookeeper"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -94,6 +99,7 @@ resource "aws_cloudwatch_metric_alarm" "zookeeper" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "donut-batch-worker-poor" {
   alarm_name                = "${var.stack_name}-${var.environment}-donut-batch-worker-poor"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -110,6 +116,7 @@ resource "aws_cloudwatch_metric_alarm" "donut-batch-worker-poor" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "donut-batch-worker" {
   alarm_name                = "${var.stack_name}-${var.environment}-donut-batch-worker"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -126,6 +133,7 @@ resource "aws_cloudwatch_metric_alarm" "donut-batch-worker" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "donut-webapp-poor" {
   alarm_name                = "${var.stack_name}-${var.environment}-donut-webapp-poor"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -142,6 +150,7 @@ resource "aws_cloudwatch_metric_alarm" "donut-webapp-poor" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "donut-webapp" {
   alarm_name                = "${var.stack_name}-${var.environment}-donut-webapp"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -158,6 +167,7 @@ resource "aws_cloudwatch_metric_alarm" "donut-webapp" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "avr-webapp-poor" {
   alarm_name                = "${var.stack_name}-${var.environment}-avr-webapp-poor"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -174,6 +184,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-webapp-poor" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "avr-webapp" {
   alarm_name                = "${var.stack_name}-${var.environment}-avr-webapp"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -190,6 +201,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-webapp" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "avr-batch-worker-poor" {
   alarm_name                = "${var.stack_name}-${var.environment}-avr-batch-worker-poor"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -206,6 +218,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-batch-worker-poor" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "avr-batch-worker" {
   alarm_name                = "${var.stack_name}-${var.environment}-avr-batch-worker"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -222,6 +235,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-batch-worker" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "avr-ui-worker-poor" {
   alarm_name                = "${var.stack_name}-${var.environment}-avr-ui-worker-poor"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -238,6 +252,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-ui-worker-poor" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "avr-ui-worker" {
   alarm_name                = "${var.stack_name}-${var.environment}-avr-ui-worker"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -254,6 +269,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-ui-worker" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "arch-poor" {
   alarm_name                = "${var.stack_name}-${var.environment}-arch-poor"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -270,6 +286,7 @@ resource "aws_cloudwatch_metric_alarm" "arch-poor" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "arch" {
   alarm_name                = "${var.stack_name}-${var.environment}-arch"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -286,6 +303,7 @@ resource "aws_cloudwatch_metric_alarm" "arch" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "arch-ui-worker-poor" {
   alarm_name                = "${var.stack_name}-${var.environment}-arch-ui-worker-poor"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -302,6 +320,7 @@ resource "aws_cloudwatch_metric_alarm" "arch-ui-worker-poor" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "arch-ui-worker" {
   alarm_name                = "${var.stack_name}-${var.environment}-arch-ui-worker"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -318,6 +337,7 @@ resource "aws_cloudwatch_metric_alarm" "arch-ui-worker" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "cantaloupe-ecs-high-cpu-utilization" {
   alarm_name                = "${var.stack_name}-${var.environment}-cantaloupe-ecs-high-cpu-utilization"
   comparison_operator       = "GreaterThanOrEqualToThreshold"
@@ -334,6 +354,7 @@ resource "aws_cloudwatch_metric_alarm" "cantaloupe-ecs-high-cpu-utilization" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "cantaloupe-ecs-high-memory-utilization" {
   alarm_name                = "${var.stack_name}-${var.environment}-cantaloupe-ecs-high-memory-utilization"
   metric_name               = "MemoryUtilization"
@@ -350,6 +371,7 @@ resource "aws_cloudwatch_metric_alarm" "cantaloupe-ecs-high-memory-utilization" 
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "avr-elasticache-swapusage" {
   alarm_name                = "${var.stack_name}-${var.environment}-avr-elasticache-swapusage"
   metric_name               = "SwapUsage"
@@ -363,6 +385,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-elasticache-swapusage" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "avr-elasticache-freeablememory" {
   alarm_name                = "${var.stack_name}-${var.environment}-avr-elasticache-freeablememory"
   metric_name               = "FreeableMemory"
@@ -376,6 +399,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-elasticache-freeablememory" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
+
 resource "aws_cloudwatch_metric_alarm" "rds-low-free-storage-space" {
   alarm_name                = "${var.stack_name}-${var.environment}-rds-low-free-storage-space"
   metric_name               = "FreeStorageSpace"
@@ -392,20 +416,22 @@ resource "aws_cloudwatch_metric_alarm" "rds-low-free-storage-space" {
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
-# 20181004 JRB This doesn't work because I need to know the ARN of the ELB and I'm 
-# Not sure how to do that.
-#
-# resource "aws_cloudwatch_metric_alarm" "fcrepo-unhealthy-host-count" {
-#   alarm_name                = "${var.stack_name}-${var.environment}-fcrepo-unhealthy-host-count"
-#   metric_name               = "UnHealthyHostCount"
-#   comparison_operator       = "GreaterThanOrEqualToThreshold"
-#   threshold                 = "1"
-#   evaluation_periods        = "1"
-#   namespace                 = "AWS/Application/ELB"
-#   period                    = "300"
-#   statistic                 = "Average"
-#   alarm_description         = "Fedora ELB UnHealthy Host Count"
-#   alarm_actions             = [ "${var.pager_alert}", ]
-#   insufficient_data_actions = []
-# }
+
+resource "aws_cloudwatch_metric_alarm" "fcrepo-unhealthy-host-count" {
+  alarm_name                = "${var.stack_name}-${var.environment}-fcrepo-unhealthy-host-count"
+  metric_name               = "UnHealthyHostCount"
+  comparison_operator       = "GreaterThanOrEqualToThreshold"
+  threshold                 = "1"
+  evaluation_periods        = "1"
+  namespace                 = "AWS/ApplicationELB"
+  period                    = "300"
+  statistic                 = "Average"
+  alarm_description         = "Fedora ELB UnHealthy Host Count"
+  dimensions {
+    "LoadBalancer" = "${module.fcrepo_environment.elb_name}"
+  }
+  alarm_actions             = [ "${var.pager_alert}", ]
+  insufficient_data_actions = []
+}
+
 ### cantaloupe elasticsearch frontend postgres redis solrcloud vpc

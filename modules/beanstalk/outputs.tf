@@ -13,6 +13,11 @@ output "security_group_id" {
   description = "Security group id"
 }
 
+output "elb_name" {
+  value       = "${element(flatten(coalescelist(aws_elastic_beanstalk_environment.default.*.load_balancers, aws_elastic_beanstalk_environment.worker.*.load_balancers)), 0)}"
+  description = "ELB name"
+}
+
 output "elb_dns_name" {
   value       = "${element(coalescelist(aws_elastic_beanstalk_environment.default.*.cname, aws_elastic_beanstalk_environment.worker.*.cname), 0)}"
   description = "ELB technical host"
