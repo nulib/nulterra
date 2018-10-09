@@ -178,12 +178,12 @@ resource "aws_s3_bucket" "this_batch" {
   tags   = "${local.common_tags}"
 
   lifecycle_rule {
-    id                                     = "batch-delete-after-30-days"
+    id                                     = "batch-delete-after-365-days"
     enabled                                = true
     abort_incomplete_multipart_upload_days = 3
 
     expiration {
-      days = 30
+      days = 365
     }
   }
 }
