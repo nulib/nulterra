@@ -44,6 +44,10 @@ variable "stack_name" {
   default = "stack"
 }
 
+variable "pager_alert" {
+  type    = "list"
+}
+
 variable "tags" {
   type    = "map"
   default = {}
