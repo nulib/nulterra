@@ -1,10 +1,5 @@
 data "aws_ami" "pe" {
-#  most_recent = true
-
-#  filter {
-#    name = "description"
-#    values = ["*BYOL*"]
-#  }
+  most_recent = true
 
   filter {
     name = "name"
@@ -16,25 +11,9 @@ data "aws_ami" "pe" {
     values = ["aws-marketplace"]
   }
 
-#  filter {
-#    name = "platform"
-#    values = ["Other Linux"]
-#  }
-
-#  filter {
-#    name   = "virtualization-type"
-#    values = ["hvm"]
-#  }
-
-#  filter {
-#    name   = "root-device-type"
-#    values = ["ebs"]
-#  }
-
   owners = ["679593333241"] # Puppet Enterprise
 
   name_regex = "BYOL"
-
 }
 
 data "aws_iam_policy_document" "pe" {
@@ -129,7 +108,11 @@ resource "aws_instance" "pe" {
   tags                        = "${merge(local.common_tags, map("Name", "${local.namespace}-pe"))}"
 
   vpc_security_group_ids = [
+    "${aws_security_group.bastion.id}",
+    "${aws_security_group.redis.id}",
+    "${aws_security_group.elasticsearch.id}",
     "${aws_security_group.pe.id}",
+    "${aws_security_group.db.id}",
     "${aws_security_group.db_client.id}",
   ]
 
