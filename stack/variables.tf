@@ -13,6 +13,11 @@ variable "bastion_instance_type" {
   default = "t2.small"
 }
 
+variable "pe_instance_type" {
+  type    = "string"
+  default = "t2.xlarge"
+}
+
 variable "db_master_username" {
   type    = "string"
   default = "dbadmin"
