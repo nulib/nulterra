@@ -80,13 +80,22 @@ resource "aws_security_group" "pe" {
   tags        = "${local.common_tags}"
 }
 
+resource "aws_security_group_rule" "allow_pe_self_access" {
+  security_group_id        = "${aws_security_group.pe.id}"
+  type                     = "ingress"
+  from_port                = "0"
+  to_port                  = "0"
+  protocol                 = "-1"
+  source_security_group_id = "${aws_security_group.pe.id}"
+}
+
 resource "aws_security_group_rule" "pe_ssh_ingress" {
-  security_group_id = "${aws_security_group.pe.id}"
-  type              = "ingress"
-  from_port         = "22"
-  to_port           = "22"
-  protocol          = "tcp"
-  cidr_blocks       = ["129.105.203.0/24"]
+ security_group_id = "${aws_security_group.pe.id}"
+ type              = "ingress"
+ from_port         = "22"
+ to_port           = "22"
+ protocol          = "tcp"
+ cidr_blocks       = ["129.105.203.0/24"]
 }
 
 resource "aws_security_group_rule" "pe_https_ingress" {
@@ -96,6 +105,42 @@ resource "aws_security_group_rule" "pe_https_ingress" {
   to_port           = "443"
   protocol          = "tcp"
   cidr_blocks       = ["129.105.203.0/24"]
+}
+
+resource "aws_security_group_rule" "pe_mcollective_ingress" {
+  security_group_id = "${aws_security_group.pe.id}"
+  type              = "ingress"
+  from_port         = "61613"
+  to_port           = "61613"
+  protocol          = "tcp"
+  cidr_blocks       = ["10.0.0.0/8"]
+}
+
+resource "aws_security_group_rule" "pe_orchestration_srv1_ingress" {
+  security_group_id = "${aws_security_group.pe.id}"
+  type              = "ingress"
+  from_port         = "8142"
+  to_port           = "8142"
+  protocol          = "tcp"
+  cidr_blocks       = ["10.0.0.0/8"]
+}
+
+resource "aws_security_group_rule" "pe_orchestration_srv2_ingress" {
+  security_group_id = "${aws_security_group.pe.id}"
+  type              = "ingress"
+  from_port         = "8143"
+  to_port           = "8143"
+  protocol          = "tcp"
+  cidr_blocks       = ["10.0.0.0/8"]
+}
+
+resource "aws_security_group_rule" "pe_master_ingress" {
+  security_group_id = "${aws_security_group.pe.id}"
+  type              = "ingress"
+  from_port         = "8140"
+  to_port           = "8140"
+  protocol          = "tcp"
+  cidr_blocks       = ["10.0.0.0/8"]
 }
 
 resource "aws_security_group_rule" "pe_egress" {
