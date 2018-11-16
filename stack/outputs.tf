@@ -48,6 +48,7 @@ output "vpc_cidr_block" {
 output "security_groups" {
   value = {
     bastion    = "${aws_security_group.bastion.id}"
+    pe         = "${aws_security_group.pe.id}"
     cache      = "${aws_security_group.redis.id}"
     cantaloupe = "${module.cantaloupe_service.lb_security_group}"
     db         = "${aws_security_group.db.id}"
@@ -65,6 +66,10 @@ output "application_source_bucket" {
 
 output "bastion_address" {
   value = "${aws_route53_record.bastion.name}"
+}
+
+output "pe_address" {
+  value = "${aws_route53_record.pe.name}"
 }
 
 output "cache_address" {
