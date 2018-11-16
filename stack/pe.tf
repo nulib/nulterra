@@ -80,13 +80,22 @@ resource "aws_security_group" "pe" {
   tags        = "${local.common_tags}"
 }
 
-resource "aws_security_group_rule" "pe_ingress" {
+resource "aws_security_group_rule" "pe_ssh_ingress" {
   security_group_id = "${aws_security_group.pe.id}"
   type              = "ingress"
   from_port         = "22"
   to_port           = "22"
   protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
+  cidr_blocks       = ["129.105.203.0/24"]
+}
+
+resource "aws_security_group_rule" "pe_https_ingress" {
+  security_group_id = "${aws_security_group.pe.id}"
+  type              = "ingress"
+  from_port         = "443"
+  to_port           = "443"
+  protocol          = "tcp"
+  cidr_blocks       = ["129.105.203.0/24"]
 }
 
 resource "aws_security_group_rule" "pe_egress" {
@@ -112,7 +121,6 @@ resource "aws_instance" "pe" {
     "${aws_security_group.redis.id}",
     "${aws_security_group.elasticsearch.id}",
     "${aws_security_group.pe.id}",
-    "${aws_security_group.db.id}",
     "${aws_security_group.db_client.id}",
   ]
 
@@ -129,7 +137,7 @@ resource "null_resource" "provision_pe" {
   provisioner "file" {
     connection {
       host        = "${aws_instance.pe.public_dns}"
-      user        = "ec2-user"
+      user        = "puppetadmin"
       agent       = true
       timeout     = "3m"
       private_key = "${file(var.ec2_private_keyfile)}"
@@ -142,18 +150,18 @@ resource "null_resource" "provision_pe" {
   provisioner "remote-exec" {
     connection {
       host        = "${aws_instance.pe.public_dns}"
-      user        = "ec2-user"
+      user        = "puppetadmin"
       agent       = true
       timeout     = "3m"
       private_key = "${file(var.ec2_private_keyfile)}"
     }
 
-    inline = [
-      "sudo mv /tmp/mount_all_efs /usr/local/sbin/mount_all_efs",
-      "sudo mv /tmp/awssh /usr/local/bin/awssh",
-      "sudo chmod 0755 /usr/local/bin/awssh /usr/local/sbin/mount_all_efs",
-      "sudo yum install -y postgresql96 jq tmux",
-    ]
+#    inline = [
+#      "sudo mv /tmp/mount_all_efs /usr/local/sbin/mount_all_efs",
+#      "sudo mv /tmp/awssh /usr/local/bin/awssh",
+#      "sudo chmod 0755 /usr/local/bin/awssh /usr/local/sbin/mount_all_efs",
+#      "sudo yum install -y postgresql96 jq tmux",
+#    ]
   }
 }
 

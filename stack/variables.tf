@@ -15,7 +15,7 @@ variable "bastion_instance_type" {
 
 variable "pe_instance_type" {
   type    = "string"
-  default = "t2.xlarge"
+  default = "m4.xlarge"
 }
 
 variable "db_master_username" {
