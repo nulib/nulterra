@@ -113,7 +113,7 @@ resource "aws_security_group_rule" "pe_mcollective_ingress" {
   from_port         = "61613"
   to_port           = "61613"
   protocol          = "tcp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = ["${vpc_private_subnets}"]
 }
 
 resource "aws_security_group_rule" "pe_orchestration_srv1_ingress" {
@@ -122,7 +122,7 @@ resource "aws_security_group_rule" "pe_orchestration_srv1_ingress" {
   from_port         = "8142"
   to_port           = "8142"
   protocol          = "tcp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = ["${vpc_private_subnets}"]
 }
 
 resource "aws_security_group_rule" "pe_orchestration_srv2_ingress" {
@@ -131,7 +131,7 @@ resource "aws_security_group_rule" "pe_orchestration_srv2_ingress" {
   from_port         = "8143"
   to_port           = "8143"
   protocol          = "tcp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = ["${vpc_private_subnets}"]
 }
 
 resource "aws_security_group_rule" "pe_master_ingress" {
@@ -140,7 +140,7 @@ resource "aws_security_group_rule" "pe_master_ingress" {
   from_port         = "8140"
   to_port           = "8140"
   protocol          = "tcp"
-  cidr_blocks       = ["10.0.0.0/8"]
+  cidr_blocks       = ["${vpc_private_subnets}"]
 }
 
 resource "aws_security_group_rule" "pe_egress" {
@@ -149,7 +149,7 @@ resource "aws_security_group_rule" "pe_egress" {
   from_port         = "0"
   to_port           = "0"
   protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
+  cidr_blocks       = ["${vpc_private_subnets}"]
 }
 
 resource "aws_instance" "pe" {
@@ -201,12 +201,12 @@ resource "null_resource" "provision_pe" {
       private_key = "${file(var.ec2_private_keyfile)}"
     }
 
-#    inline = [
+    inline = [
 #      "sudo mv /tmp/mount_all_efs /usr/local/sbin/mount_all_efs",
 #      "sudo mv /tmp/awssh /usr/local/bin/awssh",
 #      "sudo chmod 0755 /usr/local/bin/awssh /usr/local/sbin/mount_all_efs",
-#      "sudo yum install -y postgresql96 jq tmux",
-#    ]
+      "sudo yum install -y tmux",
+    ]
   }
 }
 
