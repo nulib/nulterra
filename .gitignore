@@ -14,7 +14,12 @@
 *tfstate*
 **/node_modules
 **/package-lock.json
-
+variables.tf-orig
+tfvars.tar.bz2
+# Failed attempt at removing tfvars files
+*.ssm
+*.list
+*ssm_parameters*
 .env
 applications/**/Dockerrun.aws.json
 batch
