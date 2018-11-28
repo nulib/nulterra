@@ -113,7 +113,7 @@ resource "aws_security_group_rule" "pe_mcollective_ingress" {
   from_port         = "61613"
   to_port           = "61613"
   protocol          = "tcp"
-  cidr_blocks       = ["${vpc_private_subnets}"]
+  cidr_blocks       = ["${var.vpc_private_subnets}"]
 }
 
 resource "aws_security_group_rule" "pe_orchestration_srv1_ingress" {
@@ -122,7 +122,7 @@ resource "aws_security_group_rule" "pe_orchestration_srv1_ingress" {
   from_port         = "8142"
   to_port           = "8142"
   protocol          = "tcp"
-  cidr_blocks       = ["${vpc_private_subnets}"]
+  cidr_blocks       = ["${var.vpc_private_subnets}"]
 }
 
 resource "aws_security_group_rule" "pe_orchestration_srv2_ingress" {
@@ -131,7 +131,7 @@ resource "aws_security_group_rule" "pe_orchestration_srv2_ingress" {
   from_port         = "8143"
   to_port           = "8143"
   protocol          = "tcp"
-  cidr_blocks       = ["${vpc_private_subnets}"]
+  cidr_blocks       = ["${var.vpc_private_subnets}"]
 }
 
 resource "aws_security_group_rule" "pe_master_ingress" {
@@ -140,7 +140,7 @@ resource "aws_security_group_rule" "pe_master_ingress" {
   from_port         = "8140"
   to_port           = "8140"
   protocol          = "tcp"
-  cidr_blocks       = ["${vpc_private_subnets}"]
+  cidr_blocks       = ["${var.vpc_private_subnets}"]
 }
 
 resource "aws_security_group_rule" "pe_egress" {
@@ -149,7 +149,7 @@ resource "aws_security_group_rule" "pe_egress" {
   from_port         = "0"
   to_port           = "0"
   protocol          = "-1"
-  cidr_blocks       = ["${vpc_private_subnets}"]
+  cidr_blocks       = ["${var.vpc_private_subnets}"]
 }
 
 resource "aws_instance" "pe" {
