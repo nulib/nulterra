@@ -202,9 +202,6 @@ resource "null_resource" "provision_pe" {
     }
 
     inline = [
-#      "sudo mv /tmp/mount_all_efs /usr/local/sbin/mount_all_efs",
-#      "sudo mv /tmp/awssh /usr/local/bin/awssh",
-#      "sudo chmod 0755 /usr/local/bin/awssh /usr/local/sbin/mount_all_efs",
       "sudo yum install -y tmux",
     ]
   }
