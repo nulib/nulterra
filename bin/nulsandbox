@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# 20181130 JRB Script to tear down the costly bits of AWS for the sandbox
+#
+usage () {
+  echo "Usage:"
+  echo "This script is intended to be run in the nulterra/stack directory"
+  echo "$0 start|stop"
+}
+if [ $# -ne 1 ]; then
+  usage
+  exit 1
+fi
+case "$1" in
+  'stop')  tf destroy \
+           -target=module.db.module.db \
+           -target=module.fcrepdb \
+           -target=module.fcrepo_environment \
+           -target=module.cantaloupe_service \
+           -target=module.zookeeper_environment \
+           -target=module.solr_environment
+           aws ec2 stop-instances --instance-ids i-00d2e16d8f7dca7c4 i-0ed11776501c01899
+           ;;
+  'start') aws ec2 start-instances --instance-ids i-00d2e16d8f7dca7c4 i-0ed11776501c01899
+           tf apply \
+           -target=module.solr_environment
+           -target=module.zookeeper_environment \
+           -target=module.db.module.db \
+           -target=module.cantaloupe_service \
+           -target=module.fcrepo_environment \
+           -target=module.fcrepdb \
+          ;;
+  *) usage
+          ;;
+esac
