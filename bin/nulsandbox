@@ -28,9 +28,10 @@ case "$1" in
            -target=module.cantaloupe_service \
            -target=module.zookeeper_environment \
            -target=module.solr_environment
-           aws ec2 stop-instances --instance-ids i-00d2e16d8f7dca7c4 i-0ed11776501c01899
+#           -target=module.pe
+#           aws ec2 stop-instances --instance-ids i-00d2e16d8f7dca7c4 i-0ed11776501c01899
            ;;
-  'start') aws ec2 start-instances --instance-ids i-00d2e16d8f7dca7c4 i-0ed11776501c01899
+  'start') # aws ec2 start-instances --instance-ids i-00d2e16d8f7dca7c4 i-0ed11776501c01899
            tf apply -auto-approve \
            -lock=true \
            -refresh=true \
