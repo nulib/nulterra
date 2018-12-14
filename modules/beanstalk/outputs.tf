@@ -14,7 +14,7 @@ output "security_group_id" {
 }
 
 output "elb_name" {
-  value       = "${element(flatten(coalescelist(aws_elastic_beanstalk_environment.default.*.load_balancers, aws_elastic_beanstalk_environment.worker.*.load_balancers)), 0)}"
+  value       = "${element(flatten(concat(aws_elastic_beanstalk_environment.default.*.load_balancers, aws_elastic_beanstalk_environment.worker.*.load_balancers, list(list("no-elb")))), 0)}"
   description = "ELB name"
 }
 

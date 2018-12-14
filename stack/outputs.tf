@@ -107,7 +107,7 @@ output "exhibitor_endpoint" {
 }
 
 output "iiif_endpoint" {
-  value = "http://${aws_route53_record.iiif.name}/iiif/2"
+  value = "https://${aws_route53_record.iiif.name}/iiif/2"
 }
 
 output "iiif_pyramid_bucket" {
@@ -120,6 +120,10 @@ output "iiif_pyramid_bucket_arn" {
 
 output "index_endpoint" {
   value = "http://${aws_route53_record.solr.name}/solr/"
+}
+
+output "metadata_endpoint" {
+  value = "https://${aws_route53_record.iiif.name}/"
 }
 
 output "private_subnets" {

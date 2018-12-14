@@ -147,6 +147,11 @@ variable "root_volume_type" {
   description = "The type of the EBS root volume"
 }
 
+variable "extra_block_devices" {
+  default     = ""
+  description = "Additional BlockDeviceMappings"
+}
+
 variable "availability_zones" {
   default     = "Any 2"
   description = "Choose the number of AZs for your instances"

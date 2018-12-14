@@ -149,6 +149,7 @@ module "fcrepo_environment" {
   healthcheck_url        = "/rest/alive"
   keypair                = "${var.ec2_keyname}"
   instance_type          = "t2.xlarge"
+  extra_block_devices    = "/dev/xvdcz=:64:true:gp2"
   autoscale_min          = 1
   autoscale_max          = 2
   health_check_threshold = "Ok"

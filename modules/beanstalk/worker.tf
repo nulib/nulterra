@@ -141,6 +141,11 @@ resource "aws_elastic_beanstalk_environment" "worker" {
     value     = "${var.root_volume_type}"
   }
   setting {
+    namespace = "aws:autoscaling:launchconfiguration"
+    name      = "BlockDeviceMappings"
+    value     = "${var.extra_block_devices}"
+  }
+  setting {
     namespace = "aws:autoscaling:asg"
     name      = "Availability Zones"
     value     = "${var.availability_zones}"

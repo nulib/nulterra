@@ -158,6 +158,7 @@ module "this_environment" {
   healthcheck_url              = "/"
   keypair                      = "${data.terraform_remote_state.stack.ec2_keyname}"
   instance_type                = "t2.medium"
+  extra_block_devices          = "/dev/xvdcz=:64:true:gp2"
   autoscale_min                = "${var.autoscale_min}"
   autoscale_max                = "${var.autoscale_max}"
   health_check_threshold       = "Ok"

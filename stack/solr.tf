@@ -79,6 +79,7 @@ module "solr_environment" {
   healthcheck_url         = "/solr/"
   keypair                 = "${var.ec2_keyname}"
   instance_type           = "t2.medium"
+  extra_block_devices    = "/dev/xvdcz=:64:true:gp2"
   autoscale_min           = 3
   autoscale_max           = 4
   health_check_threshold  = "Ok"

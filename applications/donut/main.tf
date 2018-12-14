@@ -342,19 +342,21 @@ data "null_data_source" "ssm_parameters" {
   inputs = "${map(
     "aws/buckets/batch",        "${aws_s3_bucket.this_batch.id}",
     "aws/buckets/dropbox",      "${aws_s3_bucket.this_dropbox.id}",
+    "aws/buckets/manifests",    "${data.terraform_remote_state.stack.iiif_pyramid_bucket}",
     "aws/buckets/pyramids",     "${data.terraform_remote_state.stack.iiif_pyramid_bucket}",
     "aws/buckets/uploads",      "${aws_s3_bucket.this_uploads.id}",
     "common_indexer/endpoint",  "${data.terraform_remote_state.stack.elasticsearch_endpoint}",
     "domain/host",              "${local.domain_host}",
     "geonames_username",        "nul_rdc",
     "iiif/endpoint",            "${data.terraform_remote_state.stack.iiif_endpoint}",
+    "metadata/endpoint",        "${data.terraform_remote_state.stack.metadata_endpoint}",
     "solr/url",                 "${data.terraform_remote_state.stack.index_endpoint}donut",
     "zookeeper/connection_str", "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
   )}"
 }
 
 resource "aws_ssm_parameter" "this_config_setting" {
-  count     = 10
+  count     = 12
   name      = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
   type      = "String"
   value     = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"
