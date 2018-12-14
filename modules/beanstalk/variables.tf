@@ -148,7 +148,7 @@ variable "root_volume_type" {
 }
 
 variable "extra_block_devices" {
-  default     = ""
+  default     = "/dev/xvdcz=:12:true:gp2"
   description = "Additional BlockDeviceMappings"
 }
 
