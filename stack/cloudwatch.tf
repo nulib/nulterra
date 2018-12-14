@@ -338,40 +338,6 @@ resource "aws_cloudwatch_metric_alarm" "arch-ui-worker" {
   insufficient_data_actions = []
 }
 
-resource "aws_cloudwatch_metric_alarm" "cantaloupe-ecs-high-cpu-utilization" {
-  alarm_name                = "${var.stack_name}-${var.environment}-cantaloupe-ecs-high-cpu-utilization"
-  comparison_operator       = "GreaterThanOrEqualToThreshold"
-  evaluation_periods        = "5"
-  metric_name               = "CPUUtilization"
-  namespace                 = "AWS/ECS"
-  period                    = "300"
-  statistic                 = "Average"
-  threshold                 = "85"
-  alarm_description         = "Cantaloupe ECS High CPU Utilization"
-  dimensions {
-      "ClusterName" = "${var.stack_name}-${var.environment}-cantaloupe"
-  }
-  alarm_actions             = [ "${var.pager_alert}", ]
-  insufficient_data_actions = []
-}
-
-resource "aws_cloudwatch_metric_alarm" "cantaloupe-ecs-high-memory-utilization" {
-  alarm_name                = "${var.stack_name}-${var.environment}-cantaloupe-ecs-high-memory-utilization"
-  metric_name               = "MemoryUtilization"
-  comparison_operator       = "GreaterThanOrEqualToThreshold"
-  threshold                 = "10"
-  evaluation_periods        = "2"
-  namespace                 = "AWS/ECS"
-  period                    = "300"
-  statistic                 = "Average"
-  alarm_description         = "Cantaloupe ECS High Memory Utilization"
-  dimensions {
-      "ClusterName" = "${var.stack_name}-${var.environment}-cantaloupe"
-  }
-  alarm_actions             = [ "${var.pager_alert}", ]
-  insufficient_data_actions = []
-}
-
 resource "aws_cloudwatch_metric_alarm" "avr-elasticache-swapusage" {
   alarm_name                = "${var.stack_name}-${var.environment}-avr-elasticache-swapusage"
   metric_name               = "SwapUsage"
@@ -434,4 +400,4 @@ resource "aws_cloudwatch_metric_alarm" "fcrepo-unhealthy-host-count" {
   insufficient_data_actions = []
 }
 
-### cantaloupe elasticsearch frontend postgres redis solrcloud vpc
+### elasticsearch frontend postgres redis solrcloud vpc

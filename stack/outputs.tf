@@ -49,7 +49,6 @@ output "security_groups" {
   value = {
     bastion    = "${aws_security_group.bastion.id}"
     cache      = "${aws_security_group.redis.id}"
-    cantaloupe = "${module.cantaloupe_service.lb_security_group}"
     db         = "${aws_security_group.db.id}"
     fcrepo     = "${module.fcrepo_environment.security_group_id}"
     index      = "${module.solr_environment.security_group_id}"
@@ -108,7 +107,7 @@ output "exhibitor_endpoint" {
 }
 
 output "iiif_endpoint" {
-  value = "http://${element(concat(aws_cloudfront_distribution.cantaloupe.*.domain_name, list(aws_route53_record.cantaloupe.name)), 0)}/iiif/2"
+  value = "http://${aws_route53_record.iiif.name}/iiif/2"
 }
 
 output "iiif_pyramid_bucket" {
