@@ -92,6 +92,7 @@ resource "aws_api_gateway_rest_api" "iiif_api" {
   name                  = "${local.namespace}-iiif"
   description           = "Mini IIIF Server"
   binary_media_types    = ["*/*"]
+  body                  = "${data.template_file.iiif_openapi_template.rendered}"
 
   endpoint_configuration {
     types = ["REGIONAL"]
