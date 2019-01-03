@@ -9,7 +9,7 @@ module "db" {
   identifier = "${local.namespace}-db"
 
   engine         = "postgres"
-  engine_version = "9.6.6"
+  engine_version = "9.6.9"
 
   instance_class    = "db.t2.medium"
   allocated_storage = 100

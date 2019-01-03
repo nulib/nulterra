@@ -46,7 +46,22 @@ resource "aws_iam_role_policy_attachment" "zookeeper_config_bucket_role_access" 
   policy_arn = "${aws_iam_policy.zookeeper_config_bucket_policy.arn}"
 }
 
+data "template_file" "zookeeper_dockerrun_aws_json" {
+  template = "${file("./templates/zookeeper_Dockerrun.aws.json.tpl")}"
+
+  vars {
+    aws_region = "${var.aws_region}"
+    stack_name = "${local.namespace}"
+  }
+}
+
+resource "local_file" "zookeeper_dockerrun_aws_json" {
+  content  = "${data.template_file.zookeeper_dockerrun_aws_json.rendered}"
+  filename = "./applications/zookeeper/Dockerrun.aws.json"
+}
+
 data "archive_file" "zookeeper_source" {
+  depends_on  = ["local_file.zookeeper_dockerrun_aws_json"]
   type        = "zip"
   source_dir  = "${path.module}/applications/zookeeper"
   output_path = "${path.module}/build/zookeeper.zip"

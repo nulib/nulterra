@@ -46,7 +46,15 @@
         { "sourceVolume": "awseb-logs-donut-app",  "containerPath": "/home/app/current/log"  },
         { "sourceVolume": "donut-working",         "containerPath": "/var/donut-working"     },
         { "sourceVolume": "donut-derivatives",     "containerPath": "/var/donut-derivatives" }
-      ]
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+            "awslogs-group": "${stack_name}",
+            "awslogs-region": "${aws_region}",
+            "awslogs-stream-prefix": "donut"
+        }
+      }
     }
   ]
 }

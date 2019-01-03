@@ -17,4 +17,5 @@
 
 .env
 applications/**/Dockerrun.aws.json
+stack/applications/**/Dockerrun.aws.json
 batch

@@ -30,7 +30,9 @@ data "template_file" "dockerrun_aws_json" {
   template = "${file("./templates/Dockerrun.aws.json.tpl")}"
 
   vars {
-    app_image = "${var.app_image}"
+    app_image  = "${var.app_image}"
+    aws_region = "${var.stack_region}"
+    stack_name = "${local.namespace}"
   }
 }
 

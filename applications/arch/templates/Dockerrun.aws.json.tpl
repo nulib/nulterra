@@ -46,7 +46,15 @@
         { "sourceVolume": "awseb-logs-arch-app",  "containerPath": "/home/app/current/log"  },
         { "sourceVolume": "arch-working",         "containerPath": "/var/arch-working"     },
         { "sourceVolume": "arch-derivatives",     "containerPath": "/var/arch-derivatives" }
-      ]
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+            "awslogs-group": "${stack_name}",
+            "awslogs-region": "${aws_region}",
+            "awslogs-stream-prefix": "arch"
+        }
+      }
     }
   ]
 }

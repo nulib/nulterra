@@ -37,7 +37,15 @@
       "readonlyRootFilesystem": false,
       "mountPoints": [
         { "sourceVolume": "awseb-logs-avr-app",  "containerPath": "/home/app/current/log"  }
-      ]
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+            "awslogs-group": "${stack_name}",
+            "awslogs-region": "${aws_region}",
+            "awslogs-stream-prefix": "avr"
+        }
+      }
     }
   ]
 }

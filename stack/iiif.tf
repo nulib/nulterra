@@ -121,6 +121,7 @@ resource "aws_api_gateway_domain_name" "iiif_domain_name" {
 }
 
 resource "aws_api_gateway_base_path_mapping" "iiif_domain_mapping" {
+  base_path     = "/"
   api_id        = "${aws_api_gateway_rest_api.iiif_api.id}"
   stage_name    = "${aws_api_gateway_stage.iiif_latest.stage_name}"
   domain_name   = "${aws_api_gateway_domain_name.iiif_domain_name.domain_name}"

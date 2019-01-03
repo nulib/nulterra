@@ -12,7 +12,15 @@
         { "hostPort": 2888, "containerPort": 2888 },
         { "hostPort": 3888, "containerPort": 3888 }
       ],
-      "readonlyRootFilesystem": false
+      "readonlyRootFilesystem": false,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+            "awslogs-group": "${stack_name}",
+            "awslogs-region": "${aws_region}",
+            "awslogs-stream-prefix": "zk"
+        }
+      }
     }
   ]
 }
