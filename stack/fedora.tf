@@ -107,7 +107,22 @@ resource "aws_iam_role_policy" "fcrepo_change_notification_access" {
   policy = "${data.aws_iam_policy_document.fcrepo_change_notification_access.json}"
 }
 
+data "template_file" "fcrepo_dockerrun_aws_json" {
+  template = "${file("./templates/fcrepo_Dockerrun.aws.json.tpl")}"
+
+  vars {
+    aws_region = "${var.aws_region}"
+    stack_name = "${local.namespace}"
+  }
+}
+
+resource "local_file" "fcrepo_dockerrun_aws_json" {
+  content  = "${data.template_file.fcrepo_dockerrun_aws_json.rendered}"
+  filename = "./applications/fcrepo/Dockerrun.aws.json"
+}
+
 data "archive_file" "fcrepo_source" {
+  depends_on  = ["local_file.fcrepo_dockerrun_aws_json"]
   type        = "zip"
   source_dir  = "${path.module}/applications/fcrepo"
   output_path = "${path.module}/build/fcrepo.zip"

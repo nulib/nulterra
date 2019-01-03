@@ -20,7 +20,22 @@ module "solr_backup_volume" {
   tags = "${local.common_tags}"
 }
 
+data "template_file" "solr_dockerrun_aws_json" {
+  template = "${file("./templates/solr_Dockerrun.aws.json.tpl")}"
+
+  vars {
+    aws_region = "${var.aws_region}"
+    stack_name = "${local.namespace}"
+  }
+}
+
+resource "local_file" "solr_dockerrun_aws_json" {
+  content  = "${data.template_file.solr_dockerrun_aws_json.rendered}"
+  filename = "./applications/solr/Dockerrun.aws.json"
+}
+
 data "archive_file" "solr_source" {
+  depends_on  = ["local_file.solr_dockerrun_aws_json"]
   type        = "zip"
   source_dir  = "${path.module}/applications/solr"
   output_path = "${path.module}/build/solr.zip"

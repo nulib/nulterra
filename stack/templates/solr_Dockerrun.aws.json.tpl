@@ -34,7 +34,15 @@
         { "sourceVolume": "solr-data",           "containerPath": "/data/solr"                  },
         { "sourceVolume": "solr-backup",         "containerPath": "/data/backup"                },
         { "sourceVolume": "solr-scripts",        "containerPath": "/docker-entrypoint-initdb.d" }
-      ]
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+            "awslogs-group": "${stack_name}",
+            "awslogs-region": "${aws_region}",
+            "awslogs-stream-prefix": "solr"
+        }
+      }
     }
   ]
 }

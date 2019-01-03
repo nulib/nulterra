@@ -156,6 +156,29 @@ resource "null_resource" "provision_bastion" {
   }
 }
 
+resource "null_resource" "install_puppet_on_bastion" {
+  triggers {
+    host = "${aws_instance.bastion.id}"
+  }
+
+  provisioner "remote-exec" {
+    connection {
+      host        = "${aws_instance.bastion.public_dns}"
+      user        = "ec2-user"
+      agent       = true
+      timeout     = "3m"
+      private_key = "${file(var.ec2_private_keyfile)}"
+    }
+
+    inline = [
+      "mkdir -p /etc/facter/facts.d",
+      "curl -o /etc/facter/facts.d/ec2_facts https://nul-repo-deploy.s3.amazonaws.com/ec2_facts",
+      "chmod 0770 /etc/facter/facts.d/ec2_facts",
+      "curl -k https://pe.library.northwestern.edu:8140/packages/current/install.bash | sudo bash"
+    ]
+  }
+}
+
 resource "aws_route53_record" "bastion" {
   zone_id = "${module.dns.public_zone_id}"
   name    = "bastion.${local.public_zone_name}"
