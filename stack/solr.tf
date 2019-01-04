@@ -122,3 +122,58 @@ resource "aws_route53_record" "solr" {
     evaluate_target_health = true
   }
 }
+
+data "aws_iam_policy_document" "solr_metrics_lambda_access" {
+  statement {
+    effect = "Allow"
+    actions = ["cloudwatch:PutMetricData"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_lambda_permission" "solr_metrics_invoke_permission" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = "${module.solr_metrics_function.function_name}"
+  principal     = "events.amazonaws.com"
+  source_arn    = "${aws_cloudwatch_event_rule.solr_metrics_event.arn}"
+}
+
+
+module "solr_metrics_function" {
+  source = "git://github.com/claranet/terraform-aws-lambda"
+
+  function_name = "${local.namespace}-solr-metrics"
+  description   = "Posts solr metrics to CloudWatch"
+  handler       = "index.handler"
+  runtime       = "nodejs8.10"
+  timeout       = 300
+
+  attach_policy = true
+  policy        = "${data.aws_iam_policy_document.solr_metrics_lambda_access.json}"
+  
+  source_path = "${path.module}/lambdas/solr-metrics"
+
+  environment {
+    variables {
+      SolrUrl = "http://${aws_route53_record.solr.name}/solr"
+    }
+  }
+
+  attach_vpc_config = true
+  vpc_config {
+    subnet_ids         = ["${module.vpc.private_subnets}"]
+    security_group_ids = ["${module.vpc.default_security_group_id}"]
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "solr_metrics_event" {
+  name                  = "${local.namespace}-solr-metrics"
+  description           = "Report solr metrics every 5 minutes"
+  schedule_expression   = "rate(5 minutes)"
+}
+
+resource "aws_cloudwatch_event_target" "solr_metrics_lambda" {
+  rule = "${aws_cloudwatch_event_rule.solr_metrics_event.name}"
+  arn  = "${module.solr_metrics_function.function_arn}"
+}

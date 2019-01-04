@@ -1,0 +1,12 @@
+{
+  "name": "solr-metrics",
+  "version": "1.0.0",
+  "description": "Pull metrics from solr and post to CloudWatch",
+  "main": "index.js",
+  "author": "Michael B. Klein",
+  "license": "Apache2",
+  "dependencies": {
+    "aws-sdk": "^2.383.0",
+    "node-fetch": "^2.3.0"
+  }
+}

@@ -179,6 +179,7 @@ data "aws_iam_policy_document" "default" {
       "autoscaling:TerminateInstanceInAutoScalingGroup",
       "autoscaling:UpdateAutoScalingGroup",
       "cloudwatch:PutMetricAlarm",
+      "cloudwatch:PutMetricData",
       "ec2:AssociateAddress",
       "ec2:AllocateAddress",
       "ec2:AuthorizeSecurityGroupEgress",

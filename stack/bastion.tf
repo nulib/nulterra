@@ -49,19 +49,12 @@ resource "aws_iam_role" "bastion" {
 data "aws_iam_policy_document" "bastion_api_access" {
   statement {
     effect    = "Allow"
-    actions   = ["ec2:DescribeInstances"]
-    resources = ["*"]
-  }
-
-  statement {
-    effect    = "Allow"
-    actions   = ["elasticfilesystem:*"]
-    resources = ["*"]
-  }
-
-  statement {
-    effect    = "Allow"
-    actions   = ["s3:*"]
+    actions   = [
+                  "ec2:DescribeInstances",
+                  "elasticfilesystem:*",
+                  "s3:*",
+                  "cloudwatch:PutMetricData"
+                ]
     resources = ["*"]
   }
 }
