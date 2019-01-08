@@ -29,7 +29,7 @@ class SolrMetrics {
   post() {
     return new Promise((resolve, reject) => {
       var client = new AWS.CloudWatch({ region: this.region });
-      client.putMetricData({ Namespace: 'NulAws', MetricData: this.metrics }, (err, data) => {
+      client.putMetricData({ Namespace: 'NUL/Solr', MetricData: this.metrics }, (err, data) => {
         if (err) reject(err);
         else     resolve(data);
       })
