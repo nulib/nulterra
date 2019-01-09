@@ -62,3 +62,6 @@ resource "aws_lambda_permission" "iiif_gateway_lambda_access_e6d5e1923" {
   principal       = "apigateway.amazonaws.com"
   source_arn      = "${aws_api_gateway_rest_api.iiif_api.execution_arn}/*/OPTIONS/iiif/2/{id}/info.json"
 }
+resource "null_resource" "aws_lambda_permissions" {
+  depends_on      = ["aws_lambda_permission.iiif_gateway_lambda_access_e6d5e1923"]
+}

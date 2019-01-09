@@ -30,3 +30,9 @@ resource "aws_lambda_permission" "iiif_gateway_lambda_access_#{path_hash}" {
 __EOF__
   dependency = %{["aws_lambda_permission.iiif_gateway_lambda_access_#{path_hash}"]}
 end
+
+$stdout.write <<__EOF__
+resource "null_resource" "aws_lambda_permissions" {
+  depends_on      = #{dependency}
+}
+__EOF__
