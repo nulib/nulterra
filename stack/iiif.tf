@@ -68,21 +68,13 @@ resource "aws_s3_bucket_policy" "allow_cloudfront_pyramid_public_access" {
   policy = "${data.aws_iam_policy_document.pyramid_bucket_public_policy.json}"
 }
 
-resource "aws_lambda_permission" "iiif_gateway_lambda_access" {
-  statement_id    = "AllowIIIFImageGatewayInvocation"
-  action          = "lambda:InvokeFunction"
-  function_name   = "iiif-image"
-  principal       = "apigateway.amazonaws.com"
-  source_arn      = "${aws_api_gateway_rest_api.iiif_api.execution_arn}/*/*/*"
-}
-
 data "template_file" "iiif_openapi_template" {
-  template = "${file("./templates/iiif_api_gateway_openapi.json.tpl")}"
+  template = "${file("./templates/iiif_api_gateway_openapi.yaml.tpl")}"
 
   vars {
     api_name              = "${local.namespace}-iiif"
     hostname              = "iiif.${local.public_zone_name}"
-    lambda_arn            = "${data.aws_lambda_function.iiif_image.arn}"
+    lambda_arn            = "${replace(data.aws_lambda_function.iiif_image.arn, ":$LATEST", "")}"
     public_manifest_url   = "http://donut.${local.public_zone_name}"
     region                = "${var.aws_region}"
   }
@@ -121,7 +113,7 @@ resource "aws_api_gateway_domain_name" "iiif_domain_name" {
 }
 
 resource "aws_api_gateway_base_path_mapping" "iiif_domain_mapping" {
-  base_path     = "/"
+  base_path     = ""
   api_id        = "${aws_api_gateway_rest_api.iiif_api.id}"
   stage_name    = "${aws_api_gateway_stage.iiif_latest.stage_name}"
   domain_name   = "${aws_api_gateway_domain_name.iiif_domain_name.domain_name}"
