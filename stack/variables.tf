@@ -35,6 +35,11 @@ variable "environment" {
   type    = "string"
 }
 
+variable "frontend_dns_names" {
+  type    = "list"
+  default = []
+}
+
 variable "hosted_zone_name" {
   type    = "string"
 }
