@@ -1,11 +1,3 @@
-data "external" "ecs_domain_client" {
-  program = ["external/es_domain_client"]
-
-  query = {
-    domain_name = "${aws_elasticsearch_domain.elasticsearch.domain_name}"
-  }
-}
-
 resource "aws_cloudwatch_dashboard" "nul_metrics" {
   dashboard_name = "${local.namespace}-nul-metrics"
   dashboard_body = <<__EOF__
@@ -15,7 +7,7 @@ resource "aws_cloudwatch_dashboard" "nul_metrics" {
       "type": "metric",
       "x": 0,
       "y": 0,
-      "width": 12,
+      "width": 15,
       "height": 6,
       "properties": {
         "metrics": [
@@ -24,71 +16,110 @@ resource "aws_cloudwatch_dashboard" "nul_metrics" {
             "DockerDataUsedPct",
             "Environment",
             "${local.namespace}-arch-ui-worker",
-            { "label": "arch-ui-worker", "stat": "Maximum" }
+            {
+              "label": "arch-ui-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-arch-webapp",
-            { "label": "arch-webapp", "stat": "Maximum" }
+            {
+              "label": "arch-webapp",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-avr-batch-worker",
-            { "label": "avr-batch-worker", "stat": "Maximum" }
+            {
+              "label": "avr-batch-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-avr-ui-worker",
-            { "label": "avr-ui-worker", "stat": "Maximum" }
+            {
+              "label": "avr-ui-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-avr-webapp",
-            { "label": "avr-webapp", "stat": "Maximum" }
+            {
+              "label": "avr-webapp",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-donut-batch-worker",
-            { "label": "donut-batch-worker", "stat": "Maximum" }
+            {
+              "label": "donut-batch-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-donut-ui-worker",
-            { "label": "donut-ui-worker", "stat": "Maximum" }
+            {
+              "label": "donut-ui-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-donut-webapp",
-            { "label": "donut-webapp", "stat": "Maximum" }
+            {
+              "label": "donut-webapp",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-fcrepo",
-            { "label": "fcrepo", "stat": "Maximum" }
+            {
+              "label": "fcrepo",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-solr",
-            { "label": "solr", "stat": "Maximum" }
+            {
+              "label": "solr",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-zookeeper",
-            { "label": "zookeeper", "stat": "Maximum" }
+            {
+              "label": "zookeeper",
+              "stat": "Maximum"
+            }
           ]
         ],
         "view": "timeSeries",
         "stacked": false,
         "region": "us-east-1",
         "title": "Docker Data Used %",
-        "period": 300
+        "period": 300,
+        "yAxis": {
+          "left": {
+            "min": 0,
+            "max": 100
+          }
+        }
       }
     },
     {
       "type": "metric",
-      "x": 12,
-      "y": 0,
-      "width": 12,
+      "x": 0,
+      "y": 6,
+      "width": 15,
       "height": 6,
       "properties": {
         "metrics": [
@@ -97,71 +128,110 @@ resource "aws_cloudwatch_dashboard" "nul_metrics" {
             "RootDeviceUsedPct",
             "Environment",
             "${local.namespace}-arch-ui-worker",
-            { "label": "arch-ui-worker", "stat": "Maximum" }
+            {
+              "label": "arch-ui-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-arch-webapp",
-            { "label": "arch-webapp", "stat": "Maximum" }
+            {
+              "label": "arch-webapp",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-avr-batch-worker",
-            { "label": "avr-batch-worker", "stat": "Maximum" }
+            {
+              "label": "avr-batch-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-avr-ui-worker",
-            { "label": "avr-ui-worker", "stat": "Maximum" }
+            {
+              "label": "avr-ui-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-avr-webapp",
-            { "label": "avr-webapp", "stat": "Maximum" }
+            {
+              "label": "avr-webapp",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-donut-batch-worker",
-            { "label": "donut-batch-worker", "stat": "Maximum" }
+            {
+              "label": "donut-batch-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-donut-ui-worker",
-            { "label": "donut-ui-worker", "stat": "Maximum" }
+            {
+              "label": "donut-ui-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-donut-webapp",
-            { "label": "donut-webapp", "stat": "Maximum" }
+            {
+              "label": "donut-webapp",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-fcrepo",
-            { "label": "fcrepo", "stat": "Maximum" }
+            {
+              "label": "fcrepo",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-solr",
-            { "label": "solr", "stat": "Maximum" }
+            {
+              "label": "solr",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-zookeeper",
-            { "label": "zookeeper", "stat": "Maximum" }
+            {
+              "label": "zookeeper",
+              "stat": "Maximum"
+            }
           ]
         ],
         "view": "timeSeries",
         "stacked": false,
         "region": "us-east-1",
         "title": "Root Device Used %",
-        "period": 300
+        "period": 300,
+        "yAxis": {
+          "left": {
+            "min": 0,
+            "max": 100
+          }
+        }
       }
     },
     {
       "type": "metric",
       "x": 0,
-      "y": 6,
-      "width": 12,
+      "y": 12,
+      "width": 15,
       "height": 6,
       "properties": {
         "metrics": [
@@ -170,57 +240,90 @@ resource "aws_cloudwatch_dashboard" "nul_metrics" {
             "MemoryBytesUsed",
             "Environment",
             "${local.namespace}-arch-ui-worker",
-            { "label": "arch-ui-worker", "stat": "Maximum" }
+            {
+              "label": "arch-ui-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-arch-webapp",
-            { "label": "arch-webapp", "stat": "Maximum" }
+            {
+              "label": "arch-webapp",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-avr-batch-worker",
-            { "label": "avr-batch-worker", "stat": "Maximum" }
+            {
+              "label": "avr-batch-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-avr-ui-worker",
-            { "label": "avr-ui-worker", "stat": "Maximum" }
+            {
+              "label": "avr-ui-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-avr-webapp",
-            { "label": "avr-webapp", "stat": "Maximum" }
+            {
+              "label": "avr-webapp",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-donut-batch-worker",
-            { "label": "donut-batch-worker", "stat": "Maximum" }
+            {
+              "label": "donut-batch-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-donut-ui-worker",
-            { "label": "donut-ui-worker", "stat": "Maximum" }
+            {
+              "label": "donut-ui-worker",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-donut-webapp",
-            { "label": "donut-webapp", "stat": "Maximum" }
+            {
+              "label": "donut-webapp",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-fcrepo",
-            { "label": "fcrepo", "stat": "Maximum" }
+            {
+              "label": "fcrepo",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-solr",
-            { "label": "solr", "stat": "Maximum" }
+            {
+              "label": "solr",
+              "stat": "Maximum"
+            }
           ],
           [
             "...",
             "${local.namespace}-zookeeper",
-            { "label": "zookeeper", "stat": "Maximum" }
+            {
+              "label": "zookeeper",
+              "stat": "Maximum"
+            }
           ]
         ],
         "view": "timeSeries",
@@ -232,83 +335,58 @@ resource "aws_cloudwatch_dashboard" "nul_metrics" {
     },
     {
       "type": "metric",
-      "x": 12,
-      "y": 6,
-      "width": 12,
-      "height": 6,
+      "x": 21,
+      "y": 0,
+      "width": 3,
+      "height": 18,
       "properties": {
         "metrics": [
           [
             "NUL/Solr",
             "DocumentCount",
             "Collection",
-            "arch",
-            { "label": "arch" }
-          ],
-          [
-            "...",
             "avr",
-            { "label": "avr" }
+            {
+              "label": "Total Documents"
+            }
           ],
           [
-            "...",
-            "donut",
-            { "label": "donut" }
-          ],
-          [
-            "AWS/ES",
-            "SearchableDocuments",
-            "DomainName",
-            "${aws_elasticsearch_domain.elasticsearch.domain_name}",
-            "ClientId",
-            "${data.external.ecs_domain_client.result.client_id}",
-            { "label": "common index" }
-          ]
-        ],
-        "view": "timeSeries",
-        "stacked": false,
-        "region": "us-east-1",
-        "title": "Indexed Documents",
-        "period": 300
-      }
-    },
-    {
-      "type": "metric",
-      "x": 0,
-      "y": 15,
-      "width": 24,
-      "height": 3,
-      "properties": {
-        "metrics": [
-          [
-            "NUL/Solr",
-            "DocumentCount",
+            ".",
+            ".",
             "Model",
             "Admin::Collection",
             "Collection",
             "avr",
-            { "label": "Collections" }
+            {
+              "label": "Collections"
+            }
           ],
           [
             "...",
             "MediaObject",
             ".",
             ".",
-            { "label": "MediaObjects" }
+            {
+              "label": "MediaObjects"
+            }
           ],
           [
             "...",
             "MasterFile",
             ".",
             ".",
-            { "label": "MasterFiles" }
+            {
+              "label": "MasterFiles"
+            }
           ],
           [
             "...",
             "Derivative",
             ".",
             ".",
-            { "label": "Derivatives" }
+            {
+              "label": "Derivatives"
+            }
           ],
           [
             ".",
@@ -317,52 +395,71 @@ resource "aws_cloudwatch_dashboard" "nul_metrics" {
             "avr",
             "Shard",
             "shard1",
-            { "label": "Active Replicas" }
+            {
+              "label": "Active Replicas"
+            }
           ]
         ],
         "view": "singleValue",
         "region": "us-east-1",
-        "title": "AVR Data",
+        "title": "AVR",
         "period": 300
       }
     },
     {
       "type": "metric",
-      "x": 0,
-      "y": 18,
-      "width": 24,
-      "height": 3,
+      "x": 18,
+      "y": 0,
+      "width": 3,
+      "height": 18,
       "properties": {
         "metrics": [
           [
             "NUL/Solr",
             "DocumentCount",
+            "Collection",
+            "donut",
+            {
+              "label": "Total Documents"
+            }
+          ],
+          [
+            ".",
+            ".",
             "Model",
             "AdminSet",
             "Collection",
             "donut",
-            { "label": "Admin Sets" }
+            {
+              "label": "Admin Sets"
+            }
           ],
           [
             "...",
             "Collection",
             ".",
             ".",
-            { "label": "Collections" }
+            {
+              "label": "Collections"
+            }
           ],
           [
             "...",
             "Image",
             ".",
             ".",
-            { "label": "Images" }
+            {
+              "label": "Images"
+            }
           ],
           [
             "...",
             "FileSet",
             ".",
             ".",
-            { "label": "FileSets" }
+            {
+              "label": "FileSets"
+            }
           ],
           [
             ".",
@@ -371,52 +468,71 @@ resource "aws_cloudwatch_dashboard" "nul_metrics" {
             "donut",
             "Shard",
             "shard1",
-            { "label": "Active Replicas" }
+            {
+              "label": "Active Replicas"
+            }
           ]
         ],
         "view": "singleValue",
         "region": "us-east-1",
-        "title": "Donut Data",
+        "title": "Donut",
         "period": 300
       }
     },
     {
       "type": "metric",
-      "x": 0,
-      "y": 12,
-      "width": 24,
-      "height": 3,
+      "x": 15,
+      "y": 0,
+      "width": 3,
+      "height": 18,
       "properties": {
         "metrics": [
           [
             "NUL/Solr",
             "DocumentCount",
+            "Collection",
+            "arch",
+            {
+              "label": "Total Documents"
+            }
+          ],
+          [
+            ".",
+            ".",
             "Model",
             "AdminSet",
             "Collection",
             "arch",
-            { "label": "Admin Sets" }
+            {
+              "label": "Admin Sets"
+            }
           ],
           [
             "...",
             "Collection",
             ".",
             ".",
-            { "label": "Collections" }
+            {
+              "label": "Collections"
+            }
           ],
           [
             "...",
             "GenericWork",
             ".",
             ".",
-            { "label": "Works" }
+            {
+              "label": "Works"
+            }
           ],
           [
             "...",
             "FileSet",
             ".",
             ".",
-            { "label": "FileSets" }
+            {
+              "label": "FileSets"
+            }
           ],
           [
             ".",
@@ -425,12 +541,14 @@ resource "aws_cloudwatch_dashboard" "nul_metrics" {
             "arch",
             "Shard",
             "shard1",
-            { "label": "Active Replicas" }
+            {
+              "label": "Active Replicas"
+            }
           ]
         ],
         "view": "singleValue",
         "region": "us-east-1",
-        "title": "Arch Data",
+        "title": "Arch",
         "period": 300
       }
     }
