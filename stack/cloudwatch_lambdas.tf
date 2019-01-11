@@ -33,6 +33,12 @@ module "solr_metrics_function" {
   
   source_path = "${path.module}/lambdas/solr-metrics"
 
+  attach_vpc_config = true
+  vpc_config {
+    subnet_ids         = ["${module.vpc.private_subnets}"]
+    security_group_ids = ["${module.vpc.default_security_group_id}"]
+  }
+
   environment {
     variables {
       SolrUrl = "http://${aws_route53_record.solr.name}/solr"

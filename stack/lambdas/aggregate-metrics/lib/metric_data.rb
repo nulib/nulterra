@@ -1,3 +1,5 @@
+require 'forwardable'
+
 class MetricData
   extend Forwardable
   attr_accessor :environment, :metric, :unit, :timestamps, :values

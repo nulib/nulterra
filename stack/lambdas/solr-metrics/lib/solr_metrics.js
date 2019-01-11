@@ -4,6 +4,7 @@ const AWS = require('aws-sdk');
 class SolrMetrics {
   constructor(url, region) {
     this.metrics = [];
+    this.publishedMetrics = [];
     this.region = region;
     this.solrUrl = url;
   }
@@ -23,7 +24,18 @@ class SolrMetrics {
       newMetric.Dimensions.push({ Name: dim, Value: dimensions[dim] });
     }
     this.metrics.push(newMetric);
+    if (this.metrics.length == 20) {
+      this.flush();
+    }
     return this.metrics;
+  }
+
+  flush() {
+    if (this.metrics.length > 0) {
+      this.post();
+      this.publishedMetrics = this.publishedMetrics.concat(this.metrics);
+      this.metrics = [];
+    }
   }
 
   post() {

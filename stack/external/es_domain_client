@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+eval $(jq -r '"ES_DOMAIN_NAME=\(.domain_name)"')
+aws cloudwatch list-metrics --namespace AWS/ES --dimensions Name=DomainName,Value=${ES_DOMAIN_NAME} --metric-name SearchableDocuments \
+  | jq '.Metrics[].Dimensions[] | select(.Name == "ClientId") | { client_id: .Value }'

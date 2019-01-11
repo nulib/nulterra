@@ -1,6 +1,6 @@
 const SolrMetrics = require('./lib/solr_metrics.js');
 
-async function collectMetrics(solrUrl, region) {
+async function publishMetrics(solrUrl, region) {
   var metrics = new SolrMetrics(solrUrl, region);
   var cluster = await metrics.get('admin/collections?action=CLUSTERSTATUS');
 
@@ -25,15 +25,15 @@ async function collectMetrics(solrUrl, region) {
     }
   }
 
+  metrics.flush();
   return metrics;
 }
 
 function handler(_event, context, callback) {
   var region = context.invokedFunctionArn.match(/^arn:aws:lambda:(\w+-\w+-\d+):/)[1];
-  collectMetrics(process.env.SolrUrl, region)
+  publishMetrics(process.env.SolrUrl, region)
     .then(metrics => {
-      metrics.post();
-      callback(null, metrics.metrics);
+      callback(null, metrics.publishedMetrics);
     })
     .catch(err => {
       console.log(err);
