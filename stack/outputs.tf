@@ -107,7 +107,7 @@ output "exhibitor_endpoint" {
 }
 
 output "iiif_endpoint" {
-  value = "https://${aws_route53_record.iiif.name}/iiif/2"
+  value = "${local.iiif_base_url}iiif/2"
 }
 
 output "iiif_pyramid_bucket" {
@@ -123,7 +123,7 @@ output "index_endpoint" {
 }
 
 output "metadata_endpoint" {
-  value = "https://${aws_route53_record.iiif.name}/"
+  value = "${local.iiif_base_url}"
 }
 
 output "private_subnets" {
