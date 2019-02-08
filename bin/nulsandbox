@@ -25,7 +25,6 @@ case "$1" in
            -target=module.db.module.db \
            -target=module.fcrepdb \
            -target=module.fcrepo_environment \
-           -target=module.cantaloupe_service \
            -target=module.zookeeper_environment \
            -target=module.solr_environment
            ;;
@@ -35,7 +34,6 @@ case "$1" in
            -target=module.db.module.db \
            -target=module.solr_environment \
            -target=module.zookeeper_environment \
-           -target=module.cantaloupe_service \
            -target=module.fcrepdb \
            -target=module.fcrepo_environment
           ;;

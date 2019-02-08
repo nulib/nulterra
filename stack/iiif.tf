@@ -134,5 +134,6 @@ resource "aws_route53_record" "iiif" {
 }
 
 locals {
-  iiif_base_url = "${length(aws_route53_record.iiif.*.name) > 0 ? "https://${element(aws_route53_record.iiif.*.name, 0)}/" : aws_api_gateway_stage.iiif_latest.invoke_url}"
+  fudged_record_list = "${concat(aws_route53_record.iiif.*.name, list("DUMMY_ITEM"))}"
+  iiif_base_url = "${length(aws_route53_record.iiif.*.name) > 0 ? "https://${element(local.fudged_record_list, 0)}/" : aws_api_gateway_stage.iiif_latest.invoke_url}"
 }

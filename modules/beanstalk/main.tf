@@ -120,12 +120,6 @@ resource "aws_iam_role_policy_attachment" "ecr-readonly" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
-resource "aws_ssm_activation" "ec2" {
-  name               = "${local.environment_label}"
-  iam_role           = "${aws_iam_role.ec2.id}"
-  registration_limit = "${var.autoscale_max}"
-}
-
 data "aws_iam_policy_document" "default" {
   statement {
     sid = ""
