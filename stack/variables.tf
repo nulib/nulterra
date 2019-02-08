@@ -1,5 +1,4 @@
 variable "aws_region" {
-  type    = "string"
   default = "us-east-1"
 }
 
@@ -9,12 +8,10 @@ variable "azs" {
 }
 
 variable "bastion_instance_type" {
-  type    = "string"
   default = "t2.small"
 }
 
 variable "db_master_username" {
-  type    = "string"
   default = "dbadmin"
 }
 
@@ -26,8 +23,11 @@ variable "ec2_private_keyfile" {
   type    = "string"
 }
 
+variable "enable_alarms" {
+  default = true
+}
+
 variable "enable_iiif_cloudfront" {
-  type    = "string"
   default = false
 }
 
@@ -45,7 +45,6 @@ variable "hosted_zone_name" {
 }
 
 variable "iiif_ssl_certificate_arn" {
-  type    = "string"
   default = ""
 }
 
@@ -54,7 +53,6 @@ variable "solr_capacity" {
 }
 
 variable "stack_name" {
-  type    = "string"
   default = "stack"
 }
 
@@ -68,7 +66,6 @@ variable "tags" {
 }
 
 variable "vpc_cidr_block" {
-  type    = "string"
   default = "10.1.0.0/16"
 }
 

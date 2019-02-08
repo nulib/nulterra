@@ -11,6 +11,7 @@ resource "aws_cloudwatch_metric_alarm" "fcrepo-poor" {
   dimensions  {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-fcrepo"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -28,6 +29,7 @@ resource "aws_cloudwatch_metric_alarm" "fcrepo" {
   dimensions  {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-fcrepo"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -45,6 +47,7 @@ resource "aws_cloudwatch_metric_alarm" "solr-poor" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-solr"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -62,6 +65,7 @@ resource "aws_cloudwatch_metric_alarm" "solr" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-solr"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -79,6 +83,7 @@ resource "aws_cloudwatch_metric_alarm" "zookeeper-poor" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-zookeeper"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -96,6 +101,7 @@ resource "aws_cloudwatch_metric_alarm" "zookeeper" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-zookeeper"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -113,6 +119,7 @@ resource "aws_cloudwatch_metric_alarm" "donut-batch-worker-poor" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-donut-batch-worker"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -130,6 +137,7 @@ resource "aws_cloudwatch_metric_alarm" "donut-batch-worker" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-donut-batch-worker"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -147,6 +155,7 @@ resource "aws_cloudwatch_metric_alarm" "donut-webapp-poor" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-donut-webapp"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -164,6 +173,7 @@ resource "aws_cloudwatch_metric_alarm" "donut-webapp" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-donut-webapp"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -181,6 +191,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-webapp-poor" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-avr-webapp"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -198,6 +209,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-webapp" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-avr-webapp"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -215,6 +227,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-batch-worker-poor" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-avr-batch-worker"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -232,6 +245,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-batch-worker" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-avr-batch-worker"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -249,6 +263,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-ui-worker-poor" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-avr-ui-worker"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -266,6 +281,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-ui-worker" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-avr-ui-worker"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -283,6 +299,7 @@ resource "aws_cloudwatch_metric_alarm" "arch-poor" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-arch"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -300,6 +317,7 @@ resource "aws_cloudwatch_metric_alarm" "arch" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-arch"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -317,6 +335,7 @@ resource "aws_cloudwatch_metric_alarm" "arch-ui-worker-poor" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-arch-ui-worker"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -334,6 +353,7 @@ resource "aws_cloudwatch_metric_alarm" "arch-ui-worker" {
   dimensions {
       "EnvironmentName" = "${var.stack_name}-${var.environment}-arch-ui-worker"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -348,6 +368,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-elasticache-swapusage" {
   period                    = "300"
   statistic                 = "Average"
   alarm_description         = "AVR ElastiCache High Swap UsageUtilization"
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -362,6 +383,7 @@ resource "aws_cloudwatch_metric_alarm" "avr-elasticache-freeablememory" {
   period                    = "300"
   statistic                 = "Average"
   alarm_description         = "AVR ElastiCache Low Freeable Momory"
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -379,6 +401,7 @@ resource "aws_cloudwatch_metric_alarm" "rds-low-free-storage-space" {
   dimensions {
       "DBInstanceIdentifier" = "${var.stack_name}-${var.environment}-db"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
@@ -396,6 +419,7 @@ resource "aws_cloudwatch_metric_alarm" "fcrepo-unhealthy-host-count" {
   dimensions {
     "LoadBalancer" = "${module.fcrepo_environment.elb_name}"
   }
+  actions_enabled           = "${var.enable_alarms}"
   alarm_actions             = [ "${var.pager_alert}", ]
   insufficient_data_actions = []
 }
