@@ -113,7 +113,7 @@ resource "aws_api_gateway_domain_name" "iiif_domain_name" {
 }
 
 resource "aws_api_gateway_base_path_mapping" "iiif_domain_mapping" {
-  count         = "${length(aws_api_gateway_domain_name.iiif_domain_name.*.regional_domain_name)}"
+  count         = "${var.iiif_ssl_certificate_arn == "" ? 0 : 1}"
   base_path     = ""
   api_id        = "${aws_api_gateway_rest_api.iiif_api.id}"
   stage_name    = "${aws_api_gateway_stage.iiif_latest.stage_name}"
@@ -121,7 +121,7 @@ resource "aws_api_gateway_base_path_mapping" "iiif_domain_mapping" {
 }
 
 resource "aws_route53_record" "iiif" {
-  count   = "${length(aws_api_gateway_domain_name.iiif_domain_name.*.regional_domain_name)}"
+  count   = "${var.iiif_ssl_certificate_arn == "" ? 0 : 1}"
   zone_id = "${module.dns.public_zone_id}"
   name    = "iiif.${local.public_zone_name}"
   type    = "A"
