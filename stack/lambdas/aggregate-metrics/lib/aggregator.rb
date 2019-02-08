@@ -75,21 +75,32 @@ class Aggregator
   end
 
   def raw_data(environment, metric)
-    unless environments.include?(environment) && metric_names(environment).include?(metric)
-      return OpenStruct.new(metric_data_results: [])
-    end
+    return [] unless environments.include?(environment) && metric_names(environment).include?(metric)
 
-    client.get_metric_data(
-      metric_data_queries: queries_for(environment, metric), 
-      start_time: Time.now-60, 
-      end_time: Time.now, 
-      max_datapoints: 3
-    )
+    [].tap do |result|
+      token = nil
+      while true
+        params = {
+          metric_data_queries: queries_for(environment, metric), 
+          start_time: Time.now-60, 
+          end_time: Time.now, 
+          max_datapoints: 3,
+          next_token: token
+        }
+        begin
+          response = client.get_metric_data(params)
+          result.concat(response.metric_data_results)
+          break if (token = response.next_token).nil?
+        rescue Aws::CloudWatch::Errors::InvalidNextToken
+          break
+        end
+      end
+    end
   end
 
   def data(environment, metric)
     MetricData.new(environment, metric, UNITS[metric]).tap do |result|
-      raw_data(environment, metric).metric_data_results.collect(&:to_h).each do |hash|
+      raw_data(environment, metric).collect(&:to_h).each do |hash|
         result.timestamps.concat(Array(hash[:timestamps]))
         result.values.concat(Array(hash[:values]))
       end
