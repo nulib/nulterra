@@ -95,8 +95,8 @@ module "solr_environment" {
   keypair                 = "${var.ec2_keyname}"
   instance_type           = "t2.medium"
   extra_block_devices    = "/dev/xvdcz=:64:true:gp2"
-  autoscale_min           = 3
-  autoscale_max           = 4
+  autoscale_min           = "${var.solr_capacity}"
+  autoscale_max           = "${var.solr_capacity + 1}"
   health_check_threshold  = "Ok"
   wait_for_ready_timeout  = "40m"
   tags                    = "${local.common_tags}"

@@ -49,6 +49,10 @@ variable "iiif_ssl_certificate_arn" {
   default = ""
 }
 
+variable "solr_capacity" {
+  default = 3
+}
+
 variable "stack_name" {
   type    = "string"
   default = "stack"
