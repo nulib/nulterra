@@ -134,5 +134,5 @@ resource "aws_route53_record" "iiif" {
 }
 
 locals {
-  iiif_base_url = "${length(aws_route53_record.iiif.*.name) > 0 ? "https://${aws_route53_record.iiif.name}/" : aws_api_gateway_stage.iiif_latest.invoke_url}"
+  iiif_base_url = "${length(aws_route53_record.iiif.*.name) > 0 ? "https://${aws_route53_record.iiif.*.name.0}/" : aws_api_gateway_stage.iiif_latest.invoke_url}"
 }
