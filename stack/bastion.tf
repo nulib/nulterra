@@ -113,42 +113,6 @@ resource "aws_instance" "bastion" {
   }
 }
 
-resource "null_resource" "provision_bastion" {
-  triggers {
-    host = "${aws_instance.bastion.id}"
-  }
-
-  provisioner "file" {
-    connection {
-      host        = "${aws_instance.bastion.public_dns}"
-      user        = "ec2-user"
-      agent       = true
-      timeout     = "3m"
-      private_key = "${file(var.ec2_private_keyfile)}"
-    }
-
-    source      = "${path.module}/files/"
-    destination = "/tmp/"
-  }
-
-  provisioner "remote-exec" {
-    connection {
-      host        = "${aws_instance.bastion.public_dns}"
-      user        = "ec2-user"
-      agent       = true
-      timeout     = "3m"
-      private_key = "${file(var.ec2_private_keyfile)}"
-    }
-
-    inline = [
-      "sudo mv /tmp/mount_all_efs /usr/local/sbin/mount_all_efs",
-      "sudo mv /tmp/awssh /usr/local/bin/awssh",
-      "sudo chmod 0755 /usr/local/bin/awssh /usr/local/sbin/mount_all_efs",
-      "sudo yum install -y postgresql96 jq tmux",
-    ]
-  }
-}
-
 resource "null_resource" "install_puppet_on_bastion" {
   triggers {
     host = "${aws_instance.bastion.id}"
@@ -159,14 +123,14 @@ resource "null_resource" "install_puppet_on_bastion" {
       host        = "${aws_instance.bastion.public_dns}"
       user        = "ec2-user"
       agent       = true
-      timeout     = "3m"
+      timeout     = "10m"
       private_key = "${file(var.ec2_private_keyfile)}"
     }
 
     inline = [
-      "mkdir -p /etc/facter/facts.d",
-      "curl -o /etc/facter/facts.d/ec2_facts https://nul-repo-deploy.s3.amazonaws.com/ec2_facts",
-      "chmod 0770 /etc/facter/facts.d/ec2_facts",
+      "sudo mkdir -p /etc/facter/facts.d",
+      "sudo curl -o /etc/facter/facts.d/ec2_facts https://nul-repo-deploy.s3.amazonaws.com/ec2_facts",
+      "sudo chmod 0770 /etc/facter/facts.d/ec2_facts",
       "curl -k https://pe.library.northwestern.edu:8140/packages/current/install.bash | sudo bash"
     ]
   }

@@ -22,6 +22,10 @@ variable "connection" {
   type = "map"
 }
 
+variable "dependency_id" {
+  default = ""
+}
+
 module "role_password" {
   source = "../password"
 }

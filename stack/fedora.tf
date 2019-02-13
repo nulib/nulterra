@@ -20,6 +20,7 @@ module "fcrepodb" {
   port            = "${module.db.this_db_instance_port}"
   master_username = "${module.db.this_db_instance_username}"
   master_password = "${module.db.this_db_instance_password}"
+  dependency_id   = "${null_resource.install_puppet_on_bastion.id}"
 
   connection = {
     user        = "ec2-user"
