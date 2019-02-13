@@ -1,3 +1,7 @@
+variable "api_token_secret" {
+  type    = "string"
+}
+
 variable "aws_region" {
   default = "us-east-1"
 }

@@ -1,5 +1,35 @@
-data "aws_lambda_function" "iiif_image" {
-  function_name = "iiif-image"
+module "iiif_function" {
+  source = "git://github.com/nulib/terraform-aws-lambda"
+
+  function_name = "${local.namespace}-iiif"
+  description   = "IIIF Image server lambda"
+  handler       = "index.handler"
+  runtime       = "nodejs8.10"
+  memory_size   = 3008
+  timeout       = 300
+
+  attach_policy = true
+  policy        = "${data.aws_iam_policy_document.pyramid_tiff_bucket_access.json}"
+
+  attach_vpc_config = true
+  vpc_config {
+    subnet_ids         = ["${module.vpc.private_subnets}"]
+    security_group_ids = ["${module.vpc.default_security_group_id}"]
+  }
+
+  environment {
+    variables {
+      VIPS_DISC_THRESHOLD = "1500m"
+      allow_everything    = "true"
+      api_token_secret    = "${var.api_token_secret}"
+      elastic_search      = "https://${aws_elasticsearch_domain.elasticsearch.endpoint}/"
+      tiff_bucket         = "${aws_s3_bucket.pyramid_tiff_bucket.id}"
+    }
+  }
+
+  layers        = ["${aws_lambda_layer_version.common_layer.layer_arn}", "${aws_lambda_layer_version.image_utils_layer.layer_arn}"]
+  source_path   = "${path.module}/lambdas/iiif"
+  build_command = "${path.module}/../bin/bundle-lambda '$$filename' '$$runtime' '$$source' common image-utils"
 }
 
 resource "aws_s3_bucket" "pyramid_tiff_bucket" {
@@ -47,7 +77,7 @@ data "aws_iam_policy_document" "pyramid_bucket_public_policy" {
 
     principals {
       type        = "AWS"
-      identifiers = ["${data.aws_lambda_function.iiif_image.role}"]
+      identifiers = ["${module.iiif_function.role_arn}"]
     }
   }
 
@@ -58,7 +88,7 @@ data "aws_iam_policy_document" "pyramid_bucket_public_policy" {
 
     principals {
       type        = "AWS"
-      identifiers = ["${data.aws_lambda_function.iiif_image.role}"]
+      identifiers = ["${module.iiif_function.role_arn}"]
     }
   }
 }
@@ -74,7 +104,7 @@ data "template_file" "iiif_openapi_template" {
   vars {
     api_name              = "${local.namespace}-iiif"
     hostname              = "iiif.${local.public_zone_name}"
-    lambda_arn            = "${replace(data.aws_lambda_function.iiif_image.arn, ":$LATEST", "")}"
+    lambda_arn            = "${replace(module.iiif_function.function_arn, ":$LATEST", "")}"
     public_manifest_url   = "http://donut.${local.public_zone_name}"
     region                = "${var.aws_region}"
   }

@@ -1,0 +1,36 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'open3'
+require 'pathname'
+
+filename, runtime, source = ARGV.slice!(0, 3)
+filename = Pathname(File.expand_path(filename))
+source = Pathname(File.expand_path(source))
+base = Pathname(File.expand_path('../lambda_layers', __FILE__))
+layers = ARGV.empty? ? Dir[base.join('layers/*')].collect { |d| File.basename(d) } : ARGV
+
+bundled_modules = layers.collect do |layer|
+  Dir[base.join('layers', layer, 'nodejs', 'node_modules', '*')].collect { |d| File.basename(d) }
+end.flatten.sort.uniq
+
+FileUtils.mkdir_p(filename.dirname)
+Dir.chdir(source) do
+  distro_modules = Dir[source.join('node_modules','*')].collect { |d| File.basename(d) }.sort.uniq - bundled_modules
+  distro_files = `git ls-files`.split + distro_modules.collect { |m| "node_modules/#{m}" }
+  cmd = [
+    'zip', 
+    '-FS', 
+    filename.to_s, 
+    '-r',
+    distro_files,
+    '--exclude',
+    'node_modules/*/node_modules/*',
+    '--exclude',
+    '**/.*'
+  ].flatten
+
+  Open3.popen2e(*cmd) do |io_in, io_out, wait_thr|
+    io_out.each { |line| $stdout.puts line }
+  end
+end

@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+require 'open3'
+require 'pathname'
+
+base = Pathname(File.expand_path('../../lambda_layers', __FILE__))
+layers = ARGV.empty? ? Dir[base.join('layers/*')].collect { |d| File.basename(d) } : ARGV
+layers.each do |layer|
+  $stderr.puts "Building #{layer}"
+  Dir.chdir(base.join("layers", layer, "nodejs")) do
+    cmds = [
+      ["docker", "run", "-v", "#{Dir.pwd}:/var/task", "lambci/lambda:build-nodejs8.10", "npm", "install", "--build-from-source"],
+      ["zip", "-FS", "#{base.join('build', layer)}.zip", "-r", "."]
+    ]
+    cmds.each do |cmd|
+      Open3.popen2e(*cmd) do |io_in, io_out, wait_thr|
+        io_out.each { |line| $stdout.puts line }
+      end
+    end
+  end
+end

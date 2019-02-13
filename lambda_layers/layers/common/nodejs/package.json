@@ -1,0 +1,17 @@
+{
+  "name": "common-layer",
+  "version": "0.0.1",
+  "description": "NUL common libraries for lambda",
+  "main": "index.js",
+  "author": "Michael B. Klein",
+  "license": "Apache2",
+  "dependencies": {
+    "aws-sdk": "^2.368.0",
+    "jsonwebtoken": "^8.4.0",
+    "lodash.isobject": "^3.0.2",
+    "lodash.isstring": "^4.0.1",
+    "middy": "^0.19.4",
+    "node-fetch": "^2.3.0",
+    "url": "^0.11.0"
+  }
+}

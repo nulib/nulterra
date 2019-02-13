@@ -1,0 +1,16 @@
+{
+  "name": "lambda-layer-sharp",
+  "version": "0.0.1",
+  "description": "sharp for lambda",
+  "main": "index.js",
+  "author": "Michael B. Klein",
+  "license": "Apache2",
+  "dependencies": {
+    "aws-sdk": "^2.368.0",
+    "mime-types": "^2.1.21",
+    "probe-image-size": "^4.0.0",
+    "request": "^2.88.0",
+    "sharp": "^0.21.3",
+    "url-parse": "^1.4.4"
+  }
+}
