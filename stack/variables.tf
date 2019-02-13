@@ -52,6 +52,10 @@ variable "iiif_ssl_certificate_arn" {
   default = ""
 }
 
+variable "postgres_version" {
+  default = "9.6.11"
+}
+
 variable "solr_capacity" {
   default = 3
 }

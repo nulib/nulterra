@@ -2,10 +2,6 @@ module "db_master_password" {
   source = "../modules/password"
 }
 
-data "aws_db_instance" "existing_database" {
-  db_instance_identifier = "${local.namespace}-db"
-}
-
 module "db" {
   source  = "terraform-aws-modules/rds/aws"
   version = "1.9.0"
@@ -13,7 +9,7 @@ module "db" {
   identifier = "${local.namespace}-db"
 
   engine         = "postgres"
-  engine_version = "${data.aws_db_instance.existing_database.engine_version}"
+  engine_version = "${var.postgres_version}"
 
   instance_class    = "db.t2.medium"
   allocated_storage = 100
