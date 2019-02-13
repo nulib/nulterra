@@ -201,12 +201,12 @@ resource "aws_lambda_permission" "upsert_invoke_permission" {
 }
 
 module "upsert_zk_records" {
-  source = "git://github.com/claranet/terraform-aws-lambda"
+  source = "git://github.com/nulib/terraform-aws-lambda"
 
   function_name = "${local.namespace}-upsert-zk-route53-records"
   description   = "Upsert Route53 records for Zookeeper on scaling"
   handler       = "index.handler"
-  runtime       = "nodejs4.3"
+  runtime       = "nodejs8.10"
   timeout       = 300
 
   attach_policy = true

@@ -17,7 +17,7 @@ resource "aws_lambda_permission" "batch_status_finished" {
 }
 
 module "batch_status_finished" {
-  source = "git://github.com/claranet/terraform-aws-lambda"
+  source = "git://github.com/nulib/terraform-aws-lambda"
 
   function_name = "${local.namespace}-batch-finished"
   description   = "Run batch status checks"
@@ -58,7 +58,7 @@ resource "aws_lambda_permission" "batch_status_stalled" {
 }
 
 module "batch_status_stalled" {
-  source = "git://github.com/claranet/terraform-aws-lambda"
+  source = "git://github.com/nulib/terraform-aws-lambda"
 
   function_name = "${local.namespace}-batch-stalled"
   description   = "Run batch stalled checks"

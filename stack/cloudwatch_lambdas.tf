@@ -20,7 +20,7 @@ resource "aws_lambda_permission" "solr_metrics_invoke_permission" {
 
 
 module "solr_metrics_function" {
-  source = "git://github.com/claranet/terraform-aws-lambda"
+  source = "git://github.com/nulib/terraform-aws-lambda"
 
   function_name = "${local.namespace}-solr-metrics"
   description   = "Posts solr metrics to CloudWatch"
@@ -66,7 +66,7 @@ resource "aws_lambda_permission" "aggregate_metrics_invoke_permission" {
 }
 
 module "aggregate_metrics_function" {
-  source = "git://github.com/claranet/terraform-aws-lambda"
+  source = "git://github.com/nulib/terraform-aws-lambda"
 
   function_name = "${local.namespace}-aggregate-metrics"
   description   = "Aggregates instance Docker/Disk/Memory metrics and posts them to CloudWatch"

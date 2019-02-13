@@ -295,7 +295,7 @@ data "aws_iam_policy_document" "this_batch_ingest_access" {
 }
 
 module "this_batch_ingest" {
-  source = "git://github.com/claranet/terraform-aws-lambda"
+  source = "git://github.com/nulib/terraform-aws-lambda"
 
   function_name = "${data.terraform_remote_state.stack.stack_name}-${local.app_name}-batch-ingest"
   description   = "Batch Ingest trigger for ${local.app_name}"
