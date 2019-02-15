@@ -25,20 +25,6 @@ class Decommissioner
         path: "/puppet-ca/v1/certificate_status/#{hostname}", 
         headers: { Accept: 'pson' }
       )
-
-      result << request(
-        method: :Post, 
-        path: '/pdb/cmd/v1',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, 
-        body: {
-          command: 'deactivate node',
-          version: 3,
-          payload: {
-            certname: hostname,
-            producer_timestamp: Time.now.iso8601
-          }
-        }
-      )
     end
   end
 
