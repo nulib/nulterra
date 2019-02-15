@@ -32,11 +32,7 @@ class LambdaHandler
     return event['certname'] unless event['certname'].nil?
     instance_id = event['detail']['instance-id']
     instance = Aws::EC2::Instance.new(id: instance_id)
-    attributes = instance.tags.find { |tag| tag.key == 'Name' }.value.split(/-/, 4)
-    namespace = attributes[0..1].compact.join('-')
-    role = attributes[2..3].compact.join('-')
-    dns_name = instance.private_dns_name.split(/\./).first
-    "%s.%s.%s.nul.internal" % [dns_name, role, namespace]
+    instance.tags.find { |tag| tag.key == 'nul:puppet:certname' }&.value
   end
 
   def get_parameters(*names)

@@ -31,7 +31,6 @@ resource "aws_cloudwatch_event_rule" "decommissioner_event" {
   }
 }
 __EOF__
-  
 }
 
 module "decommissioner_function" {
