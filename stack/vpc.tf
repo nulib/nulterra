@@ -14,6 +14,12 @@ module "vpc" {
   single_nat_gateway           = true
   create_database_subnet_group = false
 
+  enable_ec2_endpoint               = true
+  enable_s3_endpoint                = true
+  enable_ssm_endpoint               = true
+  ec2_endpoint_security_group_ids   = ["${module.vpc.default_security_group_id}"]
+  ssm_endpoint_security_group_ids   = ["${module.vpc.default_security_group_id}"]
+
   tags = "${local.common_tags}"
 }
 
