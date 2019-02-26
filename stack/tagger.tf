@@ -40,7 +40,7 @@ module "instance_tagger_function" {
   description   = "Tags newly booted instances with a puppet certname"
   handler       = "main.handle_event"
   runtime       = "ruby2.5"
-  timeout       = 300
+  timeout       = 60
 
   attach_policy = true
   policy        = "${data.aws_iam_policy_document.instance_tagger_lambda_access.json}"

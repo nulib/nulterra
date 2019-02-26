@@ -28,11 +28,16 @@ class LambdaHandler
 
   def instance
     instance_id = event['detail']['instance-id']
-    @instance ||= Aws::EC2::Instance.new(id: instance_id)
+    Aws::EC2::Instance.new(id: instance_id)
+  end
+
+  def name_tag
+    instance.tags.find { |tag| tag.key == 'Name' }.value
   end
 
   def instance_certname
-    attributes = instance.tags.find { |tag| tag.key == 'Name' }.value.split(/-/, 4)
+    sleep 2 while name_tag.empty? # lambda will kill this if it doesn't complete within its configured timeout
+    attributes = name_tag.split(/-/, 4)
     namespace = attributes[0..1].compact.join('-')
     role = attributes[2..3].compact.join('-')
     dns_name = instance.private_dns_name.split(/\./).first
