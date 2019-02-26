@@ -62,3 +62,40 @@ resource "aws_security_group_rule" "db_client_access" {
   protocol                 = "tcp"
   source_security_group_id = "${aws_security_group.db_client.id}"
 }
+
+resource "aws_ssm_parameter" "db_host" {
+  name        = "/${var.stack_name}-db/host"
+  value       = "${module.db.this_db_instance_address}"
+  type        = "String"
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "db_port" {
+  name        = "/${var.stack_name}-db/port"
+  value       = "${module.db.this_db_instance_port}"
+  type        = "String"
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "db_admin_user" {
+  name        = "/${var.stack_name}-db/admin_user"
+  value       = "${module.db.this_db_instance_username}"
+  type        = "SecureString"
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "db_admin_password" {
+  name        = "/${var.stack_name}-db/admin_password"
+  value       = "${module.db.this_db_instance_password}"
+  type        = "SecureString"
+  overwrite   = true
+}
+
+resource "null_resource" "db_parameters" {
+  depends_on  = [
+    "aws_ssm_parameter.db_host",
+    "aws_ssm_parameter.db_port",
+    "aws_ssm_parameter.db_admin_user",
+    "aws_ssm_parameter.db_admin_password"
+  ]
+}

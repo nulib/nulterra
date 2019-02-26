@@ -16,7 +16,7 @@ resource "aws_s3_bucket" "static_frontend_bucket" {
 }
 
 resource "aws_ssm_parameter" "glaze_bucket_name" {
-  name        = "/stack-glaze/s3_bucket"
+  name        = "/${var.stack_name}-glaze/s3_bucket"
   value       = "${aws_s3_bucket.static_frontend_bucket.id}"
   type        = "String"
   overwrite   = true

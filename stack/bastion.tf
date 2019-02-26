@@ -53,7 +53,8 @@ data "aws_iam_policy_document" "bastion_api_access" {
                   "ec2:DescribeInstances",
                   "elasticfilesystem:*",
                   "s3:*",
-                  "cloudwatch:PutMetricData"
+                  "cloudwatch:PutMetricData",
+                  "ssm:Get*"
                 ]
     resources = ["*"]
   }
