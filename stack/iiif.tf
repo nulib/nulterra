@@ -11,12 +11,6 @@ module "iiif_function" {
   attach_policy = true
   policy        = "${data.aws_iam_policy_document.pyramid_tiff_bucket_access.json}"
 
-  attach_vpc_config = true
-  vpc_config {
-    subnet_ids         = ["${module.vpc.private_subnets}"]
-    security_group_ids = ["${module.vpc.default_security_group_id}"]
-  }
-
   environment {
     variables {
       VIPS_DISC_THRESHOLD = "1500m"
@@ -30,6 +24,7 @@ module "iiif_function" {
   layers        = ["${aws_lambda_layer_version.common_layer.layer_arn}", "${aws_lambda_layer_version.image_utils_layer.layer_arn}"]
   source_path   = "${path.module}/lambdas/iiif"
   build_command = "${path.module}/../bin/bundle-lambda '$$filename' '$$runtime' '$$source' common image-utils"
+  tags          = "${local.common_tags}"
 }
 
 resource "aws_s3_bucket" "pyramid_tiff_bucket" {
@@ -46,25 +41,21 @@ data "aws_iam_policy_document" "pyramid_tiff_bucket_access" {
   }
 
   statement {
-    effect = "Allow"
-
-    actions = [
+    effect    = "Allow"
+    actions   = [
       "s3:ListBucket",
       "s3:GetBucketLocation",
     ]
-
     resources = ["${aws_s3_bucket.pyramid_tiff_bucket.arn}"]
   }
 
   statement {
-    effect = "Allow"
-
-    actions = [
+    effect    = "Allow"
+    actions   = [
       "s3:PutObject",
       "s3:GetObject",
       "s3:DeleteObject",
     ]
-
     resources = ["${aws_s3_bucket.pyramid_tiff_bucket.arn}/*"]
   }
 }
