@@ -7,7 +7,8 @@ require 'pathname'
 filename, runtime, source = ARGV.slice!(0, 3)
 filename = Pathname(File.expand_path(filename))
 source = Pathname(File.expand_path(source))
-base = Pathname(File.expand_path('../lambda_layers', __FILE__))
+base = Pathname(File.expand_path('../../lambda_layers', __FILE__))
+
 layers = ARGV.empty? ? Dir[base.join('layers/*')].collect { |d| File.basename(d) } : ARGV
 
 bundled_modules = layers.collect do |layer|

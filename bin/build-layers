@@ -7,9 +7,9 @@ base = Pathname(File.expand_path('../../lambda_layers', __FILE__))
 layers = ARGV.empty? ? Dir[base.join('layers/*')].collect { |d| File.basename(d) } : ARGV
 layers.each do |layer|
   $stderr.puts "Building #{layer}"
-  Dir.chdir(base.join("layers", layer, "nodejs")) do
+  Dir.chdir(base.join("layers", layer)) do
     cmds = [
-      ["docker", "run", "-v", "#{Dir.pwd}:/var/task", "lambci/lambda:build-nodejs8.10", "npm", "install", "--build-from-source"],
+      ["docker", "run", "-v", "#{Dir.pwd}/nodejs:/var/task", "lambci/lambda:build-nodejs8.10", "npm", "install", "--build-from-source"],
       ["zip", "-FS", "#{base.join('build', layer)}.zip", "-r", "."]
     ]
     cmds.each do |cmd|
