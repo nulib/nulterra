@@ -35,7 +35,9 @@ function makeResource(event) {
   return new IIIF.Processor(uri, id => s3Object(id));
 }
 
-function processRequest(event, _context, callback) {
+function processRequest(event, context, callback) {
+  AWS.config.region = context.invokedFunctionArn.match(/^arn:aws:lambda:(\w+-\w+-\d+):/)[1];
+
   if (event.httpMethod == 'OPTIONS' || event.path == '/iiif/login') {
     callback(null, { statusCode: 204, body: null });
   } else {

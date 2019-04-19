@@ -40,7 +40,7 @@ async function fetchJson(request) {
 async function makeRequest(method, requestUrl, body = null) {
   return new Promise((resolve, reject) => {
     var chain = new AWS.CredentialProviderChain();
-    var request = new AWS.HttpRequest(requestUrl, 'us-east-1');
+    var request = new AWS.HttpRequest(requestUrl, AWS.config.region);
     request.method = method;
     request.headers['Host'] = url.parse(requestUrl).host;
     request.body = body;

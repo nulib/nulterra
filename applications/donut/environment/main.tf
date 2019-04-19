@@ -26,6 +26,11 @@ variable "honeybadger_api_key" {
   type = "string"
 }
 
+variable "instance_type" {
+  type    = "string"
+  default = "t2.medium"
+}
+
 variable "mount_volumes" {
   type = "string"
 }
@@ -64,6 +69,16 @@ variable "worker_queue" {
 
 variable "worker_queue_url" {
   type = "string"
+}
+
+variable "sqsd_inactivity_timeout" {
+  type    = "string"
+  default = "299"
+}
+
+variable "sqsd_visibility_timeout" {
+  type    = "string"
+  default = "300"
 }
 
 variable "ssl_certificate" {
@@ -145,11 +160,13 @@ module "this_environment" {
   instance_port                = "80"
   healthcheck_url              = "/"
   keypair                      = "${data.terraform_remote_state.stack.ec2_keyname}"
-  instance_type                = "t2.medium"
+  instance_type                = "${var.instance_type}"
   extra_block_devices          = "/dev/xvdcz=:64:true:gp2"
   autoscale_min                = "${var.autoscale_min}"
   autoscale_max                = "${var.autoscale_max}"
   health_check_threshold       = "Ok"
+  sqsd_inactivity_timeout      = "${var.sqsd_inactivity_timeout}"
+  sqsd_visibility_timeout      = "${var.sqsd_visibility_timeout}"
   sqsd_worker_queue_url        = "${var.worker_queue_url}"
   tags                         = "${var.tags}"
 
@@ -157,7 +174,7 @@ module "this_environment" {
     AWS_REGION                      = "${data.terraform_remote_state.stack.aws_region}"
     DATABASE_URL                    = "${var.database_url}"
     FEDORA_BASE_PATH                = "/${var.name}"
-    FEDORA_URL                      = "${data.terraform_remote_state.stack.repo_endpoint}"
+    FEDORA_URL                      = "${data.terraform_remote_state.stack.repo_endpoint}?timeout=600&open_timeout=60"
     HONEYBADGER_API_KEY             = "${var.honeybadger_api_key}"
     HONEYBADGER_ENV                 = "${terraform.workspace}"
     MOUNT_GID                       = "1000"

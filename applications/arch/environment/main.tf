@@ -164,7 +164,7 @@ module "this_environment" {
     AWS_REGION                      = "${data.terraform_remote_state.stack.aws_region}"
     DATABASE_URL                    = "${var.database_url}"
     FEDORA_BASE_PATH                = "/nuf"
-    FEDORA_URL                      = "${data.terraform_remote_state.stack.repo_endpoint}"
+    FEDORA_URL                      = "${data.terraform_remote_state.stack.repo_endpoint}?timeout=600&open_timeout=60"
     HONEYBADGER_API_KEY             = "${var.honeybadger_api_key}"
     HONEYBADGER_ENV                 = "${terraform.workspace}"
     MOUNT_GID                       = "1000"
