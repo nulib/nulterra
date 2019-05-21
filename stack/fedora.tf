@@ -161,6 +161,7 @@ module "fcrepo_environment" {
   private_subnets        = "${module.vpc.private_subnets}"
   public_subnets         = "${module.vpc.private_subnets}"
   loadbalancer_scheme    = "internal"
+  loadbalancer_timeout   = "600"
   instance_port          = "8080"
   healthcheck_url        = "/rest/alive"
   keypair                = "${var.ec2_keyname}"

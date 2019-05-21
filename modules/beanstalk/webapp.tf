@@ -207,6 +207,16 @@ resource "aws_elastic_beanstalk_environment" "default" {
   }
   setting {
     namespace = "aws:elb:policies"
+    name      = "ConnectionSettingIdleTimeout"
+    value     = "${var.loadbalancer_timeout}"
+  }
+  setting {
+    namespace = "aws:elb:policies"
+    name      = "ConnectionDrainingTimeout"
+    value     = "${var.loadbalancer_timeout}"
+  }
+  setting {
+    namespace = "aws:elb:policies"
     name      = "ConnectionDrainingEnabled"
     value     = "true"
   }

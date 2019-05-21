@@ -65,6 +65,11 @@ variable "loadbalancer_scheme" {
   description = "Specify 'internal' for internal load balancer"
 }
 
+variable "loadbalancer_timeout" {
+  default     = "60"
+  description = "Number of seconds that the load balancer waits for any data to be sent or received over the connection"
+}
+
 variable "loadbalancer_type" {
   default     = "classic"
   description = "Load Balancer type, e.g. 'application' or 'classic'"
