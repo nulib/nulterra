@@ -7,6 +7,16 @@ const AWS      = require('aws-sdk');
 
 const apiTokenSecret = process.env.api_token_secret;
 const elasticSearch  = process.env.elastic_search;
+const allowedFrom    = allowedFromRegexes(process.env.allow_from);
+
+function allowedFromRegexes(str) {
+  var configValues = isString(str) ? str.split(';') : [];
+  var result = [];
+  for (var re in configValues) {
+    result.push(new RegExp(configValues[re]));
+  }
+  return result;
+}
 
 function getCurrentUser(token) {
   if (isString(token)) {
@@ -59,11 +69,11 @@ async function makeRequest(method, requestUrl, body = null) {
   });
 }
 
-async function authorize(token, id) {
-  if (process.env.allow_everything) {
-    return true;
+async function authorize(token, id, referer) {
+  for (var re in allowedFrom) {
+    if (allowedFrom[re].test(referer)) return true;
   }
-  
+
   var currentUser = getCurrentUser(token);
   var docUrl = url.parse(url.resolve(elasticSearch, `common/_doc/${id}`));
   var request = await makeRequest('GET', docUrl);

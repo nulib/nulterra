@@ -43,7 +43,7 @@ function processRequest(event, context, callback) {
   } else {
     var authToken = isString(event.headers.Authorization) ? event.headers.Authorization.replace(/^Bearer /,'') : null;
     var resource = makeResource(event);
-    authorize(authToken, resource.id)
+    authorize(authToken, resource.id, event.headers.Referer)
       .then(authed => {
           if (resource.filename == 'info.json' || authed) {
             resource.execute()
