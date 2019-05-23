@@ -17,8 +17,8 @@ class LambdaHandler
     @context = context
     @pyramid_queue_url = ENV['QueueUrl']
     @ecs = Task.new
-    @pyramid_bucket = event[:target].split(/s3:\/\/(.*?)\//)[1]
-    @destination_s3_key = event[:target].scan(/^s3:\/\/#{pyramid_bucket}\/(.+)$/).flatten.first
+    @pyramid_bucket = event['target'].split(/s3:\/\/(.*?)\//)[1]
+    @destination_s3_key = event['target'].scan(/^s3:\/\/#{pyramid_bucket}\/(.+)$/).flatten.first
   end
 
   def process!
@@ -28,6 +28,7 @@ class LambdaHandler
       ecs.run_task unless ecs.task_running?
       { statusCode: 201, body: JSON.generate('Created') }
     rescue StandardError => error
+      puts error.backtrace.join("\n")
       { statusCode: 500, body: JSON.generate(error.message) }
     end
   end
