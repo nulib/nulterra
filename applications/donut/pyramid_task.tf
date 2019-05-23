@@ -112,3 +112,49 @@ resource "aws_ecs_task_definition" "this_pyramid_tiff_task" {
   memory                      = "8192"
   container_definitions       = "${data.template_file.pyramid_container_definitions.rendered}"
 }
+
+data "aws_iam_policy_document" "this_pyramid_trigger_access" {
+  statement {
+    effect    = "Allow"
+    actions   = ["iam:Passrole"]
+    resources = ["*"]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["sqs:*"]
+    resources = ["${aws_sqs_queue.this_pyramid_tiff_queue.arn}"]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = [
+      "ecs:ListTasks",
+      "ecs:RunTask"
+    ]
+    resources = ["*"]
+  }
+}
+
+module "this_pyramid_trigger" {
+  source = "git://github.com/nulib/terraform-aws-lambda"
+
+  function_name = "${local.namespace}-trigger-pyramid"
+  description   = "Pyramid TIFF Creation trigger"
+  handler       = "main.handle_event"
+  runtime       = "ruby2.5"
+  timeout       = 30
+
+  attach_policy = true
+  policy        = "${data.aws_iam_policy_document.this_pyramid_trigger_access.json}"
+
+  source_path = "${path.module}/lambdas/pyramid_trigger"
+
+  environment {
+    variables {
+      QueueUrl = "${aws_sqs_queue.this_pyramid_tiff_queue.id}"
+      TaskArn  = "${aws_ecs_task_definition.this_pyramid_tiff_task.arn}"
+      VpcId    = "${data.terraform_remote_state.stack.vpc_id}"
+    }
+  }
+}
