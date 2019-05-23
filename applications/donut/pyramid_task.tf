@@ -130,9 +130,22 @@ data "aws_iam_policy_document" "this_pyramid_trigger_access" {
     effect    = "Allow"
     actions   = [
       "ecs:ListTasks",
-      "ecs:RunTask"
+      "ecs:RunTask",
+      "ec2:Describe*"
     ]
     resources = ["*"]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = [
+      "s3:List*",
+      "s3:Get*"
+    ]
+    resources = [
+      "${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}",
+      "${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}/*"
+    ]
   }
 }
 

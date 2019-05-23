@@ -350,6 +350,7 @@ data "null_data_source" "ssm_parameters" {
   inputs = "${map(
     "aws/buckets/batch",        "${aws_s3_bucket.this_batch.id}",
     "aws/buckets/dropbox",      "${aws_s3_bucket.this_dropbox.id}",
+    "aws/buckets/fedora",       "${local.namespace}-fedora-binaries",
     "aws/buckets/manifests",    "${data.terraform_remote_state.stack.iiif_pyramid_bucket}",
     "aws/buckets/pyramids",     "${data.terraform_remote_state.stack.iiif_pyramid_bucket}",
     "aws/buckets/uploads",      "${aws_s3_bucket.this_uploads.id}",
@@ -365,7 +366,7 @@ data "null_data_source" "ssm_parameters" {
 }
 
 resource "aws_ssm_parameter" "this_config_setting" {
-  count     = 11
+  count     = 12
   name      = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
   type      = "String"
   value     = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"
