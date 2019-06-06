@@ -35,6 +35,33 @@ function makeResource(event) {
   return new IIIF.Processor(uri, id => s3Object(id));
 }
 
+function packageBase64(result) {
+  var base64Payload = result.body.toString('base64');
+  return {
+    statusCode: 200,
+    headers: { 'Content-Type': result.contentType },
+    isBase64Encoded: true,
+    body: base64Payload
+  };
+}
+
+function packageRaw(result) {
+  return {
+    statusCode: 200,
+    headers: { 'Content-Type': result.contentType },
+    isBase64Encoded: false,
+    body: result.body
+  };
+}
+
+function packageResponse(result) {
+  if (/^image\//.test(result.contentType)) {
+    return packageBase64(result);
+  } else {
+    return packageRaw(result);
+  }
+}
+
 function processRequest(event, context, callback) {
   AWS.config.region = context.invokedFunctionArn.match(/^arn:aws:lambda:(\w+-\w+-\d+):/)[1];
 
@@ -48,17 +75,7 @@ function processRequest(event, context, callback) {
           if (resource.filename == 'info.json' || authed) {
             resource.execute()
               .then(result => {
-                var response = { 
-                  statusCode: 200, 
-                  headers: { 'Content-Type': result.contentType }, 
-                  isBase64Encoded: /^image\//.test(result.contentType)
-                };
-                if (response.isBase64Encoded) {
-                  response.body = result.body.toString('base64');
-                } else {
-                  response.body = result.body;
-                }
-                callback(null, response);
+                callback(null, packageResponse(result));
               })
               .catch(err => {
                 if (err.statusCode) {
