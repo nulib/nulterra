@@ -9,7 +9,7 @@
   "containerDefinitions": [
     {
       "name": "fcrepo-app",
-      "image": "nulib/fcrepo4:s3fix",
+      "image": "${image}",
       "memoryReservation": 3000,
       "portMappings": [
         { "hostPort": 8080, "containerPort": 8080 }

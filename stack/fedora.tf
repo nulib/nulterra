@@ -113,6 +113,7 @@ data "template_file" "fcrepo_dockerrun_aws_json" {
 
   vars {
     aws_region = "${var.aws_region}"
+    image      = "${var.fcrepo_image}"
     stack_name = "${local.namespace}"
   }
 }

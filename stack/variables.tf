@@ -39,6 +39,10 @@ variable "environment" {
   type    = "string"
 }
 
+variable "fcrepo_image" {
+  default = "nulib/fcrepo4:4.7.5-s3fix"
+}
+
 variable "frontend_dns_names" {
   type    = "list"
   default = []
