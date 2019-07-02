@@ -30,7 +30,7 @@ output "stack_name" {
 
 output "subnet_config" {
   value = {
-    public_subnets = "${var.vpc_public_subnets}"
+    public_subnets  = "${var.vpc_public_subnets}"
     private_subnets = "${var.vpc_private_subnets}"
   }
 }
@@ -47,12 +47,12 @@ output "vpc_cidr_block" {
 
 output "security_groups" {
   value = {
-    bastion    = "${aws_security_group.bastion.id}"
-    cache      = "${aws_security_group.redis.id}"
-    db         = "${aws_security_group.db.id}"
-    fcrepo     = "${module.fcrepo_environment.security_group_id}"
-    index      = "${module.solr_environment.security_group_id}"
-    zookeeper  = "${module.zookeeper_environment.security_group_id}"
+    bastion   = "${aws_security_group.bastion.id}"
+    cache     = "${aws_security_group.redis.id}"
+    db        = "${aws_security_group.db.id}"
+    fcrepo    = "${module.fcrepo_environment.security_group_id}"
+    index     = "${module.solr_environment.security_group_id}"
+    zookeeper = "${module.zookeeper_environment.security_group_id}"
   }
 }
 

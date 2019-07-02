@@ -110,7 +110,7 @@ resource "aws_instance" "bastion" {
   ]
 
   lifecycle {
-    ignore_changes = ["ami"]
+    ignore_changes = ["ami", "tags"]
   }
 }
 

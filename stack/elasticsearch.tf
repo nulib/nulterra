@@ -32,12 +32,20 @@ resource "aws_elasticsearch_domain" "elasticsearch" {
     volume_size = 10
   }
   access_policies = "${data.aws_iam_policy_document.elasticsearch_http_access.json}"
+  lifecycle {
+    ignore_changes  = ["access_policies"]
+  }
 }
 
 data "aws_iam_policy_document" "elasticsearch_http_access" {
   statement {
     effect    = "Allow"
-    actions   = ["es:ESHttp*"]
+    actions   = [
+      "es:ESHttpGet",
+      "es:ESHttpPost",
+      "es:ESHttpPut",
+      "es:ESHttpDelete"
+    ],
     principals {
       type        = "AWS"
       identifiers = ["*"]
