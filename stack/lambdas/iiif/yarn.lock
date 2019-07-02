@@ -394,9 +394,10 @@ ieee754@^1.1.4:
   version "1.1.12"
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.1.12.tgz#50bf24e5b9c8bb98af4964c941cdb0918da7b60b"
 
-iiif@nulib/node-iiif:
-  version "0.1.0"
-  resolved "https://codeload.github.com/nulib/node-iiif/tar.gz/af94970183d22c3371f4c621fa08791143249d40"
+iiif-processor@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/iiif-processor/-/iiif-processor-0.2.0.tgz#84ad26f3b5522499ba42115d31e3fe11e395834d"
+  integrity sha512-oha78Nr8c7XXcpKj/ovTsJqF2ZsNpBcbWlEW1jblAmxvmC/rO9GC6Ih0tOkck8AF9LKH4mXNswqp6gvJbVirhA==
   dependencies:
     mime-types "^2.1.21"
     probe-image-size "^4.0.0"

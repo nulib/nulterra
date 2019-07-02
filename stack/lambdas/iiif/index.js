@@ -1,5 +1,5 @@
 const AWS        = require('aws-sdk');
-const IIIF       = require('iiif');
+const IIIF       = require('iiif-processor');
 const authorize  = require('./lib/authorize');
 const isString   = require('lodash.isstring');
 const middy      = require('middy');
