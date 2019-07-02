@@ -234,6 +234,13 @@ data "aws_iam_policy_document" "this_bucket_access" {
 
     resources = ["*"]
   }
+
+  statement {
+    effect  = "Allow"
+    actions = ["lambda:InvokeFunction"]
+
+    resources = ["${data.terraform_remote_state.stack.minter_arn}"]
+  }
 }
 
 resource "aws_iam_policy" "this_bucket_policy" {
