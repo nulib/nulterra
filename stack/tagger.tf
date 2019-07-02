@@ -1,10 +1,12 @@
 data "aws_iam_policy_document" "instance_tagger_lambda_access" {
   statement {
     effect = "Allow"
+
     actions = [
       "ec2:DescribeInstances",
-      "ec2:CreateTags"
+      "ec2:CreateTags",
     ]
+
     resources = ["*"]
   }
 }
@@ -44,6 +46,7 @@ module "instance_tagger_function" {
 
   attach_policy = true
   policy        = "${data.aws_iam_policy_document.instance_tagger_lambda_access.json}"
-  
-  source_path = "${path.module}/lambdas/instance-tagger"
+
+  source_path                    = "${path.module}/lambdas/instance-tagger"
+  reserved_concurrent_executions = "-1"
 }

@@ -212,7 +212,8 @@ module "upsert_zk_records" {
   attach_policy = true
   policy        = "${data.aws_iam_policy_document.upsert_route53_access.json}"
 
-  source_path = "${path.module}/lambdas/upsert_zk_records"
+  source_path                    = "${path.module}/lambdas/upsert_zk_records"
+  reserved_concurrent_executions = "-1"
 
   environment {
     variables {

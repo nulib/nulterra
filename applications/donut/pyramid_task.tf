@@ -12,32 +12,36 @@ resource "aws_sqs_queue" "this_pyramid_tiff_deadletter_queue" {
 }
 
 resource "aws_sqs_queue" "this_pyramid_tiff_queue" {
-  name                        = "${local.namespace}-create-pyramid-tiffs"
-  delay_seconds               = 0
-  visibility_timeout_seconds  = 360
-  redrive_policy              = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.this_pyramid_tiff_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
-  tags                        = "${local.common_tags}"
+  name                       = "${local.namespace}-create-pyramid-tiffs"
+  delay_seconds              = 0
+  visibility_timeout_seconds = 360
+  redrive_policy             = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.this_pyramid_tiff_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
+  tags                       = "${local.common_tags}"
 }
 
 data "aws_iam_policy_document" "this_pyramid_tiff_access" {
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "s3:ListAllMyBuckets",
-      "sqs:ListQueues"
+      "sqs:ListQueues",
     ]
+
     resources = ["*"]
   }
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "s3:ListBucket",
       "s3:GetBucketLocation",
     ]
+
     resources = [
       "${data.aws_s3_bucket.stack_fcrepo_binary_bucket.arn}",
-      "${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}"
+      "${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}",
     ]
   }
 
@@ -54,11 +58,13 @@ data "aws_iam_policy_document" "this_pyramid_tiff_access" {
   }
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "sqs:DeleteMessage",
-      "sqs:ReceiveMessage"
+      "sqs:ReceiveMessage",
     ]
+
     resources = ["${aws_sqs_queue.this_pyramid_tiff_queue.arn}"]
   }
 }
@@ -66,12 +72,14 @@ data "aws_iam_policy_document" "this_pyramid_tiff_access" {
 data "aws_iam_policy_document" "ecs_assume_role" {
   statement {
     effect = "Allow"
+
     principals = [
-      { 
-        type = "Service"
+      {
+        type        = "Service"
         identifiers = ["ecs-tasks.amazonaws.com"]
-      }
+      },
     ]
+
     actions = ["sts:AssumeRole"]
   }
 }
@@ -95,22 +103,22 @@ data "template_file" "pyramid_container_definitions" {
   template = "${file("./templates/create_pyramid_tiff_container.json.tpl")}"
 
   vars {
-    image_name  = "nulib/pyramid:latest"
-    queue_url   = "${aws_sqs_queue.this_pyramid_tiff_queue.id}"
-    region      = "${data.terraform_remote_state.stack.aws_region}"
-    task_name   = "${local.namespace}-create-pyramid"
+    image_name = "nulib/pyramid:latest"
+    queue_url  = "${aws_sqs_queue.this_pyramid_tiff_queue.id}"
+    region     = "${data.terraform_remote_state.stack.aws_region}"
+    task_name  = "${local.namespace}-create-pyramid"
   }
 }
 
 resource "aws_ecs_task_definition" "this_pyramid_tiff_task" {
-  family                      = "${local.namespace}-create-pyramid"
-  network_mode                = "awsvpc"
-  requires_compatibilities    = ["FARGATE"]
-  execution_role_arn          = "${data.aws_iam_role.task_execution_role.arn}"
-  task_role_arn               = "${aws_iam_role.this_pyramid_tiff_role.arn}"
-  cpu                         = "2048"
-  memory                      = "8192"
-  container_definitions       = "${data.template_file.pyramid_container_definitions.rendered}"
+  family                   = "${local.namespace}-create-pyramid"
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  execution_role_arn       = "${data.aws_iam_role.task_execution_role.arn}"
+  task_role_arn            = "${aws_iam_role.this_pyramid_tiff_role.arn}"
+  cpu                      = "2048"
+  memory                   = "8192"
+  container_definitions    = "${data.template_file.pyramid_container_definitions.rendered}"
 }
 
 data "aws_iam_policy_document" "this_pyramid_trigger_access" {
@@ -127,26 +135,48 @@ data "aws_iam_policy_document" "this_pyramid_trigger_access" {
   }
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "ecs:ListTasks",
       "ecs:RunTask",
-      "ec2:Describe*"
+      "ec2:Describe*",
     ]
+
     resources = ["*"]
   }
 
   statement {
-    effect    = "Allow"
-    actions   = [
+    effect = "Allow"
+
+    actions = [
       "s3:List*",
-      "s3:Get*"
+      "s3:Get*",
     ]
+
     resources = [
       "${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}",
-      "${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}/*"
+      "${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}/*",
     ]
   }
+}
+
+resource "aws_cloudwatch_event_rule" "trigger_pyramid_rule" {
+  name                = "${local.namespace}-check-pyramid-queue"
+  description         = "Check pyramid tiff queue for unhandled messages"
+  schedule_expression = "rate(3 minutes)"
+}
+
+resource "aws_cloudwatch_event_target" "trigger_pyramid_rule" {
+  rule = "${aws_cloudwatch_event_rule.trigger_pyramid_rule.name}"
+  arn  = "${module.this_pyramid_trigger.function_arn}"
+}
+
+resource "aws_lambda_permission" "trigger_pyramid_rule" {
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = "${module.this_pyramid_trigger.function_name}"
+  principal     = "events.amazonaws.com"
 }
 
 module "this_pyramid_trigger" {
@@ -161,7 +191,8 @@ module "this_pyramid_trigger" {
   attach_policy = true
   policy        = "${data.aws_iam_policy_document.this_pyramid_trigger_access.json}"
 
-  source_path = "${path.module}/lambdas/pyramid_trigger"
+  source_path                    = "${path.module}/lambdas/pyramid_trigger"
+  reserved_concurrent_executions = "-1"
 
   environment {
     variables {

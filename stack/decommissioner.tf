@@ -1,10 +1,12 @@
 data "aws_iam_policy_document" "decommissioner_lambda_access" {
   statement {
     effect = "Allow"
+
     actions = [
       "ssm:GetParameter*",
-      "ec2:DescribeInstances"
+      "ec2:DescribeInstances",
     ]
+
     resources = ["*"]
   }
 }
@@ -44,6 +46,7 @@ module "decommissioner_function" {
 
   attach_policy = true
   policy        = "${data.aws_iam_policy_document.decommissioner_lambda_access.json}"
-  
-  source_path = "${path.module}/lambdas/puppet-decommissioner"
+
+  source_path                    = "${path.module}/lambdas/puppet-decommissioner"
+  reserved_concurrent_executions = "-1"
 }

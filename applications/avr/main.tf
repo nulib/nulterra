@@ -232,7 +232,8 @@ module "this_batch_ingest" {
   attach_policy = true
   policy        = "${data.aws_iam_policy_document.this_batch_ingest_access.json}"
 
-  source_path = "${path.module}/lambdas/batch_ingest_notification"
+  source_path                    = "${path.module}/lambdas/batch_ingest_notification"
+  reserved_concurrent_executions = "-1"
 
   environment {
     variables {

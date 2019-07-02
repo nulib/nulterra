@@ -1,19 +1,19 @@
 resource "aws_cloudwatch_event_rule" "batch_status_finished" {
-  name                  = "${local.namespace}-batch-status-finished"
-  description           = "Check on finished batch jobs"
-  schedule_expression   = "rate(15 minutes)"
+  name                = "${local.namespace}-batch-status-finished"
+  description         = "Check on finished batch jobs"
+  schedule_expression = "rate(15 minutes)"
 }
 
 resource "aws_cloudwatch_event_target" "batch_status_finished" {
-  rule  = "${aws_cloudwatch_event_rule.batch_status_finished.name}"
-  arn   = "${module.batch_status_finished.function_arn}"
+  rule = "${aws_cloudwatch_event_rule.batch_status_finished.name}"
+  arn  = "${module.batch_status_finished.function_arn}"
 }
 
 resource "aws_lambda_permission" "batch_status_finished" {
-  statement_id    = "AllowExecutionFromCloudWatch"
-  action          = "lambda:InvokeFunction"
-  function_name   = "${module.batch_status_finished.function_name}"
-  principal       = "events.amazonaws.com"
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = "${module.batch_status_finished.function_name}"
+  principal     = "events.amazonaws.com"
 }
 
 module "batch_status_finished" {
@@ -25,7 +25,8 @@ module "batch_status_finished" {
   runtime       = "nodejs8.10"
   timeout       = 300
 
-  source_path   = "${path.module}/lambdas/batch_status"
+  source_path                    = "${path.module}/lambdas/batch_status"
+  reserved_concurrent_executions = "-1"
 
   attach_policy = true
   policy        = "${data.aws_iam_policy_document.this_batch_ingest_access.json}"
@@ -40,21 +41,21 @@ module "batch_status_finished" {
 }
 
 resource "aws_cloudwatch_event_rule" "batch_status_stalled" {
-  name                  = "${local.namespace}-batch-status-stalled"
-  description           = "Check on stalled batch jobs"
-  schedule_expression   = "rate(1 day)"
+  name                = "${local.namespace}-batch-status-stalled"
+  description         = "Check on stalled batch jobs"
+  schedule_expression = "rate(1 day)"
 }
 
 resource "aws_cloudwatch_event_target" "batch_status_stalled" {
-  rule  = "${aws_cloudwatch_event_rule.batch_status_stalled.name}"
-  arn   = "${module.batch_status_stalled.function_arn}"
+  rule = "${aws_cloudwatch_event_rule.batch_status_stalled.name}"
+  arn  = "${module.batch_status_stalled.function_arn}"
 }
 
 resource "aws_lambda_permission" "batch_status_stalled" {
-  statement_id    = "AllowExecutionFromCloudWatch"
-  action          = "lambda:InvokeFunction"
-  function_name   = "${module.batch_status_stalled.function_name}"
-  principal       = "events.amazonaws.com"
+  statement_id  = "AllowExecutionFromCloudWatch"
+  action        = "lambda:InvokeFunction"
+  function_name = "${module.batch_status_stalled.function_name}"
+  principal     = "events.amazonaws.com"
 }
 
 module "batch_status_stalled" {
@@ -66,7 +67,8 @@ module "batch_status_stalled" {
   runtime       = "nodejs8.10"
   timeout       = 300
 
-  source_path   = "${path.module}/lambdas/batch_status"
+  source_path                    = "${path.module}/lambdas/batch_status"
+  reserved_concurrent_executions = "-1"
 
   attach_policy = true
   policy        = "${data.aws_iam_policy_document.this_batch_ingest_access.json}"
