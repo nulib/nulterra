@@ -19,3 +19,4 @@
 applications/**/Dockerrun.aws.json
 stack/applications/**/Dockerrun.aws.json
 batch
+stack/lambdas/noid-minter/vendor

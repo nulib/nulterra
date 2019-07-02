@@ -126,6 +126,10 @@ output "metadata_endpoint" {
   value = "${local.iiif_base_url}"
 }
 
+output "minter_arn" {
+  value = "${module.this_noid_minter.function_arn}"
+}
+
 output "private_subnets" {
   value = "${module.vpc.private_subnets}"
 }
