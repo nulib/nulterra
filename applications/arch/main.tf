@@ -253,6 +253,7 @@ data "null_data_source" "ssm_parameters" {
     "arch/contact_email",               "digitalscholarship@northwestern.edu",
     "aws/buckets/archives",             "${aws_s3_bucket.this_archives.id}",
     "aws/buckets/dropbox",              "${aws_s3_bucket.this_dropbox.id}",
+    "aws/lambdas/noid",                 "${data.terraform_remote_state.stack.minter_arn}",
     "doi_credentials/host",             "ezid.lib.purdue.edu",
     "doi_credentials/port",             443,
     "doi_credentials/use_ssl",          true,
@@ -264,7 +265,7 @@ data "null_data_source" "ssm_parameters" {
 }
 
 resource "aws_ssm_parameter" "this_config_setting" {
-  count     = 10
+  count     = 11
   name      = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
   type      = "String"
   value     = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"
