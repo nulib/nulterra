@@ -1,6 +1,7 @@
 resource "aws_security_group" "minter" {
   name   = "${local.namespace}-minter-lambda"
   vpc_id = "${module.vpc.vpc_id}"
+  tags   = "${merge(local.common_tags, map("Name", "${local.namespace}-minter"))}"
 }
 
 resource "aws_security_group_rule" "minter_outbound_access" {
