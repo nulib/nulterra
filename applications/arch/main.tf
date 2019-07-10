@@ -254,9 +254,6 @@ data "null_data_source" "ssm_parameters" {
     "aws/buckets/archives",             "${aws_s3_bucket.this_archives.id}",
     "aws/buckets/dropbox",              "${aws_s3_bucket.this_dropbox.id}",
     "aws/lambdas/noid",                 "${data.terraform_remote_state.stack.minter_arn}",
-    "doi_credentials/host",             "ezid.lib.purdue.edu",
-    "doi_credentials/port",             443,
-    "doi_credentials/use_ssl",          true,
     "domain/host",                      "${local.domain_host}",
     "geonames_username",                "nul_rdc",
     "solr/url",                         "${data.terraform_remote_state.stack.index_endpoint}arch",
@@ -265,7 +262,7 @@ data "null_data_source" "ssm_parameters" {
 }
 
 resource "aws_ssm_parameter" "this_config_setting" {
-  count     = 11
+  count     = 8
   name      = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
   type      = "String"
   value     = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"
