@@ -333,6 +333,7 @@ data "aws_iam_policy_document" "elb_logs" {
 }
 
 resource "aws_s3_bucket" "elb_logs" {
+  count  = "${var.loadbalancer_log_bucket == "" ? 1 : 0}"
   bucket = "${local.environment_label}-logs"
   acl    = "private"
 

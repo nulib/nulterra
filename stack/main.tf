@@ -20,3 +20,33 @@ resource "aws_s3_bucket" "app_sources" {
 resource "aws_cloudwatch_log_group" "stack_log_group" {
   name = "${local.namespace}"
 }
+
+data "aws_elb_service_account" "main" {}
+
+data "aws_iam_policy_document" "elb_logs" {
+  statement {
+    sid = ""
+
+    actions = [
+      "s3:PutObject",
+    ]
+
+    resources = [
+      "arn:aws:s3:::${local.namespace}-elb-logs/*",
+    ]
+
+    principals {
+      type        = "AWS"
+      identifiers = ["${data.aws_elb_service_account.main.arn}"]
+    }
+
+    effect = "Allow"
+  }
+}
+
+resource "aws_s3_bucket" "elb_logs" {
+  bucket = "${local.namespace}-elb-logs"
+  acl    = "private"
+
+  policy = "${data.aws_iam_policy_document.elb_logs.json}"
+}

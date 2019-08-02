@@ -60,6 +60,11 @@ variable "notification_topic_name" {
   description = "Notification topic name"
 }
 
+variable "loadbalancer_log_bucket" {
+  default     = ""
+  description = "Name of the bucket to hold load balancer logs"
+}
+
 variable "loadbalancer_scheme" {
   default     = ""
   description = "Specify 'internal' for internal load balancer"

@@ -122,6 +122,10 @@ output "index_endpoint" {
   value = "http://${aws_route53_record.solr.name}/solr/"
 }
 
+output "loadbalancer_log_bucket" {
+  value = "${aws_s3_bucket.elb_logs.id}"
+}
+
 output "metadata_endpoint" {
   value = "${local.iiif_base_url}"
 }
