@@ -1,5 +1,5 @@
 variable "api_token_secret" {
-  type    = "string"
+  type = "string"
 }
 
 variable "aws_region" {
@@ -20,11 +20,11 @@ variable "db_master_username" {
 }
 
 variable "ec2_keyname" {
-  type    = "string"
+  type = "string"
 }
 
 variable "ec2_private_keyfile" {
-  type    = "string"
+  type = "string"
 }
 
 variable "enable_alarms" {
@@ -36,7 +36,7 @@ variable "enable_iiif_cloudfront" {
 }
 
 variable "environment" {
-  type    = "string"
+  type = "string"
 }
 
 variable "fcrepo_image" {
@@ -49,7 +49,7 @@ variable "frontend_dns_names" {
 }
 
 variable "hosted_zone_name" {
-  type    = "string"
+  type = "string"
 }
 
 variable "iiif_ssl_certificate_arn" {
@@ -69,7 +69,7 @@ variable "stack_name" {
 }
 
 variable "pager_alert" {
-  type    = "list"
+  type = "list"
 }
 
 variable "tags" {
@@ -89,6 +89,21 @@ variable "vpc_public_subnets" {
 variable "vpc_private_subnets" {
   type    = "list"
   default = ["10.1.1.0/24", "10.1.3.0/24", "10.1.5.0/24"]
+}
+
+variable "ip_whitelist" {
+  type    = "string"
+  default = "false"
+}
+
+variable "ua_blacklist" {
+  type    = "string"
+  default = "false"
+}
+
+variable "url_blacklist" {
+  type    = "string"
+  default = "false"
 }
 
 locals {
