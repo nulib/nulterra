@@ -137,6 +137,11 @@ resource "aws_wafregional_ipset" "nul_ips" {
 
   ip_set_descriptor {
     type  = "IPV4"
+    value = "165.124.160.0/21" # IPSec VPN
+  }
+
+  ip_set_descriptor {
+    type  = "IPV4"
     value = "165.124.200.24/29" # SSLVPN
   }
 
