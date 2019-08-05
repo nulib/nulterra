@@ -102,7 +102,57 @@ resource "aws_wafregional_ipset" "nul_ips" {
 
   ip_set_descriptor {
     type  = "IPV4"
-    value = "10.105.0.0/16"
+    value = "129.105.19.0/24" # NUL Staff
+  }
+
+  ip_set_descriptor {
+    type  = "IPV4"
+    value = "129.105.29.0/24" # NUL Staff
+  }
+
+  ip_set_descriptor {
+    type  = "IPV4"
+    value = "129.105.112.64/26" # NUL Staff
+  }
+
+  ip_set_descriptor {
+    type  = "IPV4"
+    value = "129.105.121.128/25" # NUL Staff
+  }
+
+  ip_set_descriptor {
+    type  = "IPV4"
+    value = "129.105.203.0/24" # NUL Staff
+  }
+
+  ip_set_descriptor {
+    type  = "IPV4"
+    value = "165.124.202.0/24" # NUL Staff
+  }
+
+  ip_set_descriptor {
+    type  = "IPV4"
+    value = "129.105.22.224/27" # NUL Staff
+  }
+
+  ip_set_descriptor {
+    type  = "IPV4"
+    value = "165.124.200.24/29" # SSLVPN
+  }
+
+  ip_set_descriptor {
+    type  = "IPV4"
+    value = "165.124.199.32/29" # SSLVPN
+  }
+
+  ip_set_descriptor {
+    type  = "IPV4"
+    value = "165.124.201.96/28" # SSLVPN
+  }
+
+  ip_set_descriptor {
+    type  = "IPV4"
+    value = "165.124.144.0/23" # External Wireless IPs
   }
 }
 
