@@ -137,6 +137,11 @@ resource "aws_wafregional_ipset" "nul_ips" {
 
   ip_set_descriptor {
     type  = "IPV4"
+    value = "129.105.184.0/24" # NUL Staff
+  }
+
+  ip_set_descriptor {
+    type  = "IPV4"
     value = "165.124.160.0/21" # IPSec VPN
   }
 
@@ -162,12 +167,27 @@ resource "aws_wafregional_ipset" "nul_ips" {
 }
 
 resource "aws_wafregional_rule" "ip_whitelist" {
-  count = "${var.ip_whitelist == "true" ? 1 : 0}"
-  name  = "${local.namespace}-ip-whitelist"
+  count       = "${var.ip_whitelist == "true" ? 1 : 0}"
+  name        = "${local.namespace}-ip-whitelist"
+  metric_name = "${replace("${local.namespace}-ip-whitelist", "-", "")}"
 
   predicate {
-    type    = "IpMatch"
+    type    = "IPMatch"
     data_id = "${aws_wafregional_ipset.nul_ips.id}"
     negated = false
   }
+}
+
+resource "null_resource" "waf_rules" {
+  depends_on = [
+    "aws_wafregional_regex_pattern_set.ua_blacklist",
+    "aws_wafregional_regex_match_set.ua_blacklist",
+    "aws_wafregional_rule.ua_blacklist",
+    "aws_wafregional_byte_match_set.healthcheck_url",
+    "aws_wafregional_regex_pattern_set.url_blacklist",
+    "aws_wafregional_regex_match_set.url_blacklist",
+    "aws_wafregional_rule.url_blacklist",
+    "aws_wafregional_ipset.nul_ips",
+    "aws_wafregional_rule.ip_whitelist",
+  ]
 }
