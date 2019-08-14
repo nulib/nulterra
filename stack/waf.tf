@@ -178,6 +178,34 @@ resource "aws_wafregional_rule" "ip_whitelist" {
   }
 }
 
+resource "aws_wafregional_byte_match_set" "api_gateway_proxy" {
+  count = "${var.ip_whitelist == "true" ? 1 : 0}"
+  name  = "${local.namespace}-api-gateway-proxy"
+
+  byte_match_tuples {
+    text_transformation   = "NONE"
+    target_string         = "${aws_api_gateway_stage.iiif_latest.rest_api_id}"
+    positional_constraint = "EXACTLY"
+
+    field_to_match {
+      type = "HEADER"
+      data = "x-amzn-apigateway-api-id"
+    }
+  }
+}
+
+resource "aws_wafregional_rule" "api_gateway_proxy" {
+  count       = "${var.ip_whitelist == "true" ? 1 : 0}"
+  name        = "${local.namespace}-api-gateway-proxy"
+  metric_name = "${replace("${local.namespace}-api-gateway-proxy", "-", "")}"
+
+  predicate {
+    type    = "ByteMatch"
+    data_id = "${aws_wafregional_byte_match_set.api_gateway_proxy.id}"
+    negated = false
+  }
+}
+
 resource "null_resource" "waf_rules" {
   depends_on = [
     "aws_wafregional_regex_pattern_set.ua_blacklist",
@@ -189,5 +217,7 @@ resource "null_resource" "waf_rules" {
     "aws_wafregional_rule.url_blacklist",
     "aws_wafregional_ipset.nul_ips",
     "aws_wafregional_rule.ip_whitelist",
+    "aws_wafregional_byte_match_set.api_gateway_proxy",
+    "aws_wafregional_rule.api_gateway_proxy",
   ]
 }
