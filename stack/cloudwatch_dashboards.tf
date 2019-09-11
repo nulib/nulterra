@@ -1,5 +1,10 @@
 resource "aws_cloudwatch_dashboard" "nul_metrics" {
+  lifecycle {
+    ignore_changes = ["dashboard_body"]
+  }
+
   dashboard_name = "${local.namespace}-nul-metrics"
+
   dashboard_body = <<__EOF__
 {
   "widgets": [

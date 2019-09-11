@@ -56,6 +56,11 @@ variable "iiif_ssl_certificate_arn" {
   default = ""
 }
 
+variable "passthru_security_groups" {
+  type    = "map"
+  default = {}
+}
+
 variable "postgres_version" {
   default = "9.6.11"
 }

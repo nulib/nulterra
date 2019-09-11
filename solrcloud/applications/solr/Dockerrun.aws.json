@@ -19,11 +19,13 @@
       "name": "solr-app",
       "image": "solr:7.5",
       "essential": true,
-      "memoryReservation": 3000,
+      "memory": 2500,
+      "memoryReservation": 1000,
       "portMappings": [
         { "hostPort": 8983, "containerPort": 8983 }
       ],
       "environment": [
+        { "name": "SOLR_HEAP",       "value": "2048m"      },
         { "name": "SOLR_MODE",       "value": "solrcloud"  },
         { "name": "SOLR_HOME",       "value": "/data/solr" },
         { "name": "INIT_SOLR_HOME",  "value": "yes"        }
@@ -38,8 +40,8 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-            "awslogs-group": "${stack_name}",
-            "awslogs-region": "${aws_region}",
+            "awslogs-group": "stack-s",
+            "awslogs-region": "us-east-1",
             "awslogs-stream-prefix": "solr"
         }
       }

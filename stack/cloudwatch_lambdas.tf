@@ -44,7 +44,7 @@ module "solr_metrics_function" {
 
   environment {
     variables {
-      SolrUrl = "http://${aws_route53_record.solr.name}/solr"
+      SolrUrl = "http://solr.${local.private_zone_name}/solr"
     }
   }
 }
@@ -71,11 +71,12 @@ resource "aws_lambda_permission" "aggregate_metrics_invoke_permission" {
 module "aggregate_metrics_function" {
   source = "git://github.com/nulib/terraform-aws-lambda"
 
-  function_name = "${local.namespace}-aggregate-metrics"
-  description   = "Aggregates instance Docker/Disk/Memory metrics and posts them to CloudWatch"
-  handler       = "main.LambdaHandler.process"
-  runtime       = "ruby2.5"
-  timeout       = 300
+  function_name                  = "${local.namespace}-aggregate-metrics"
+  description                    = "Aggregates instance Docker/Disk/Memory metrics and posts them to CloudWatch"
+  handler                        = "main.LambdaHandler.process"
+  runtime                        = "ruby2.5"
+  timeout                        = 300
+  reserved_concurrent_executions = "-1"
 
   attach_policy = true
   policy        = "${data.aws_iam_policy_document.cloudwatch_metrics_lambda_access.json}"

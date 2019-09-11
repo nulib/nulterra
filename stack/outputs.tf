@@ -45,15 +45,17 @@ output "vpc_cidr_block" {
 
 # Security Groups
 
-output "security_groups" {
-  value = {
-    bastion   = "${aws_security_group.bastion.id}"
-    cache     = "${aws_security_group.redis.id}"
-    db        = "${aws_security_group.db.id}"
-    fcrepo    = "${module.fcrepo_environment.security_group_id}"
-    index     = "${module.solr_environment.security_group_id}"
-    zookeeper = "${module.zookeeper_environment.security_group_id}"
+locals {
+  stack_security_groups = {
+    bastion = "${aws_security_group.bastion.id}"
+    cache   = "${aws_security_group.redis.id}"
+    db      = "${aws_security_group.db.id}"
+    fcrepo  = "${module.fcrepo_environment.security_group_id}"
   }
+}
+
+output "security_groups" {
+  value = "${merge(var.passthru_security_groups, local.stack_security_groups)}"
 }
 
 # Resource Outputs
@@ -72,14 +74,6 @@ output "cache_address" {
 
 output "cache_port" {
   value = "${aws_elasticache_cluster.redis.cache_nodes.0.port}"
-}
-
-output "zookeeper_address" {
-  value = "zk.${local.private_zone_name}"
-}
-
-output "zookeeper_port" {
-  value = "2181"
 }
 
 output "db_address" {
@@ -102,10 +96,6 @@ output "elasticsearch_endpoint" {
   value = "https://${aws_elasticsearch_domain.elasticsearch.endpoint}/"
 }
 
-output "exhibitor_endpoint" {
-  value = "http://${aws_route53_record.zookeeper.name}/exhibitor/v1/ui/index.html"
-}
-
 output "iiif_endpoint" {
   value = "${local.iiif_base_url}iiif/2"
 }
@@ -119,7 +109,7 @@ output "iiif_pyramid_bucket_arn" {
 }
 
 output "index_endpoint" {
-  value = "http://${aws_route53_record.solr.name}/solr/"
+  value = "http://solr.${local.private_zone_name}/solr/"
 }
 
 output "loadbalancer_log_bucket" {
@@ -160,4 +150,12 @@ output "send_email_policy_arn" {
 
 output "vpc_id" {
   value = "${module.vpc.vpc_id}"
+}
+
+output "zookeeper_address" {
+  value = "zk.${local.private_zone_name}"
+}
+
+output "zookeeper_port" {
+  value = "2181"
 }

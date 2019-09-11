@@ -50,7 +50,7 @@ data "template_file" "zookeeper_dockerrun_aws_json" {
   template = "${file("./templates/zookeeper_Dockerrun.aws.json.tpl")}"
 
   vars {
-    aws_region = "${var.aws_region}"
+    aws_region = "${data.terraform_remote_state.stack.aws_region}"
     stack_name = "${local.namespace}"
   }
 }
@@ -68,7 +68,7 @@ data "archive_file" "zookeeper_source" {
 }
 
 resource "aws_s3_bucket_object" "zookeeper_source" {
-  bucket = "${aws_s3_bucket.app_sources.id}"
+  bucket = "${data.terraform_remote_state.stack.application_source_bucket}"
   key    = "zookeeper-${data.archive_file.zookeeper_source.output_md5}"
   source = "${path.module}/build/zookeeper.zip"
   etag   = "${data.archive_file.zookeeper_source.output_md5}"
@@ -78,7 +78,7 @@ resource "aws_elastic_beanstalk_application_version" "zookeeper" {
   name        = "zookeeper-${data.archive_file.zookeeper_source.output_md5}"
   application = "${aws_elastic_beanstalk_application.solrcloud.name}"
   description = "application version created by terraform"
-  bucket      = "${aws_s3_bucket.app_sources.id}"
+  bucket      = "${data.terraform_remote_state.stack.application_source_bucket}"
   key         = "${aws_s3_bucket_object.zookeeper_source.id}"
 }
 
@@ -87,18 +87,18 @@ module "zookeeper_environment" {
 
   app                     = "${aws_elastic_beanstalk_application.solrcloud.name}"
   version_label           = "${aws_elastic_beanstalk_application_version.zookeeper.name}"
-  namespace               = "${var.stack_name}"
+  namespace               = "${data.terraform_remote_state.stack.stack_name}"
   name                    = "zookeeper"
-  stage                   = "${var.environment}"
+  stage                   = "${data.terraform_remote_state.stack.environment}"
   solution_stack_name     = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
-  vpc_id                  = "${module.vpc.vpc_id}"
-  private_subnets         = "${module.vpc.private_subnets}"
-  public_subnets          = "${module.vpc.private_subnets}"
+  vpc_id                  = "${data.terraform_remote_state.stack.vpc_id}"
+  private_subnets         = "${data.terraform_remote_state.stack.private_subnets}"
+  public_subnets          = "${data.terraform_remote_state.stack.private_subnets}"
   loadbalancer_scheme     = "internal"
   managed_actions_enabled = "false"
   instance_port           = "8181"
   healthcheck_url         = "/exhibitor/v1/ui/index.html"
-  keypair                 = "${var.ec2_keyname}"
+  keypair                 = "${data.terraform_remote_state.stack.ec2_keyname}"
   instance_type           = "t2.medium"
   autoscale_min           = 2
   autoscale_max           = 3
@@ -108,7 +108,7 @@ module "zookeeper_environment" {
   env_vars = {
     S3_BUCKET        = "${aws_s3_bucket.zookeeper_config_bucket.id}"
     S3_PREFIX        = "zookeeper"
-    AWS_REGION       = "${var.aws_region}"
+    AWS_REGION       = "${data.terraform_remote_state.stack.aws_region}"
     DYNAMIC_HOSTNAME = "true"
     STACK_NAMESPACE  = "${local.namespace}"
     STACK_NAME       = "zookeeper"
@@ -135,7 +135,7 @@ resource "aws_security_group_rule" "allow_zk_self_access" {
 }
 
 resource "aws_route53_record" "zookeeper" {
-  zone_id = "${module.dns.private_zone_id}"
+  zone_id = "${data.terraform_remote_state.stack.private_zone_id}"
   name    = "zookeeper.${local.private_zone_name}"
   type    = "A"
 
@@ -155,7 +155,7 @@ data "aws_iam_policy_document" "upsert_route53_access" {
       "route53:ChangeResourceRecordSets",
     ]
 
-    resources = ["arn:aws:route53:::hostedzone/${module.dns.private_zone_id}"]
+    resources = ["arn:aws:route53:::hostedzone/${data.terraform_remote_state.stack.private_zone_id}"]
   }
 
   statement {
@@ -218,7 +218,7 @@ module "upsert_zk_records" {
   environment {
     variables {
       RecordSetName = "zk.${local.private_zone_name}"
-      HostedZoneId  = "${module.dns.private_zone_id}"
+      HostedZoneId  = "${data.terraform_remote_state.stack.private_zone_id}"
     }
   }
 }
@@ -255,11 +255,11 @@ EOF
 
 resource "null_resource" "first_run_upsert_zk_records" {
   provisioner "local-exec" {
-    command = "aws --region ${var.aws_region} lambda invoke --function-name ${local.namespace}-upsert-zk-route53-records --payload '${data.template_file.first_run_upsert_zk_records_payload.rendered}' /dev/null"
+    command = "aws --region ${data.terraform_remote_state.stack.aws_region} lambda invoke --function-name ${local.namespace}-upsert-zk-route53-records --payload '${data.template_file.first_run_upsert_zk_records_payload.rendered}' /dev/null"
   }
 
   provisioner "local-exec" {
     when    = "destroy"
-    command = "aws --region ${var.aws_region} lambda invoke --function-name ${local.namespace}-upsert-zk-route53-records --payload '${data.template_file.delete_zk_records_change_batch.rendered}' /dev/null"
+    command = "aws --region ${data.terraform_remote_state.stack.aws_region} lambda invoke --function-name ${local.namespace}-upsert-zk-route53-records --payload '${data.template_file.delete_zk_records_change_batch.rendered}' /dev/null"
   }
 }

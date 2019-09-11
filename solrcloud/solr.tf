@@ -2,20 +2,20 @@ module "solr_backup_volume" {
   source  = "cloudposse/efs/aws"
   version = "0.3.6"
 
-  namespace          = "${var.stack_name}"
+  namespace          = "${data.terraform_remote_state.stack.stack_name}"
   stage              = "solr"
   name               = "backup"
-  aws_region         = "${var.aws_region}"
-  vpc_id             = "${module.vpc.vpc_id}"
-  subnets            = "${module.vpc.private_subnets}"
-  availability_zones = ["${var.azs}"]
+  aws_region         = "${data.terraform_remote_state.stack.aws_region}"
+  vpc_id             = "${data.terraform_remote_state.stack.vpc_id}"
+  subnets            = "${data.terraform_remote_state.stack.private_subnets}"
+  availability_zones = ["${data.terraform_remote_state.stack.azs}"]
 
   security_groups = [
     "${module.solr_environment.security_group_id}",
-    "${aws_security_group.bastion.id}",
+    "${data.terraform_remote_state.stack.security_groups.bastion}",
   ]
 
-  zone_id = "${module.dns.private_zone_id}"
+  zone_id = "${data.terraform_remote_state.stack.private_zone_id}"
 
   tags = "${local.common_tags}"
 }
@@ -24,7 +24,7 @@ data "template_file" "solr_dockerrun_aws_json" {
   template = "${file("./templates/solr_Dockerrun.aws.json.tpl")}"
 
   vars {
-    aws_region = "${var.aws_region}"
+    aws_region = "${data.terraform_remote_state.stack.aws_region}"
     stack_name = "${local.namespace}"
   }
 }
@@ -42,7 +42,7 @@ data "archive_file" "solr_source" {
 }
 
 resource "aws_s3_bucket_object" "solr_source" {
-  bucket = "${aws_s3_bucket.app_sources.id}"
+  bucket = "${data.terraform_remote_state.stack.application_source_bucket}"
   key    = "solr-${data.archive_file.solr_source.output_md5}.zip"
   source = "${path.module}/build/solr.zip"
   etag   = "${data.archive_file.solr_source.output_md5}"
@@ -53,7 +53,7 @@ resource "aws_elastic_beanstalk_application_version" "solr" {
   name        = "solr-${data.archive_file.solr_source.output_md5}"
   application = "${aws_elastic_beanstalk_application.solrcloud.name}"
   description = "application version created by terraform"
-  bucket      = "${aws_s3_bucket.app_sources.id}"
+  bucket      = "${data.terraform_remote_state.stack.application_source_bucket}"
   key         = "${aws_s3_bucket_object.solr_source.id}"
 }
 
@@ -81,20 +81,20 @@ module "solr_environment" {
 
   app                     = "${aws_elastic_beanstalk_application.solrcloud.name}"
   version_label           = "${aws_elastic_beanstalk_application_version.solr.name}"
-  namespace               = "${var.stack_name}"
+  namespace               = "${data.terraform_remote_state.stack.stack_name}"
   name                    = "solr"
-  stage                   = "${var.environment}"
+  stage                   = "${data.terraform_remote_state.stack.environment}"
   solution_stack_name     = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
-  vpc_id                  = "${module.vpc.vpc_id}"
-  private_subnets         = "${module.vpc.private_subnets}"
-  public_subnets          = "${module.vpc.private_subnets}"
+  vpc_id                  = "${data.terraform_remote_state.stack.vpc_id}"
+  private_subnets         = "${data.terraform_remote_state.stack.private_subnets}"
+  public_subnets          = "${data.terraform_remote_state.stack.private_subnets}"
   loadbalancer_scheme     = "internal"
   managed_actions_enabled = "false"
   instance_port           = "8983"
   healthcheck_url         = "/solr/"
-  keypair                 = "${var.ec2_keyname}"
+  keypair                 = "${data.terraform_remote_state.stack.ec2_keyname}"
   instance_type           = "t2.medium"
-  extra_block_devices    = "/dev/xvdcz=:64:true:gp2"
+  extra_block_devices     = "/dev/xvdcz=:64:true:gp2"
   autoscale_min           = "${var.solr_capacity}"
   autoscale_max           = "${var.solr_capacity + 1}"
   health_check_threshold  = "Ok"
@@ -112,7 +112,7 @@ module "solr_environment" {
 }
 
 resource "aws_route53_record" "solr" {
-  zone_id = "${module.dns.private_zone_id}"
+  zone_id = "${data.terraform_remote_state.stack.private_zone_id}"
   name    = "solr.${local.private_zone_name}"
   type    = "A"
 
