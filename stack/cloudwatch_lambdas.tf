@@ -85,8 +85,8 @@ module "aggregate_metrics_function" {
 
 resource "aws_cloudwatch_event_rule" "aggregate_metrics_event" {
   name                = "${local.namespace}-aggregate-metrics"
-  description         = "Report aggregate metrics every minute"
-  schedule_expression = "rate(1 minute)"
+  description         = "Report aggregate metrics every 15 minutes"
+  schedule_expression = "rate(15 minutes)"
 }
 
 resource "aws_cloudwatch_event_target" "aggregate_metrics_lambda" {
