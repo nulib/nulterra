@@ -1,6 +1,6 @@
-#data "aws_wafregional_web_acl" "waf_acl" {
-#  name = "${local.namespace}-waf-security-automations"
-#}
+data "aws_wafregional_web_acl" "waf_acl" {
+  name = "${local.namespace}-waf-security-automations"
+}
 
 resource "aws_wafregional_regex_pattern_set" "ua_blacklist" {
   count = "${var.ua_blacklist == "true" ? 1 : 0}"
