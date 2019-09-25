@@ -19,6 +19,7 @@ resource "aws_s3_bucket" "app_sources" {
 
 resource "aws_cloudwatch_log_group" "stack_log_group" {
   name = "${local.namespace}"
+  retention_in_days = "90"
 }
 
 data "aws_elb_service_account" "main" {}
