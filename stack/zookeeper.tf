@@ -193,6 +193,11 @@ resource "aws_cloudwatch_event_target" "lambda" {
   arn  = "${module.upsert_zk_records.function_arn}"
 }
 
+resource "aws_cloudwatch_log_group" "upsert_zk_route53_records_log" {
+  name              = "/aws/lambda/${local.namespace}-upsert-zk-route53-records"
+  retention_in_days = 90
+}
+
 resource "aws_lambda_permission" "upsert_invoke_permission" {
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
