@@ -35,6 +35,12 @@ resource "aws_cloudwatch_event_rule" "decommissioner_event" {
 __EOF__
 }
 
+resource "aws_cloudwatch_log_group" "decommissioner_log" {
+  name              = "/aws/lambda/${local.namespace}-decommissioner"
+  retention_in_days = 90
+}
+
+
 module "decommissioner_function" {
   source = "git://github.com/nulib/terraform-aws-lambda"
 

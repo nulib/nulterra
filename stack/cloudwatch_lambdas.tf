@@ -83,6 +83,16 @@ module "aggregate_metrics_function" {
   source_path = "${path.module}/lambdas/aggregate-metrics"
 }
 
+resource "aws_cloudwatch_log_group" "aggregate_metrics_log" {
+  name              = "/aws/lambda/${local.namespace}-aggregate-metrics"
+  retention_in_days = 90
+}
+
+resource "aws_cloudwatch_log_group" "solr_metrics_log" {
+  name              = "/aws/lambda/${local.namespace}-solr-metrics"
+  retention_in_days = 90
+}
+
 resource "aws_cloudwatch_event_rule" "aggregate_metrics_event" {
   name                = "${local.namespace}-aggregate-metrics"
   description         = "Report aggregate metrics every 15 minutes"

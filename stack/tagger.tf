@@ -35,6 +35,11 @@ resource "aws_cloudwatch_event_rule" "instance_tagger_event" {
 __EOF__
 }
 
+resource "aws_cloudwatch_log_group" "instance_tagger_log" {
+  name              = "/aws/lambda/${local.namespace}-instance-tagger"
+  retention_in_days = 90
+}
+
 module "instance_tagger_function" {
   source = "git://github.com/nulib/terraform-aws-lambda"
 
