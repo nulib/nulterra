@@ -7,12 +7,12 @@ exports.handler = (event, context, callback) => {
 
   var bucket = event.Records[0].s3.bucket.name
   var key = event.Records[0].s3.object.key
-  var manifest = "s3://" + bucket + "/" + key
+
   var message = {
     "job_class": process.env.JobClassName,
     "job_id": uuid(),
     "queue_name": "batch_ingest",
-    "arguments": [manifest],
+    "arguments": [bucket, key],
     "locale":"en"
   }
 
