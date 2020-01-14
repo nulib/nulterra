@@ -25,7 +25,8 @@ resource "aws_elasticsearch_domain" "elasticsearch" {
   elasticsearch_version = "6.2"
   tags                  = "${local.common_tags}"
   cluster_config {
-    instance_type = "t2.medium.elasticsearch"
+    instance_type  = "t2.medium.elasticsearch"
+    instance_count = 2
   }
   ebs_options {
     ebs_enabled = "true"

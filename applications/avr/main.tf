@@ -226,7 +226,7 @@ module "this_batch_ingest" {
   function_name = "${data.terraform_remote_state.stack.stack_name}-${local.app_name}-batch-ingest"
   description   = "Batch Ingest trigger for ${local.app_name}"
   handler       = "index.handler"
-  runtime       = "nodejs8.10"
+  runtime       = "nodejs10.x"
   timeout       = 300
 
   attach_policy = true

@@ -22,7 +22,7 @@ module "batch_status_finished" {
   function_name = "${local.namespace}-batch-finished"
   description   = "Run batch status checks"
   handler       = "index.handler"
-  runtime       = "nodejs8.10"
+  runtime       = "nodejs10.x"
   timeout       = 300
 
   source_path                    = "${path.module}/lambdas/batch_status"
@@ -64,7 +64,7 @@ module "batch_status_stalled" {
   function_name = "${local.namespace}-batch-stalled"
   description   = "Run batch stalled checks"
   handler       = "index.handler"
-  runtime       = "nodejs8.10"
+  runtime       = "nodejs10.x"
   timeout       = 300
 
   source_path                    = "${path.module}/lambdas/batch_status"

@@ -211,7 +211,7 @@ module "upsert_zk_records" {
   function_name = "${local.namespace}-upsert-zk-route53-records"
   description   = "Upsert Route53 records for Zookeeper on scaling"
   handler       = "index.handler"
-  runtime       = "nodejs8.10"
+  runtime       = "nodejs10.x"
   timeout       = 300
 
   attach_policy = true

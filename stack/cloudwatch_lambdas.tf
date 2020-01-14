@@ -26,7 +26,7 @@ module "solr_metrics_function" {
   function_name = "${local.namespace}-solr-metrics"
   description   = "Posts solr metrics to CloudWatch"
   handler       = "index.handler"
-  runtime       = "nodejs8.10"
+  runtime       = "nodejs10.x"
   timeout       = 300
 
   attach_policy = true

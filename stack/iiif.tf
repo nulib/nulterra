@@ -4,7 +4,7 @@ module "iiif_function" {
   function_name = "${local.namespace}-iiif"
   description   = "IIIF Image server lambda"
   handler       = "index.handler"
-  runtime       = "nodejs8.10"
+  runtime       = "nodejs10.x"
   memory_size   = 3008
   timeout       = 300
 
