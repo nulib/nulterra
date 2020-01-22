@@ -30,7 +30,7 @@ const MiddleAuth = {
         if (!isObject(handler.response.headers)) {
           handler.response.headers = {};
         }
-        var cookieOptions = { domain: 'stack.rdc-staging.library.northwestern.edu' };
+        var cookieOptions = { domain: process.env.auth_domain };
         if (token == '') {
           token = 'deleted';
           cookieOptions.maxAge = -1;
