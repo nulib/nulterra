@@ -16,6 +16,7 @@ module "iiif_function" {
       VIPS_DISC_THRESHOLD = "1500m"
       allow_from          = "${replace("donut.${local.public_zone_name}", ".", "\\.")}"
       api_token_secret    = "${var.api_token_secret}"
+      auth_domain         = "${local.public_zone_name}"
       elastic_search      = "https://${aws_elasticsearch_domain.elasticsearch.endpoint}/"
       tiff_bucket         = "${aws_s3_bucket.pyramid_tiff_bucket.id}"
     }

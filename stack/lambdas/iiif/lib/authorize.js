@@ -43,7 +43,10 @@ async function fetchJson(request) {
         response.json = JSON.parse(responseBody);
         resolve(response);
       });
-    }, (error) => reject(error));
+    }, (error) => {
+      console.log("ERROR RETRIEVING AUTH DOCUMENT: ", error);
+      resolve(null);
+    });
   });
 }
 
