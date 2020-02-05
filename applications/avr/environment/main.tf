@@ -26,6 +26,11 @@ variable "honeybadger_api_key" {
   type = "string"
 }
 
+variable "loadbalancer_timeout" {
+  type    = "string"
+  default = "60"
+}
+
 variable "lti_key" {
   type = "string"
 }
@@ -155,6 +160,7 @@ module "this_environment" {
   loadbalancer_certificate_arn = "${var.ssl_certificate}"
   loadbalancer_log_bucket      = "${data.terraform_remote_state.stack.loadbalancer_log_bucket}"
   loadbalancer_scheme          = "${lower(var.tier) == "worker" ? "" : "public" }"
+  loadbalancer_timeout         = "${var.loadbalancer_timeout}"
   loadbalancer_type            = "application"
   instance_port                = "80"
   healthcheck_url              = "/"
