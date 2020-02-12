@@ -181,7 +181,7 @@ resource "aws_s3_bucket" "this_batch" {
 
   lifecycle_rule {
     id                                     = "batch-delete-after-365-days"
-    enabled                                = true
+    enabled                                = false
     abort_incomplete_multipart_upload_days = 3
 
     expiration {
