@@ -33,23 +33,18 @@ resource "aws_elasticsearch_domain" "elasticsearch" {
     volume_size = 10
   }
   access_policies = "${data.aws_iam_policy_document.elasticsearch_http_access.json}"
-  lifecycle {
-    ignore_changes  = ["access_policies"]
-  }
 }
+
+data "aws_caller_identity" "current_user" {}
 
 data "aws_iam_policy_document" "elasticsearch_http_access" {
   statement {
+    sid       = "allow-from-aws"
     effect    = "Allow"
-    actions   = [
-      "es:ESHttpGet",
-      "es:ESHttpPost",
-      "es:ESHttpPut",
-      "es:ESHttpDelete"
-    ],
+    actions   = ["es:*"]
     principals {
       type        = "AWS"
-      identifiers = ["*"]
+      identifiers = ["arn:aws:iam::${data.aws_caller_identity.current_user.account_id}:root"]
     }
   }
 }

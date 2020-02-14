@@ -98,6 +98,10 @@ output "db_master_password" {
   value = "${module.db.this_db_instance_password}"
 }
 
+output "elasticsearch_arn" {
+  value = "${aws_elasticsearch_domain.elasticsearch.arn}"
+}
+
 output "elasticsearch_endpoint" {
   value = "https://${aws_elasticsearch_domain.elasticsearch.endpoint}/"
 }

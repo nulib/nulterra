@@ -275,12 +275,24 @@ data "aws_iam_policy_document" "this_bucket_access" {
   }
 
   statement {
+    effect = "Allow"
+
+    actions = [
+      "es:ESHttpGet",
+      "es:ESHttpPost",
+      "es:ESHttpPut",
+      "es:ESHttpDelete"
+    ]
+
+    resources = ["${data.terraform_remote_state.stack.elasticsearch_arn}"]
+  }
+
+  statement {
     effect  = "Allow"
     actions = ["lambda:InvokeFunction"]
 
     resources = [
-      "${module.this_pyramid_trigger.function_arn}",
-      "${data.terraform_remote_state.stack.minter_arn}",
+      "${module.this_pyramid_trigger.function_arn}"
     ]
   }
 }
@@ -359,7 +371,6 @@ data "null_data_source" "ssm_parameters" {
     "aws/buckets/manifests",    "${data.terraform_remote_state.stack.iiif_pyramid_bucket}",
     "aws/buckets/pyramids",     "${data.terraform_remote_state.stack.iiif_pyramid_bucket}",
     "aws/buckets/uploads",      "${aws_s3_bucket.this_uploads.id}",
-    "aws/lambdas/noid",         "${data.terraform_remote_state.stack.minter_arn}",
     "aws/lambdas/pyramid",      "${module.this_pyramid_trigger.function_arn}",
     "common_indexer/endpoint",  "${data.terraform_remote_state.stack.elasticsearch_endpoint}",
     "domain/host",              "${local.domain_host}",
@@ -372,7 +383,7 @@ data "null_data_source" "ssm_parameters" {
 }
 
 resource "aws_ssm_parameter" "this_config_setting" {
-  count     = 13
+  count     = 14
   name      = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
   type      = "String"
   value     = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"

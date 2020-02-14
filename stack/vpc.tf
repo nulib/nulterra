@@ -26,6 +26,7 @@ module "vpc" {
 
 module "dns" {
   source  = "infrablocks/dns-zones/aws"
+  version = "0.4.0"
 
   domain_name         = "${local.public_zone_name}"
   private_domain_name = "${local.private_zone_name}"
