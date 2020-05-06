@@ -38,6 +38,10 @@ variable "honeybadger_api_key" {
   default = ""
 }
 
+variable "ssl_certificate" {
+  type    = "string"
+}
+
 variable "tags" {
   type    = "map"
   default = {}

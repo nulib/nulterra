@@ -10,12 +10,6 @@ locals {
   domain_host = "${coalesce(var.public_hostname, join(".", local.default_host_parts))}"
 }
 
-data "aws_acm_certificate" "ssl_certificate" {
-  count       = "${var.public_hostname == "" ? 0 : 1}"
-  domain      = "${local.domain_host == "media.northwestern.edu" ? "avalon.repo.rdc.library.northwestern.edu" : local.domain_host}"
-  most_recent = true
-}
-
 resource "random_pet" "app_version_name" {
   keepers = {
     source = "${data.archive_file.this_source.output_md5}"
@@ -283,6 +277,8 @@ resource "aws_s3_bucket_notification" "batch_ingest_notification" {
 data "null_data_source" "ssm_parameters" {
   inputs = "${map(
     "domain/host",               "${local.domain_host}",
+    "domain/port",               "443",
+    "domain/protocol",           "https",
     "dropbox/path",              "s3://${aws_s3_bucket.this_masterfiles.id}/dropbox/",
     "dropbox/upload_uri",        "s3://${aws_s3_bucket.this_masterfiles.id}/dropbox/",
     "email/comments",            "${var.email_comments}",
@@ -292,13 +288,13 @@ data "null_data_source" "ssm_parameters" {
     "encoding/sns_topic",        "${aws_sns_topic.this_transcode_notification.arn}",
     "initial_user",              "${var.initial_user}",
     "solr/url",                  "${data.terraform_remote_state.stack.index_endpoint}avr",
-    "streaming/http_base",       "http${length(data.aws_acm_certificate.ssl_certificate.*.arn) == 0 ? "" : "s"}://${coalesce(var.streaming_hostname, aws_route53_record.this_cloudfront.fqdn)}/",
+    "streaming/http_base",       "https://${coalesce(var.streaming_hostname, aws_route53_record.this_cloudfront.fqdn)}/",
     "zookeeper/connection_str",  "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
   )}"
 }
 
 resource "aws_ssm_parameter" "this_config_setting" {
-  count     = 12
+  count     = 14
   name      = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
   type      = "String"
   value     = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"

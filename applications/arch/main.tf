@@ -10,12 +10,6 @@ locals {
   domain_host = "${coalesce(var.public_hostname, join(".", local.default_host_parts))}"
 }
 
-data "aws_acm_certificate" "ssl_certificate" {
-  count       = "${var.public_hostname == "" ? 0 : 1}"
-  domain      = "${local.domain_host}"
-  most_recent = true
-}
-
 resource "random_pet" "app_version_name" {
   keepers = {
     source = "${data.archive_file.this_source.output_md5}"

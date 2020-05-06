@@ -38,6 +38,10 @@ variable "ec2_private_keyfile" {
   type    = "string"
 }
 
+variable "ssl_certificate" {
+  type    = "string"
+}
+
 variable "tags" {
   type    = "map"
   default = {}
