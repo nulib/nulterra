@@ -11,6 +11,7 @@
     "lodash.isobject": "^3.0.2",
     "lodash.isstring": "^4.0.1",
     "@middy/core": "^1.0.0",
+    "@middy/do-not-wait-for-empty-event-loop": "^1.0.0",
     "@middy/http-cors": "^1.0.0-beta.8",
     "@middy/http-header-normalizer": "^1.0.0",
     "node-fetch": "^2.3.0",
