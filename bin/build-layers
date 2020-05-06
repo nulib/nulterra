@@ -9,7 +9,7 @@ layers.each do |layer|
   $stderr.puts "Building #{layer}"
   Dir.chdir(base.join("layers", layer)) do
     cmds = [
-      ["docker", "run", "-v", "#{Dir.pwd}/nodejs:/var/task", "lambci/lambda:build-nodejs10.x", "npm", "install", "--build-from-source"],
+      ["docker", "run", "-v", "#{Dir.pwd}/nodejs:/var/task", "lambci/lambda:build-nodejs12.x", "npm", "install", "--build-from-source"],
       ["zip", "-FS", "#{base.join('build', layer)}.zip", "-r", "."]
     ]
     cmds.each do |cmd|

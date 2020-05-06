@@ -46,6 +46,7 @@ data "aws_iam_policy_document" "elasticsearch_http_access" {
       type        = "AWS"
       identifiers = ["arn:aws:iam::${data.aws_caller_identity.current_user.account_id}:root"]
     }
+    resources = ["arn:aws:es:${var.aws_region}:${data.aws_caller_identity.current_user.account_id}:domain/${local.namespace}-common-index/*"]
   }
 }
 

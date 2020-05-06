@@ -4,7 +4,7 @@ module "iiif_function" {
   function_name = "${local.namespace}-iiif"
   description   = "IIIF Image server lambda"
   handler       = "index.handler"
-  runtime       = "nodejs10.x"
+  runtime       = "nodejs12.x"
   memory_size   = 3008
   timeout       = 300
 
@@ -14,9 +14,9 @@ module "iiif_function" {
   environment {
     variables {
       VIPS_DISC_THRESHOLD = "1500m"
-      allow_from          = "${replace("donut.${local.public_zone_name}", ".", "\\.")}"
+      allow_from          = "${local.allow_from}"
       api_token_secret    = "${var.api_token_secret}"
-      auth_domain         = "${local.public_zone_name}"
+      auth_domain         = "${var.hosted_zone_name}"
       elastic_search      = "https://${aws_elasticsearch_domain.elasticsearch.endpoint}/"
       tiff_bucket         = "${aws_s3_bucket.pyramid_tiff_bucket.id}"
     }
@@ -37,6 +37,13 @@ module "iiif_function" {
 resource "aws_s3_bucket" "pyramid_tiff_bucket" {
   bucket = "${local.namespace}-pyramid-tiffs"
   acl    = "private"
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["GET"]
+    allowed_origins = ["*"]
+    expose_headers  = ["x-amz-server-side-encryption", "x-amz-request-id", "x-amz-id-2"]
+    max_age_seconds = 3000
+  }
   tags   = "${local.common_tags}"
 }
 
@@ -168,6 +175,7 @@ resource "aws_route53_record" "iiif" {
 }
 
 locals {
+  allow_from         = "${var.allow_iiif_from == "" ? "${replace("donut.${local.public_zone_name}", ".", "\\.")};${replace("meadow.${var.hosted_zone_name}", ".", "\\.")}" : "${var.allow_iiif_from}"}"
   fudged_record_list = "${concat(aws_route53_record.iiif.*.name, list("DUMMY_ITEM"))}"
   iiif_base_url      = "${length(aws_route53_record.iiif.*.name) > 0 ? "https://${element(local.fudged_record_list, 0)}/" : aws_api_gateway_stage.iiif_latest.invoke_url}"
 }

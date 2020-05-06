@@ -10,7 +10,7 @@
     "mime-types": "^2.1.21",
     "probe-image-size": "^4.0.0",
     "request": "^2.88.0",
-    "sharp": "^0.21.3",
+    "sharp": "^0.25.0",
     "url-parse": "^1.4.4"
   }
 }

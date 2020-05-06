@@ -13,19 +13,19 @@ const MiddleAuth = {
     if (!isObject(handler.event.headers)) {
       handler.event.headers = {};
     }
-    if (!isString(handler.event.headers['Authorization'])) {
+    if (!isString(handler.event.headers['authorization'])) {
       var token = authCookie(handler);
       if (isString(token)) {
-        handler.event.headers['Authorization'] = `Bearer ${token}`
+        handler.event.headers['authorization'] = `Bearer ${token}`
       }
     }
     next();
   },
 
   after: (handler, next) => {
-    if (isString(handler.event.headers['Authorization'])) {
+    if (isString(handler.event.headers['authorization'])) {
       var cookieToken = authCookie(handler);
-      var token = handler.event.headers['Authorization'].replace(/^Bearer/, '').trim();
+      var token = handler.event.headers['authorization'].replace(/^Bearer/, '').trim();
       if (token != cookieToken) {
         if (!isObject(handler.response.headers)) {
           handler.response.headers = {};
@@ -35,7 +35,7 @@ const MiddleAuth = {
           token = 'deleted';
           cookieOptions.maxAge = -1;
         }
-        handler.response.headers['Set-Cookie'] = cookie.serialize('IIIFAuthToken', token, cookieOptions);
+        handler.response.headers['set-cookie'] = cookie.serialize('IIIFAuthToken', token, cookieOptions);
       }
     }
     next();

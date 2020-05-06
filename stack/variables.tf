@@ -1,3 +1,8 @@
+variable "allow_iiif_from" {
+  type = "string"
+  default = ""
+}
+
 variable "api_token_secret" {
   type = "string"
 }
