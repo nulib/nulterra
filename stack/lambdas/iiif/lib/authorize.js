@@ -1,6 +1,5 @@
 const isObject = require('lodash.isobject');
 const isString = require('lodash.isstring');
-const fetch    = require('node-fetch');
 const jwt      = require('jsonwebtoken');
 const url      = require('url');
 const AWS      = require('aws-sdk');
@@ -83,14 +82,24 @@ async function authorize(token, id, referer) {
   var response = await fetchJson(request);
   var doc = response.json;
 
-  if (isObject(doc._source) && isString(doc._source.visibility)) {
-    switch(doc._source.visibility) {
-      case 'open':          return true;
-      case 'authenticated': return isObject(currentUser);
-      case 'restricted':    return false;
-    }
+  switch(visibility(doc._source)) {
+    case 'open':          return true;
+    case 'authenticated': return isObject(currentUser);
+    case 'restricted':    return false;
   }
   return false;
+}
+
+function visibility(source) {
+  if (!isObject(source)) return null;
+
+  if (isObject(source.visibility)) {
+    return source.visibility.id;
+  } else if (isString(source.visibility)) {
+    return source.visibility;
+  }
+
+  return null;
 }
 
 module.exports = authorize;
