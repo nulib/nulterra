@@ -108,12 +108,16 @@ function getAuthToken(event) {
   let authHeader = getEventHeader(event, 'authorization');
   if (isString(authHeader)) {
     return authHeader.replace(/^Bearer /,'');
-  } else {
-    let cookies = cookie.parse(getEventHeader(event, 'cookie'));
+  }
+  
+  let cookieHeader = getEventHeader(event, 'cookie');
+  if (isString(cookieHeader)) {
+    let cookies = cookie.parse(cookieHeader);
     if (isObject(cookies) && isString(cookies.IIIFAuthToken)) {
       return cookies.IIIFAuthToken;
     }
   }
+
   return null;
 }
 
