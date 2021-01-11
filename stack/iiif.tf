@@ -114,7 +114,7 @@ data "template_file" "iiif_openapi_template" {
     api_name            = "${local.namespace}-iiif"
     hostname            = "iiif.${local.public_zone_name}"
     lambda_arn          = "${replace(module.iiif_function.function_arn, ":$LATEST", "")}"
-    public_manifest_url = "http://donut.${local.public_zone_name}"
+    public_manifest_url = "https://donut.${local.public_zone_name}"
     region              = "${var.aws_region}"
   }
 }
@@ -139,8 +139,6 @@ resource "aws_api_gateway_stage" "iiif_latest" {
   stage_name            = "latest"
   rest_api_id           = "${aws_api_gateway_rest_api.iiif_api.id}"
   deployment_id         = "${aws_api_gateway_deployment.iiif_deployment.id}"
-  cache_cluster_enabled = "true"
-  cache_cluster_size    = "0.5"
 }
 
 resource "aws_api_gateway_domain_name" "iiif_domain_name" {
