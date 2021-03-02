@@ -77,10 +77,7 @@ async function authorize(token, id, referer) {
   }
 
   var currentUser = getCurrentUser(token);
-  var docUrl = url.parse(url.resolve(elasticSearch, `common/_doc/${id}`));
-  var request = await makeRequest('GET', docUrl);
-  var response = await fetchJson(request);
-  var doc = response.json;
+  var doc = await getDoc(id);
 
   switch(visibility(doc._source)) {
     case 'open':          return true;
@@ -90,13 +87,28 @@ async function authorize(token, id, referer) {
   return false;
 }
 
+async function getDoc(id) {
+  var response = await getDocFromIndex(id, 'meadow');
+  if (response.statusCode == 200) {
+    return response.json;
+  }
+  response = await getDocFromIndex(id, 'common');
+  return response.json
+}
+
+async function getDocFromIndex(id, index) {
+  var docUrl = url.parse(url.resolve(elasticSearch, `${index}/_doc/${id}`));
+  var request = await makeRequest('GET', docUrl);
+  return await fetchJson(request);
+}
+
 function visibility(source) {
   if (!isObject(source)) return null;
 
   if (isObject(source.visibility)) {
-    return source.visibility.id;
+    return source.visibility.id.toLowerCase();
   } else if (isString(source.visibility)) {
-    return source.visibility;
+    return source.visibility.toLowerCase();
   }
 
   return null;

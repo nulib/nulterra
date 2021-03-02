@@ -65,8 +65,8 @@ function getEventHeader(event, name) {
 function makeResource(event) {
   let scheme = getEventHeader(event, 'x-forwarded-proto') || 'http';
   let host = getEventHeader(event, 'x-forwarded-host') || getEventHeader(event, 'host');
-  let path = event.path.replace(/%2f/gi, '');
-  if (!/\.(jpg|tif|gif|png|json)$/.test(path)) {
+  let path = decodeURI(event.path.replace(/%2f/gi, ''));
+  if (!/\.(jpe?g|tiff?|gif|png|json)$/.test(path)) {
     path = path + '/info.json';
   }
   if (process.env.include_stage) {
