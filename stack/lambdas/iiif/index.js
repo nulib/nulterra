@@ -9,8 +9,11 @@ const middy                = require('@middy/core');
 const cors                 = require('@middy/http-cors');
 const noWaitEventLoop      = require('@middy/do-not-wait-for-empty-event-loop');
 const httpHeaderNormalizer = require('@middy/http-header-normalizer');
+const crypto               = require('crypto');
 
+const cacheBucket          = process.env.cache_bucket;
 const tiffBucket           = process.env.tiff_bucket;
+const payloadLimit         = (6 * 1024 * 1024) / 1.4;
 
 async function s3Object(id, callback) {
   let s3 = new AWS.S3();
@@ -74,7 +77,53 @@ function makeResource(event) {
   }
   let uri = `${scheme}://${host}${path}`;
   
-  return new IIIF.Processor(uri, s3Object, dimensions);
+  let result = new IIIF.Processor(uri, s3Object, dimensions);
+  result.uri = uri;
+  return result;
+}
+
+function getCached(key) {
+  return new Promise((resolve, _reject) => {
+    let s3 = new AWS.S3();
+    s3.headObject({Bucket: cacheBucket, Key: key}, (err, result) => {
+      if (err) {
+        resolve(null);
+      } else {
+        resolve(s3.getSignedUrl('getObject', {Bucket: cacheBucket, Key: key}));
+      }
+    });
+  })
+}
+
+function uploadToS3(key, image) {
+  return new Promise((resolve, reject) => {
+    let s3 = new AWS.S3();
+    let uploadParams = {
+      Bucket: cacheBucket, 
+      Key: key, 
+      Body: image.body,
+      ContentType: image.contentType
+    };
+
+    s3.upload(uploadParams, (err, _data) => {
+      if (err) {
+        reject(err);
+      } else {
+        let url = s3.getSignedUrl('getObject', {Bucket: cacheBucket, Key: key})
+        resolve(url);
+      }
+    });
+  });
+}
+
+async function packageViaS3(result, cacheKey) {
+  let url = await uploadToS3(cacheKey, result);
+  return {
+    statusCode: 302,
+    headers: { 'location': url },
+    isBase64Encoded: false,
+    body: ''
+  }
 }
 
 function packageBase64(result) {
@@ -96,9 +145,17 @@ function packageRaw(result) {
   };
 }
 
-function packageResponse(result) {
-  if (/^image\//.test(result.contentType)) {
+async function packageImage(result, cacheKey) {
+  if (result.body.length > payloadLimit) {
+    return await packageViaS3(result, cacheKey)
+  } else {
     return packageBase64(result);
+  }
+}
+
+async function packageResponse(result, cacheKey) {
+  if (/^image\//.test(result.contentType)) {
+    return await packageImage(result, cacheKey);
   } else {
     return packageRaw(result);
   }
@@ -121,6 +178,38 @@ function getAuthToken(event) {
   return null;
 }
 
+function hash(data) {
+  let hash = crypto.createHash('sha1');
+  hash.update(data);
+  return hash.digest('hex')
+}
+
+async function executeRequest(resource) {
+  let cacheKey = hash(resource.uri) + '/' + resource.filename;
+  let cached = await getCached(cacheKey);
+  if (isString(cached)) {
+    return {
+      statusCode: 302,
+      headers: { 'location': cached },
+      isBase64Encoded: false,
+      body: ''
+    }
+  } else {
+    try {
+      let result = await resource.execute();
+      return await packageResponse(result, cacheKey);
+    } catch (err) {
+      if (err.statusCode) {
+        return { statusCode: err.statusCode, headers: { 'content-type': 'text/plain' }, body: 'Not Found' };
+      } else if (err instanceof resource.errorClass) {
+        return { statusCode: 400, headers: { 'content-type': 'text/plain' }, body: err.toString() };
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+
 function processRequest(event, context, callback) {
   AWS.config.region = context.invokedFunctionArn.match(/^arn:aws:lambda:(\w+-\w+-\d+):/)[1];
 
@@ -132,23 +221,13 @@ function processRequest(event, context, callback) {
     authorize(authToken, resource.id, event.headers.referer)
       .catch(err => { callback(err) })
       .then(authed => {
-          if (resource.filename == 'info.json' || authed) {
-            resource.execute()
-              .then(result => {
-                callback(null, packageResponse(result));
-              })
-              .catch(err => {
-                if (err.statusCode) {
-                  callback(null, { statusCode: err.statusCode, headers: { 'content-type': 'text/plain' }, body: 'Not Found' });
-                } else if (err instanceof resource.errorClass) {
-                  callback(null, { statusCode: 400, headers: { 'content-type': 'text/plain' }, body: err.toString() });
-                } else {
-                  callback(err, null);
-                }
-              });
-          } else {
-            callback(null, { statusCode: 403, headers: { 'content-type': 'text/plain' }, body: 'Unauthorized' });
-          }
+        if (resource.filename == 'info.json' || authed) {
+          executeRequest(resource)
+            .then(result => callback(null, result))
+            .catch(err => callback(err));
+        } else {
+          callback(null, { statusCode: 403, headers: { 'content-type': 'text/plain' }, body: 'Unauthorized' });
+        }
       })
   }
 }

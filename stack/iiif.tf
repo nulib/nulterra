@@ -18,6 +18,7 @@ module "iiif_function" {
       api_token_secret    = "${var.api_token_secret}"
       auth_domain         = "${var.hosted_zone_name}"
       elastic_search      = "https://${aws_elasticsearch_domain.elasticsearch.endpoint}/"
+      cache_bucket        = "${aws_s3_bucket.iiif_cache_bucket.id}"
       tiff_bucket         = "${aws_s3_bucket.pyramid_tiff_bucket.id}"
     }
   }
@@ -32,6 +33,30 @@ module "iiif_function" {
   tags          = "${local.common_tags}"
 
   reserved_concurrent_executions = "-1"
+}
+
+resource "aws_s3_bucket" "iiif_cache_bucket" {
+  bucket = "${local.namespace}-iiif-cache"
+  acl    = "private"
+  
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = ["GET"]
+    allowed_origins = ["*"]
+    expose_headers  = ["x-amz-server-side-encryption", "x-amz-request-id", "x-amz-id-2"]
+    max_age_seconds = 3000
+  }
+
+  lifecycle_rule {
+    id      = "cache"
+    enabled = true
+
+    expiration {
+      days = 1
+    }
+  }
+
+  tags   = "${local.common_tags}"
 }
 
 resource "aws_s3_bucket" "pyramid_tiff_bucket" {
@@ -62,7 +87,10 @@ data "aws_iam_policy_document" "pyramid_tiff_bucket_access" {
       "s3:GetBucketLocation",
     ]
 
-    resources = ["${aws_s3_bucket.pyramid_tiff_bucket.arn}"]
+    resources = [
+      "${aws_s3_bucket.pyramid_tiff_bucket.arn}",
+      "${aws_s3_bucket.iiif_cache_bucket.arn}"
+    ]
   }
 
   statement {
@@ -74,7 +102,10 @@ data "aws_iam_policy_document" "pyramid_tiff_bucket_access" {
       "s3:DeleteObject",
     ]
 
-    resources = ["${aws_s3_bucket.pyramid_tiff_bucket.arn}/*"]
+    resources = [
+      "${aws_s3_bucket.pyramid_tiff_bucket.arn}/*",
+      "${aws_s3_bucket.iiif_cache_bucket.arn}/*"
+    ]
   }
 }
 
