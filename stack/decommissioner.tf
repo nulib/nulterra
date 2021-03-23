@@ -14,14 +14,14 @@ data "aws_iam_policy_document" "decommissioner_lambda_access" {
 resource "aws_lambda_permission" "decommissioner_invoke_permission" {
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
-  function_name = "${module.decommissioner_function.function_name}"
+  function_name = module.decommissioner_function.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = "${aws_cloudwatch_event_rule.decommissioner_event.arn}"
+  source_arn    = aws_cloudwatch_event_rule.decommissioner_event.arn
 }
 
 resource "aws_cloudwatch_event_target" "decommissioner_lambda" {
-  rule = "${aws_cloudwatch_event_rule.decommissioner_event.name}"
-  arn  = "${module.decommissioner_function.function_arn}"
+  rule = aws_cloudwatch_event_rule.decommissioner_event.name
+  arn  = module.decommissioner_function.function_arn
 }
 
 resource "aws_cloudwatch_event_rule" "decommissioner_event" {
@@ -33,13 +33,13 @@ resource "aws_cloudwatch_event_rule" "decommissioner_event" {
   }
 }
 __EOF__
+
 }
 
 resource "aws_cloudwatch_log_group" "decommissioner_log" {
   name              = "/aws/lambda/${local.namespace}-decommissioner"
   retention_in_days = 90
 }
-
 
 module "decommissioner_function" {
   source = "git://github.com/nulib/terraform-aws-lambda"
@@ -51,8 +51,9 @@ module "decommissioner_function" {
   timeout       = 300
 
   attach_policy = true
-  policy        = "${data.aws_iam_policy_document.decommissioner_lambda_access.json}"
+  policy        = data.aws_iam_policy_document.decommissioner_lambda_access.json
 
   source_path                    = "${path.module}/lambdas/puppet-decommissioner"
   reserved_concurrent_executions = "-1"
 }
+

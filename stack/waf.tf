@@ -3,7 +3,7 @@
 #}
 
 resource "aws_wafregional_regex_pattern_set" "ua_blacklist" {
-  count = "${var.ua_blacklist == "true" ? 1 : 0}"
+  count = var.ua_blacklist == "true" ? 1 : 0
   name  = "${local.namespace}-banned-user-agent-patterns"
 
   regex_pattern_strings = [
@@ -12,7 +12,7 @@ resource "aws_wafregional_regex_pattern_set" "ua_blacklist" {
 }
 
 resource "aws_wafregional_regex_match_set" "ua_blacklist" {
-  count = "${var.ua_blacklist == "true" ? 1 : 0}"
+  count = var.ua_blacklist == "true" ? 1 : 0
   name  = "${local.namespace}-banned-user-agents"
 
   regex_match_tuple {
@@ -21,25 +21,25 @@ resource "aws_wafregional_regex_match_set" "ua_blacklist" {
       type = "HEADER"
     }
 
-    regex_pattern_set_id = "${aws_wafregional_regex_pattern_set.ua_blacklist.id}"
+    regex_pattern_set_id = aws_wafregional_regex_pattern_set.ua_blacklist[0].id
     text_transformation  = "NONE"
   }
 }
 
 resource "aws_wafregional_rule" "ua_blacklist" {
-  count       = "${var.ua_blacklist == "true" ? 1 : 0}"
+  count       = var.ua_blacklist == "true" ? 1 : 0
   name        = "UA Blacklist Rule"
   metric_name = "UABlacklistRule"
 
   predicate {
     type    = "RegexMatch"
-    data_id = "${aws_wafregional_regex_match_set.ua_blacklist.id}"
+    data_id = aws_wafregional_regex_match_set.ua_blacklist[0].id
     negated = false
   }
 }
 
 resource "aws_wafregional_byte_match_set" "healthcheck_url" {
-  count = "${var.url_blacklist == "true" ? 1 : 0}"
+  count = var.url_blacklist == "true" ? 1 : 0
   name  = "${local.namespace}-health-check"
 
   byte_match_tuples {
@@ -55,7 +55,7 @@ resource "aws_wafregional_byte_match_set" "healthcheck_url" {
 }
 
 resource "aws_wafregional_regex_pattern_set" "url_blacklist" {
-  count = "${var.url_blacklist == "true" ? 1 : 0}"
+  count = var.url_blacklist == "true" ? 1 : 0
   name  = "${local.namespace}-banned-url-patterns"
 
   regex_pattern_strings = [
@@ -65,7 +65,7 @@ resource "aws_wafregional_regex_pattern_set" "url_blacklist" {
 }
 
 resource "aws_wafregional_regex_match_set" "url_blacklist" {
-  count = "${var.url_blacklist == "true" ? 1 : 0}"
+  count = var.url_blacklist == "true" ? 1 : 0
   name  = "${local.namespace}-banned-urls"
 
   regex_match_tuple {
@@ -73,31 +73,31 @@ resource "aws_wafregional_regex_match_set" "url_blacklist" {
       type = "URI"
     }
 
-    regex_pattern_set_id = "${aws_wafregional_regex_pattern_set.url_blacklist.id}"
+    regex_pattern_set_id = aws_wafregional_regex_pattern_set.url_blacklist[0].id
     text_transformation  = "URL_DECODE"
   }
 }
 
 resource "aws_wafregional_rule" "url_blacklist" {
-  count       = "${var.url_blacklist == "true" ? 1 : 0}"
+  count       = var.url_blacklist == "true" ? 1 : 0
   name        = "URL Blacklist Rule"
   metric_name = "URLBlacklistRule"
 
   predicate {
     type    = "ByteMatch"
-    data_id = "${aws_wafregional_byte_match_set.healthcheck_url.id}"
+    data_id = aws_wafregional_byte_match_set.healthcheck_url[0].id
     negated = true
   }
 
   predicate {
     type    = "RegexMatch"
-    data_id = "${aws_wafregional_regex_match_set.url_blacklist.id}"
+    data_id = aws_wafregional_regex_match_set.url_blacklist[0].id
     negated = false
   }
 }
 
 resource "aws_wafregional_ipset" "nul_ips" {
-  count = "${var.ip_whitelist == "true" ? 1 : 0}"
+  count = var.ip_whitelist == "true" ? 1 : 0
   name  = "NUL Internal IP ranges"
 
   ip_set_descriptor {
@@ -167,24 +167,24 @@ resource "aws_wafregional_ipset" "nul_ips" {
 }
 
 resource "aws_wafregional_rule" "ip_whitelist" {
-  count       = "${var.ip_whitelist == "true" ? 1 : 0}"
+  count       = var.ip_whitelist == "true" ? 1 : 0
   name        = "${local.namespace}-ip-whitelist"
-  metric_name = "${replace("${local.namespace}-ip-whitelist", "-", "")}"
+  metric_name = replace("${local.namespace}-ip-whitelist", "-", "")
 
   predicate {
     type    = "IPMatch"
-    data_id = "${aws_wafregional_ipset.nul_ips.id}"
+    data_id = aws_wafregional_ipset.nul_ips[0].id
     negated = false
   }
 }
 
 resource "aws_wafregional_byte_match_set" "api_gateway_proxy" {
-  count = "${var.ip_whitelist == "true" ? 1 : 0}"
+  count = var.ip_whitelist == "true" ? 1 : 0
   name  = "${local.namespace}-api-gateway-proxy"
 
   byte_match_tuples {
     text_transformation   = "NONE"
-    target_string         = "${aws_api_gateway_stage.iiif_latest.rest_api_id}"
+    target_string         = aws_api_gateway_stage.iiif_latest.rest_api_id
     positional_constraint = "EXACTLY"
 
     field_to_match {
@@ -195,29 +195,30 @@ resource "aws_wafregional_byte_match_set" "api_gateway_proxy" {
 }
 
 resource "aws_wafregional_rule" "api_gateway_proxy" {
-  count       = "${var.ip_whitelist == "true" ? 1 : 0}"
+  count       = var.ip_whitelist == "true" ? 1 : 0
   name        = "${local.namespace}-api-gateway-proxy"
-  metric_name = "${replace("${local.namespace}-api-gateway-proxy", "-", "")}"
+  metric_name = replace("${local.namespace}-api-gateway-proxy", "-", "")
 
   predicate {
     type    = "ByteMatch"
-    data_id = "${aws_wafregional_byte_match_set.api_gateway_proxy.id}"
+    data_id = aws_wafregional_byte_match_set.api_gateway_proxy[0].id
     negated = false
   }
 }
 
 resource "null_resource" "waf_rules" {
   depends_on = [
-    "aws_wafregional_regex_pattern_set.ua_blacklist",
-    "aws_wafregional_regex_match_set.ua_blacklist",
-    "aws_wafregional_rule.ua_blacklist",
-    "aws_wafregional_byte_match_set.healthcheck_url",
-    "aws_wafregional_regex_pattern_set.url_blacklist",
-    "aws_wafregional_regex_match_set.url_blacklist",
-    "aws_wafregional_rule.url_blacklist",
-    "aws_wafregional_ipset.nul_ips",
-    "aws_wafregional_rule.ip_whitelist",
-    "aws_wafregional_byte_match_set.api_gateway_proxy",
-    "aws_wafregional_rule.api_gateway_proxy",
+    aws_wafregional_regex_pattern_set.ua_blacklist,
+    aws_wafregional_regex_match_set.ua_blacklist,
+    aws_wafregional_rule.ua_blacklist,
+    aws_wafregional_byte_match_set.healthcheck_url,
+    aws_wafregional_regex_pattern_set.url_blacklist,
+    aws_wafregional_regex_match_set.url_blacklist,
+    aws_wafregional_rule.url_blacklist,
+    aws_wafregional_ipset.nul_ips,
+    aws_wafregional_rule.ip_whitelist,
+    aws_wafregional_byte_match_set.api_gateway_proxy,
+    aws_wafregional_rule.api_gateway_proxy,
   ]
 }
+

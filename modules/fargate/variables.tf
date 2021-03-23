@@ -1,71 +1,72 @@
 variable "container_definitions" {
-  type = "string"
+  type = string
 }
 
 variable "container_name" {
-  type    = "string"
+  type    = string
   default = "app"
 }
 
 variable "desired_count" {
-  type    = "string"
+  type    = string
   default = "1"
 }
 
 variable "namespace" {
-  type = "string"
+  type = string
 }
 
 variable "family" {
-  type = "string"
+  type = string
 }
 
 variable "cpu" {
-  type    = "string"
+  type    = string
   default = "1024"
 }
 
 variable "memory" {
-  type = "string"
+  type = string
 }
 
 variable "tags" {
-  type    = "map"
+  type    = map(string)
   default = {}
 }
 
 variable "vpc_id" {
-  type = "string"
+  type = string
 }
 
 variable "instance_port" {
-  type    = "string"
+  type    = string
   default = "80"
 }
 
 variable "internal" {
-  type    = "string"
+  type    = string
   default = "true"
 }
 
 variable "public_subnets" {
-  type = "list"
+  type = list(string)
 }
 
 variable "private_subnets" {
-  type = "list"
+  type = list(string)
 }
 
 variable "load_balanced" {
-  type    = "string"
+  type    = string
   default = "true"
 }
 
 variable "security_groups" {
-  type    = "list"
+  type    = list(string)
   default = []
 }
 
 locals {
   family_title = "${upper(substr(var.family, 1, 1))}${lower(substr(var.family, 2, -1))}"
 }
+

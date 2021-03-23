@@ -9,13 +9,13 @@ variable "stage" {
 }
 
 variable "delimiter" {
-  type        = "string"
+  type        = string
   default     = "-"
   description = "Delimiter to be used between `name`, `namespace`, `stage`, etc."
 }
 
 variable "attributes" {
-  type        = "list"
+  type        = list(string)
   default     = []
   description = "Additional attributes (e.g. `policy` or `role`)"
 }
@@ -134,12 +134,12 @@ variable "vpc_id" {
 }
 
 variable "public_subnets" {
-  type        = "list"
+  type        = list(string)
   description = "List of public subnets to place Elastic Load Balancer"
 }
 
 variable "private_subnets" {
-  type        = "list"
+  type        = list(string)
   description = "List of private subnets to place EC2 instances"
 }
 
@@ -250,7 +250,7 @@ variable "alb_zone_id" {
 }
 
 variable "tags" {
-  type        = "map"
+  type        = map(string)
   default     = {}
   description = "Additional tags (e.g. `map('BusinessUnit`,`XYZ`)"
 }
@@ -267,7 +267,7 @@ variable "env_default_value" {
 
 variable "env_vars" {
   default     = {}
-  type        = "map"
+  type        = map(string)
   description = "Map of custom ENV variables to be provided to the Jenkins application running on Elastic Beanstalk, e.g. `env_vars = { JENKINS_USER = 'admin' JENKINS_PASS = 'xxxxxx' }`"
 }
 
@@ -325,3 +325,4 @@ variable "sqsd_worker_queue_url" {
   default     = ""
   description = "SQSD QueueURL"
 }
+

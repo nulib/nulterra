@@ -8,7 +8,7 @@ data "aws_iam_role" "task_execution_role" {
 
 resource "aws_sqs_queue" "this_pyramid_tiff_deadletter_queue" {
   name = "${local.namespace}-create-pyramid-tiffs-dead-letter-queue"
-  tags = "${local.common_tags}"
+  tags = local.common_tags
 }
 
 resource "aws_sqs_queue" "this_pyramid_tiff_queue" {
@@ -16,7 +16,7 @@ resource "aws_sqs_queue" "this_pyramid_tiff_queue" {
   delay_seconds              = 0
   visibility_timeout_seconds = 360
   redrive_policy             = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.this_pyramid_tiff_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
-  tags                       = "${local.common_tags}"
+  tags                       = local.common_tags
 }
 
 data "aws_iam_policy_document" "this_pyramid_tiff_access" {
@@ -40,8 +40,8 @@ data "aws_iam_policy_document" "this_pyramid_tiff_access" {
     ]
 
     resources = [
-      "${data.aws_s3_bucket.stack_fcrepo_binary_bucket.arn}",
-      "${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}",
+      data.aws_s3_bucket.stack_fcrepo_binary_bucket.arn,
+      data.terraform_remote_state.stack.outputs.iiif_pyramid_bucket_arn,
     ]
   }
 
@@ -54,7 +54,7 @@ data "aws_iam_policy_document" "this_pyramid_tiff_access" {
   statement {
     effect    = "Allow"
     actions   = ["s3:*"]
-    resources = ["${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}/*"]
+    resources = ["${data.terraform_remote_state.stack.outputs.iiif_pyramid_bucket_arn}/*"]
   }
 
   statement {
@@ -65,7 +65,7 @@ data "aws_iam_policy_document" "this_pyramid_tiff_access" {
       "sqs:ReceiveMessage",
     ]
 
-    resources = ["${aws_sqs_queue.this_pyramid_tiff_queue.arn}"]
+    resources = [aws_sqs_queue.this_pyramid_tiff_queue.arn]
   }
 }
 
@@ -73,12 +73,10 @@ data "aws_iam_policy_document" "ecs_assume_role" {
   statement {
     effect = "Allow"
 
-    principals = [
-      {
-        type        = "Service"
-        identifiers = ["ecs-tasks.amazonaws.com"]
-      },
-    ]
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
 
     actions = ["sts:AssumeRole"]
   }
@@ -86,26 +84,26 @@ data "aws_iam_policy_document" "ecs_assume_role" {
 
 resource "aws_iam_policy" "this_pyramid_tiff_policy" {
   name   = "${local.namespace}-create-pyramid"
-  policy = "${data.aws_iam_policy_document.this_pyramid_tiff_access.json}"
+  policy = data.aws_iam_policy_document.this_pyramid_tiff_access.json
 }
 
 resource "aws_iam_role" "this_pyramid_tiff_role" {
   name               = "${local.namespace}-create-pyramid-role"
-  assume_role_policy = "${data.aws_iam_policy_document.ecs_assume_role.json}"
+  assume_role_policy = data.aws_iam_policy_document.ecs_assume_role.json
 }
 
 resource "aws_iam_role_policy_attachment" "this_pyramid_tiff_role_policy_attachment" {
-  role       = "${aws_iam_role.this_pyramid_tiff_role.name}"
-  policy_arn = "${aws_iam_policy.this_pyramid_tiff_policy.arn}"
+  role       = aws_iam_role.this_pyramid_tiff_role.name
+  policy_arn = aws_iam_policy.this_pyramid_tiff_policy.arn
 }
 
 data "template_file" "pyramid_container_definitions" {
-  template = "${file("./templates/create_pyramid_tiff_container.json.tpl")}"
+  template = file("./templates/create_pyramid_tiff_container.json.tpl")
 
-  vars {
+  vars = {
     image_name = "nulib/pyramid:latest"
-    queue_url  = "${aws_sqs_queue.this_pyramid_tiff_queue.id}"
-    region     = "${data.terraform_remote_state.stack.aws_region}"
+    queue_url  = aws_sqs_queue.this_pyramid_tiff_queue.id
+    region     = data.terraform_remote_state.stack.outputs.aws_region
     task_name  = "${local.namespace}-create-pyramid"
   }
 }
@@ -114,11 +112,11 @@ resource "aws_ecs_task_definition" "this_pyramid_tiff_task" {
   family                   = "${local.namespace}-create-pyramid"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  execution_role_arn       = "${data.aws_iam_role.task_execution_role.arn}"
-  task_role_arn            = "${aws_iam_role.this_pyramid_tiff_role.arn}"
+  execution_role_arn       = data.aws_iam_role.task_execution_role.arn
+  task_role_arn            = aws_iam_role.this_pyramid_tiff_role.arn
   cpu                      = "2048"
   memory                   = "8192"
-  container_definitions    = "${data.template_file.pyramid_container_definitions.rendered}"
+  container_definitions    = data.template_file.pyramid_container_definitions.rendered
 }
 
 data "aws_iam_policy_document" "this_pyramid_trigger_access" {
@@ -131,7 +129,7 @@ data "aws_iam_policy_document" "this_pyramid_trigger_access" {
   statement {
     effect    = "Allow"
     actions   = ["sqs:*"]
-    resources = ["${aws_sqs_queue.this_pyramid_tiff_queue.arn}"]
+    resources = [aws_sqs_queue.this_pyramid_tiff_queue.arn]
   }
 
   statement {
@@ -155,8 +153,8 @@ data "aws_iam_policy_document" "this_pyramid_trigger_access" {
     ]
 
     resources = [
-      "${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}",
-      "${data.terraform_remote_state.stack.iiif_pyramid_bucket_arn}/*",
+      data.terraform_remote_state.stack.outputs.iiif_pyramid_bucket_arn,
+      "${data.terraform_remote_state.stack.outputs.iiif_pyramid_bucket_arn}/*",
     ]
   }
 }
@@ -168,14 +166,14 @@ resource "aws_cloudwatch_event_rule" "trigger_pyramid_rule" {
 }
 
 resource "aws_cloudwatch_event_target" "trigger_pyramid_rule" {
-  rule = "${aws_cloudwatch_event_rule.trigger_pyramid_rule.name}"
-  arn  = "${module.this_pyramid_trigger.function_arn}"
+  rule = aws_cloudwatch_event_rule.trigger_pyramid_rule.name
+  arn  = module.this_pyramid_trigger.function_arn
 }
 
 resource "aws_lambda_permission" "trigger_pyramid_rule" {
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
-  function_name = "${module.this_pyramid_trigger.function_name}"
+  function_name = module.this_pyramid_trigger.function_name
   principal     = "events.amazonaws.com"
 }
 
@@ -189,16 +187,17 @@ module "this_pyramid_trigger" {
   timeout       = 30
 
   attach_policy = true
-  policy        = "${data.aws_iam_policy_document.this_pyramid_trigger_access.json}"
+  policy        = data.aws_iam_policy_document.this_pyramid_trigger_access.json
 
   source_path                    = "${path.module}/lambdas/pyramid_trigger"
   reserved_concurrent_executions = "-1"
 
-  environment {
-    variables {
-      QueueUrl = "${aws_sqs_queue.this_pyramid_tiff_queue.id}"
-      TaskArn  = "${aws_ecs_task_definition.this_pyramid_tiff_task.arn}"
-      VpcId    = "${data.terraform_remote_state.stack.vpc_id}"
+  environment = {
+    variables = {
+      QueueUrl = aws_sqs_queue.this_pyramid_tiff_queue.id
+      TaskArn  = aws_ecs_task_definition.this_pyramid_tiff_task.arn
+      VpcId    = data.terraform_remote_state.stack.outputs.vpc_id
     }
   }
 }
+

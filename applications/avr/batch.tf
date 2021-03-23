@@ -5,14 +5,14 @@ resource "aws_cloudwatch_event_rule" "batch_status_finished" {
 }
 
 resource "aws_cloudwatch_event_target" "batch_status_finished" {
-  rule = "${aws_cloudwatch_event_rule.batch_status_finished.name}"
-  arn  = "${module.batch_status_finished.function_arn}"
+  rule = aws_cloudwatch_event_rule.batch_status_finished.name
+  arn  = module.batch_status_finished.function_arn
 }
 
 resource "aws_lambda_permission" "batch_status_finished" {
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
-  function_name = "${module.batch_status_finished.function_name}"
+  function_name = module.batch_status_finished.function_name
   principal     = "events.amazonaws.com"
 }
 
@@ -29,13 +29,13 @@ module "batch_status_finished" {
   reserved_concurrent_executions = "-1"
 
   attach_policy = true
-  policy        = "${data.aws_iam_policy_document.this_batch_ingest_access.json}"
+  policy        = data.aws_iam_policy_document.this_batch_ingest_access.json
 
-  environment {
-    variables {
+  environment = {
+    variables = {
       JobClassName = "IngestBatchStatusEmailJobs::IngestFinished"
-      QueueUrl     = "${aws_sqs_queue.this_batch_queue.id}"
-      Secret       = "${random_id.secret_key_base.hex}"
+      QueueUrl     = aws_sqs_queue.this_batch_queue.id
+      Secret       = random_id.secret_key_base.hex
     }
   }
 }
@@ -47,14 +47,14 @@ resource "aws_cloudwatch_event_rule" "batch_status_stalled" {
 }
 
 resource "aws_cloudwatch_event_target" "batch_status_stalled" {
-  rule = "${aws_cloudwatch_event_rule.batch_status_stalled.name}"
-  arn  = "${module.batch_status_stalled.function_arn}"
+  rule = aws_cloudwatch_event_rule.batch_status_stalled.name
+  arn  = module.batch_status_stalled.function_arn
 }
 
 resource "aws_lambda_permission" "batch_status_stalled" {
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
-  function_name = "${module.batch_status_stalled.function_name}"
+  function_name = module.batch_status_stalled.function_name
   principal     = "events.amazonaws.com"
 }
 
@@ -71,13 +71,14 @@ module "batch_status_stalled" {
   reserved_concurrent_executions = "-1"
 
   attach_policy = true
-  policy        = "${data.aws_iam_policy_document.this_batch_ingest_access.json}"
+  policy        = data.aws_iam_policy_document.this_batch_ingest_access.json
 
-  environment {
-    variables {
+  environment = {
+    variables = {
       JobClassName = "IngestBatchStatusEmailJobs::StalledJob"
-      QueueUrl     = "${aws_sqs_queue.this_batch_queue.id}"
-      Secret       = "${random_id.secret_key_base.hex}"
+      QueueUrl     = aws_sqs_queue.this_batch_queue.id
+      Secret       = random_id.secret_key_base.hex
     }
   }
 }
+

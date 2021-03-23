@@ -1,7 +1,7 @@
 resource "aws_s3_bucket" "zookeeper_config_bucket" {
   bucket        = "${local.namespace}-zk-configs"
   acl           = "private"
-  tags          = "${local.common_tags}"
+  tags          = local.common_tags
   force_destroy = true
 }
 
@@ -20,7 +20,7 @@ data "aws_iam_policy_document" "zookeeper_config_bucket_access" {
       "s3:GetBucketLocation",
     ]
 
-    resources = ["${aws_s3_bucket.zookeeper_config_bucket.arn}"]
+    resources = [aws_s3_bucket.zookeeper_config_bucket.arn]
   }
 
   statement {
@@ -38,110 +38,110 @@ data "aws_iam_policy_document" "zookeeper_config_bucket_access" {
 
 resource "aws_iam_policy" "zookeeper_config_bucket_policy" {
   name   = "${local.namespace}-zk-config-bucket-access"
-  policy = "${data.aws_iam_policy_document.zookeeper_config_bucket_access.json}"
+  policy = data.aws_iam_policy_document.zookeeper_config_bucket_access.json
 }
 
 resource "aws_iam_role_policy_attachment" "zookeeper_config_bucket_role_access" {
-  role       = "${module.zookeeper_environment.ec2_instance_profile_role_name}"
-  policy_arn = "${aws_iam_policy.zookeeper_config_bucket_policy.arn}"
+  role       = module.zookeeper_environment.ec2_instance_profile_role_name
+  policy_arn = aws_iam_policy.zookeeper_config_bucket_policy.arn
 }
 
 data "template_file" "zookeeper_dockerrun_aws_json" {
-  template = "${file("./templates/zookeeper_Dockerrun.aws.json.tpl")}"
+  template = file("./templates/zookeeper_Dockerrun.aws.json.tpl")
 
-  vars {
-    aws_region = "${var.aws_region}"
-    stack_name = "${local.namespace}"
+  vars = {
+    aws_region = var.aws_region
+    stack_name = local.namespace
   }
 }
 
 resource "local_file" "zookeeper_dockerrun_aws_json" {
-  content  = "${data.template_file.zookeeper_dockerrun_aws_json.rendered}"
+  content  = data.template_file.zookeeper_dockerrun_aws_json.rendered
   filename = "./applications/zookeeper/Dockerrun.aws.json"
 }
 
 data "archive_file" "zookeeper_source" {
-  depends_on  = ["local_file.zookeeper_dockerrun_aws_json"]
+  depends_on  = [local_file.zookeeper_dockerrun_aws_json]
   type        = "zip"
   source_dir  = "${path.module}/applications/zookeeper"
   output_path = "${path.module}/build/zookeeper.zip"
 }
 
 resource "aws_s3_bucket_object" "zookeeper_source" {
-  bucket = "${aws_s3_bucket.app_sources.id}"
+  bucket = aws_s3_bucket.app_sources.id
   key    = "zookeeper-${data.archive_file.zookeeper_source.output_md5}"
   source = "${path.module}/build/zookeeper.zip"
-  etag   = "${data.archive_file.zookeeper_source.output_md5}"
+  etag   = data.archive_file.zookeeper_source.output_md5
 }
 
 resource "aws_elastic_beanstalk_application_version" "zookeeper" {
   name        = "zookeeper-${data.archive_file.zookeeper_source.output_md5}"
-  application = "${aws_elastic_beanstalk_application.solrcloud.name}"
+  application = aws_elastic_beanstalk_application.solrcloud.name
   description = "application version created by terraform"
-  bucket      = "${aws_s3_bucket.app_sources.id}"
-  key         = "${aws_s3_bucket_object.zookeeper_source.id}"
+  bucket      = aws_s3_bucket.app_sources.id
+  key         = aws_s3_bucket_object.zookeeper_source.id
 }
 
 module "zookeeper_environment" {
   source = "../modules/beanstalk"
 
-  app                     = "${aws_elastic_beanstalk_application.solrcloud.name}"
-  version_label           = "${aws_elastic_beanstalk_application_version.zookeeper.name}"
-  namespace               = "${var.stack_name}"
+  app                     = aws_elastic_beanstalk_application.solrcloud.name
+  version_label           = aws_elastic_beanstalk_application_version.zookeeper.name
+  namespace               = var.stack_name
   name                    = "zookeeper"
-  stage                   = "${var.environment}"
-  solution_stack_name     = "${data.aws_elastic_beanstalk_solution_stack.multi_docker.name}"
-  vpc_id                  = "${module.vpc.vpc_id}"
-  private_subnets         = "${module.vpc.private_subnets}"
-  public_subnets          = "${module.vpc.private_subnets}"
+  stage                   = var.environment
+  solution_stack_name     = data.aws_elastic_beanstalk_solution_stack.multi_docker.name
+  vpc_id                  = module.vpc.vpc_id
+  private_subnets         = module.vpc.private_subnets
+  public_subnets          = module.vpc.private_subnets
   loadbalancer_scheme     = "internal"
   managed_actions_enabled = "false"
   instance_port           = "8181"
   healthcheck_url         = "/exhibitor/v1/ui/index.html"
-  keypair                 = "${var.ec2_keyname}"
+  keypair                 = var.ec2_keyname
   instance_type           = "t2.medium"
   autoscale_min           = 2
   autoscale_max           = 3
   health_check_threshold  = "Ok"
-  tags                    = "${local.common_tags}"
+  tags                    = local.common_tags
 
   env_vars = {
-    S3_BUCKET        = "${aws_s3_bucket.zookeeper_config_bucket.id}"
+    S3_BUCKET        = aws_s3_bucket.zookeeper_config_bucket.id
     S3_PREFIX        = "zookeeper"
-    AWS_REGION       = "${var.aws_region}"
+    AWS_REGION       = var.aws_region
     DYNAMIC_HOSTNAME = "true"
-    STACK_NAMESPACE  = "${local.namespace}"
+    STACK_NAMESPACE  = local.namespace
     STACK_NAME       = "zookeeper"
     STACK_TIER       = "app"
   }
 }
 
 resource "aws_security_group_rule" "allow_zk_solr_access" {
-  security_group_id        = "${module.zookeeper_environment.security_group_id}"
+  security_group_id        = module.zookeeper_environment.security_group_id
   type                     = "ingress"
   from_port                = "2181"
   to_port                  = "2181"
   protocol                 = "tcp"
-  source_security_group_id = "${module.solr_environment.security_group_id}"
+  source_security_group_id = module.solr_environment.security_group_id
 }
 
 resource "aws_security_group_rule" "allow_zk_self_access" {
-  security_group_id        = "${module.zookeeper_environment.security_group_id}"
+  security_group_id        = module.zookeeper_environment.security_group_id
   type                     = "ingress"
   from_port                = 0
   to_port                  = 0
   protocol                 = -1
-  source_security_group_id = "${module.zookeeper_environment.security_group_id}"
+  source_security_group_id = module.zookeeper_environment.security_group_id
 }
 
 resource "aws_route53_record" "zookeeper" {
-  zone_id = "${module.dns.private_zone_id}"
+  zone_id = module.dns.private_zone_id
   name    = "zookeeper.${local.private_zone_name}"
   type    = "A"
 
   alias {
-    name                   = "${module.zookeeper_environment.elb_dns_name}"
-    zone_id                = "${module.zookeeper_environment.elb_zone_id}"
+    name                   = module.zookeeper_environment.elb_dns_name
+    zone_id                = module.zookeeper_environment.elb_zone_id
     evaluate_target_health = true
   }
 }
@@ -186,11 +186,12 @@ resource "aws_cloudwatch_event_rule" "upsert_zk_records_event" {
   }
 }
 PATTERN
+
 }
 
 resource "aws_cloudwatch_event_target" "lambda" {
-  rule = "${aws_cloudwatch_event_rule.upsert_zk_records_event.name}"
-  arn  = "${module.upsert_zk_records.function_arn}"
+  rule = aws_cloudwatch_event_rule.upsert_zk_records_event.name
+  arn  = module.upsert_zk_records.function_arn
 }
 
 resource "aws_cloudwatch_log_group" "upsert_zk_route53_records_log" {
@@ -201,7 +202,7 @@ resource "aws_cloudwatch_log_group" "upsert_zk_route53_records_log" {
 resource "aws_lambda_permission" "upsert_invoke_permission" {
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
-  function_name = "${module.upsert_zk_records.function_name}"
+  function_name = module.upsert_zk_records.function_name
   principal     = "events.amazonaws.com"
 }
 
@@ -215,15 +216,15 @@ module "upsert_zk_records" {
   timeout       = 300
 
   attach_policy = true
-  policy        = "${data.aws_iam_policy_document.upsert_route53_access.json}"
+  policy        = data.aws_iam_policy_document.upsert_route53_access.json
 
   source_path                    = "${path.module}/lambdas/upsert_zk_records"
   reserved_concurrent_executions = "-1"
 
-  environment {
-    variables {
+  environment = {
+    variables = {
       RecordSetName = "zk.${local.private_zone_name}"
-      HostedZoneId  = "${module.dns.private_zone_id}"
+      HostedZoneId  = module.dns.private_zone_id
     }
   }
 }
@@ -238,8 +239,9 @@ data "template_file" "first_run_upsert_zk_records_payload" {
 }
 EOF
 
-  vars {
-    zookeeper_asg = "${module.zookeeper_environment.autoscaling_groups[0]}"
+
+  vars = {
+    zookeeper_asg = module.zookeeper_environment.autoscaling_groups[0]
   }
 }
 
@@ -253,8 +255,9 @@ data "template_file" "delete_zk_records_change_batch" {
 }
 EOF
 
-  vars {
-    zookeeper_asg = "${module.zookeeper_environment.autoscaling_groups[0]}"
+
+  vars = {
+    zookeeper_asg = module.zookeeper_environment.autoscaling_groups[0]
   }
 }
 
@@ -262,9 +265,5 @@ resource "null_resource" "first_run_upsert_zk_records" {
   provisioner "local-exec" {
     command = "aws --region ${var.aws_region} lambda invoke --function-name ${local.namespace}-upsert-zk-route53-records --payload '${data.template_file.first_run_upsert_zk_records_payload.rendered}' /dev/null"
   }
-
-  provisioner "local-exec" {
-    when    = "destroy"
-    command = "aws --region ${var.aws_region} lambda invoke --function-name ${local.namespace}-upsert-zk-route53-records --payload '${data.template_file.delete_zk_records_change_batch.rendered}' /dev/null"
-  }
 }
+

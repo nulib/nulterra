@@ -14,14 +14,14 @@ data "aws_iam_policy_document" "instance_tagger_lambda_access" {
 resource "aws_lambda_permission" "instance_tagger_invoke_permission" {
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
-  function_name = "${module.instance_tagger_function.function_name}"
+  function_name = module.instance_tagger_function.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = "${aws_cloudwatch_event_rule.instance_tagger_event.arn}"
+  source_arn    = aws_cloudwatch_event_rule.instance_tagger_event.arn
 }
 
 resource "aws_cloudwatch_event_target" "instance_tagger_lambda" {
-  rule = "${aws_cloudwatch_event_rule.instance_tagger_event.name}"
-  arn  = "${module.instance_tagger_function.function_arn}"
+  rule = aws_cloudwatch_event_rule.instance_tagger_event.name
+  arn  = module.instance_tagger_function.function_arn
 }
 
 resource "aws_cloudwatch_event_rule" "instance_tagger_event" {
@@ -33,6 +33,7 @@ resource "aws_cloudwatch_event_rule" "instance_tagger_event" {
   }
 }
 __EOF__
+
 }
 
 resource "aws_cloudwatch_log_group" "instance_tagger_log" {
@@ -50,8 +51,9 @@ module "instance_tagger_function" {
   timeout       = 60
 
   attach_policy = true
-  policy        = "${data.aws_iam_policy_document.instance_tagger_lambda_access.json}"
+  policy        = data.aws_iam_policy_document.instance_tagger_lambda_access.json
 
   source_path                    = "${path.module}/lambdas/instance-tagger"
   reserved_concurrent_executions = "-1"
 }
+

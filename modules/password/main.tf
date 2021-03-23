@@ -7,5 +7,6 @@ resource "random_string" "result" {
 }
 
 output "result" {
-  value = "${random_string.result.result}"
+  value = random_string.result.result
 }
+

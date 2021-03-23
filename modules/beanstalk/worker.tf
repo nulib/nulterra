@@ -3,46 +3,46 @@
 # http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html#command-options-general-elasticbeanstalkmanagedactionsplatformupdate
 #
 resource "aws_elastic_beanstalk_environment" "worker" {
-  count         = "${var.tier == "Worker" ? 1 : 0}"
-  name          = "${local.environment_label}"
-  application   = "${var.app}"
-  version_label = "${var.version_label}"
+  count         = var.tier == "Worker" ? 1 : 0
+  name          = local.environment_label
+  application   = var.app
+  version_label = var.version_label
 
-  tier                = "${var.tier}"
-  solution_stack_name = "${var.solution_stack_name}"
+  tier                = var.tier
+  solution_stack_name = var.solution_stack_name
 
-  wait_for_ready_timeout = "${var.wait_for_ready_timeout}"
+  wait_for_ready_timeout = var.wait_for_ready_timeout
 
-  tags = "${var.tags}"
+  tags = var.tags
 
   setting {
     namespace = "aws:ec2:vpc"
     name      = "VPCId"
-    value     = "${var.vpc_id}"
+    value     = var.vpc_id
   }
 
   setting {
     namespace = "aws:ec2:vpc"
     name      = "AssociatePublicIpAddress"
-    value     = "${var.associate_public_ip_address}"
+    value     = var.associate_public_ip_address
   }
 
   setting {
     namespace = "aws:ec2:vpc"
     name      = "Subnets"
-    value     = "${join(",", var.private_subnets)}"
+    value     = join(",", var.private_subnets)
   }
 
   setting {
     namespace = "aws:ec2:vpc"
     name      = "ELBSubnets"
-    value     = "${join(",", var.public_subnets)}"
+    value     = join(",", var.public_subnets)
   }
 
   setting {
     namespace = "aws:ec2:vpc"
     name      = "ELBScheme"
-    value     = "${var.loadbalancer_scheme}"
+    value     = var.loadbalancer_scheme
   }
 
   setting {
@@ -54,25 +54,25 @@ resource "aws_elastic_beanstalk_environment" "worker" {
   setting {
     namespace = "aws:autoscaling:updatepolicy:rollingupdate"
     name      = "RollingUpdateType"
-    value     = "${var.rolling_update_type}"
+    value     = var.rolling_update_type
   }
 
   setting {
     namespace = "aws:autoscaling:updatepolicy:rollingupdate"
     name      = "MinInstancesInService"
-    value     = "${var.updating_min_in_service}"
+    value     = var.updating_min_in_service
   }
 
   setting {
     namespace = "aws:elasticbeanstalk:command"
     name      = "DeploymentPolicy"
-    value     = "${var.rolling_update_type == "Immutable" ? "Immutable" : "Rolling"}"
+    value     = var.rolling_update_type == "Immutable" ? "Immutable" : "Rolling"
   }
 
   setting {
     namespace = "aws:autoscaling:updatepolicy:rollingupdate"
     name      = "MaxBatchSize"
-    value     = "${var.updating_max_batch}"
+    value     = var.updating_max_batch
   }
 
   ###=========================== Autoscale trigger ========================== ###
@@ -95,12 +95,12 @@ resource "aws_elastic_beanstalk_environment" "worker" {
   setting {
     namespace = "aws:autoscaling:trigger"
     name      = "LowerThreshold"
-    value     = "${var.autoscale_lower_bound}"
+    value     = var.autoscale_lower_bound
   }
   setting {
     namespace = "aws:autoscaling:trigger"
     name      = "UpperThreshold"
-    value     = "${var.autoscale_upper_bound}"
+    value     = var.autoscale_upper_bound
   }
 
   ###=========================== Autoscale trigger ========================== ###
@@ -108,7 +108,7 @@ resource "aws_elastic_beanstalk_environment" "worker" {
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "SecurityGroups"
-    value     = "${aws_security_group.default.id}"
+    value     = aws_security_group.default.id
   }
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
@@ -118,52 +118,52 @@ resource "aws_elastic_beanstalk_environment" "worker" {
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "InstanceType"
-    value     = "${var.instance_type}"
+    value     = var.instance_type
   }
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "IamInstanceProfile"
-    value     = "${aws_iam_instance_profile.ec2.name}"
+    value     = aws_iam_instance_profile.ec2.name
   }
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "EC2KeyName"
-    value     = "${var.keypair}"
+    value     = var.keypair
   }
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "RootVolumeSize"
-    value     = "${var.root_volume_size}"
+    value     = var.root_volume_size
   }
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "RootVolumeType"
-    value     = "${var.root_volume_type}"
+    value     = var.root_volume_type
   }
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
     name      = "BlockDeviceMappings"
-    value     = "${var.extra_block_devices}"
+    value     = var.extra_block_devices
   }
   setting {
     namespace = "aws:autoscaling:asg"
     name      = "Availability Zones"
-    value     = "${var.availability_zones}"
+    value     = var.availability_zones
   }
   setting {
     namespace = "aws:autoscaling:asg"
     name      = "MinSize"
-    value     = "${var.autoscale_min}"
+    value     = var.autoscale_min
   }
   setting {
     namespace = "aws:autoscaling:asg"
     name      = "MaxSize"
-    value     = "${var.autoscale_max}"
+    value     = var.autoscale_max
   }
   setting {
     namespace = "aws:elasticbeanstalk:healthreporting:system"
     name      = "ConfigDocument"
-    value     = "${var.config_document}"
+    value     = var.config_document
   }
   setting {
     namespace = "aws:elasticbeanstalk:application"
@@ -173,12 +173,12 @@ resource "aws_elastic_beanstalk_environment" "worker" {
   setting {
     namespace = "aws:elasticbeanstalk:environment"
     name      = "LoadBalancerType"
-    value     = "${var.loadbalancer_type}"
+    value     = var.loadbalancer_type
   }
   setting {
     namespace = "aws:elasticbeanstalk:environment"
     name      = "ServiceRole"
-    value     = "${aws_iam_role.service.name}"
+    value     = aws_iam_role.service.name
   }
   setting {
     namespace = "aws:elasticbeanstalk:healthreporting:system"
@@ -188,7 +188,7 @@ resource "aws_elastic_beanstalk_environment" "worker" {
   setting {
     namespace = "aws:elasticbeanstalk:healthreporting:system"
     name      = "HealthCheckSuccessThreshold"
-    value     = "${var.health_check_threshold}"
+    value     = var.health_check_threshold
   }
   setting {
     namespace = "aws:elasticbeanstalk:command"
@@ -208,164 +208,426 @@ resource "aws_elastic_beanstalk_environment" "worker" {
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "BASE_HOST"
-    value     = "${var.name}"
+    value     = var.name
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "CONFIG_SOURCE"
-    value     = "${var.config_source}"
+    value     = var.config_source
   }
   setting {
     namespace = "aws:elasticbeanstalk:managedactions"
     name      = "ManagedActionsEnabled"
-    value     = "${var.managed_actions_enabled}"
+    value     = var.managed_actions_enabled
   }
   setting {
     namespace = "aws:elasticbeanstalk:managedactions"
     name      = "PreferredStartTime"
-    value     = "${var.preferred_start_time}"
+    value     = var.preferred_start_time
   }
   setting {
     namespace = "aws:elasticbeanstalk:managedactions:platformupdate"
     name      = "UpdateLevel"
-    value     = "${var.update_level}"
+    value     = var.update_level
   }
   setting {
     namespace = "aws:elasticbeanstalk:managedactions:platformupdate"
     name      = "InstanceRefreshEnabled"
-    value     = "${var.instance_refresh_enabled}"
+    value     = var.instance_refresh_enabled
   }
+
   ###===================== Application ENV vars ======================###
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 0))), 0)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 0))), 0), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 0)]),
+      0,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 0)]),
+        0,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 1))), 1)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 1))), 1), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 1)]),
+      1,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 1)]),
+        1,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 2))), 2)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 2))), 2), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 2)]),
+      2,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 2)]),
+        2,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 3))), 3)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 3))), 3), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 3)]),
+      3,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 3)]),
+        3,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 4))), 4)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 4))), 4), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 4)]),
+      4,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 4)]),
+        4,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 5))), 5)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 5))), 5), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 5)]),
+      5,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 5)]),
+        5,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 6))), 6)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 6))), 6), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 6)]),
+      6,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 6)]),
+        6,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 7))), 7)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 7))), 7), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 7)]),
+      7,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 7)]),
+        7,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 8))), 8)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 8))), 8), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 8)]),
+      8,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 8)]),
+        8,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 9))), 9)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 9))), 9), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 9)]),
+      9,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 9)]),
+        9,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 10))), 10)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 10))), 10), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 10)]),
+      10,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 10)]),
+        10,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 11))), 11)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 11))), 11), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 11)]),
+      11,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 11)]),
+        11,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 12))), 12)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 12))), 12), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 12)]),
+      12,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 12)]),
+        12,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 13))), 13)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 13))), 13), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 13)]),
+      13,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 13)]),
+        13,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 14))), 14)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 14))), 14), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 14)]),
+      14,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 14)]),
+        14,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 15))), 15)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 15))), 15), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 15)]),
+      15,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 15)]),
+        15,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 16))), 16)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 16))), 16), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 16)]),
+      16,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 16)]),
+        16,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 17))), 17)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 17))), 17), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 17)]),
+      17,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 17)]),
+        17,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 18))), 18)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 18))), 18), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 18)]),
+      18,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 18)]),
+        18,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 19))), 19)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 19))), 19), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 19)]),
+      19,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 19)]),
+        19,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 20))), 20)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 20))), 20), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 20)]),
+      20,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 20)]),
+        20,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 21))), 21)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 21))), 21), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 21)]),
+      21,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 21)]),
+        21,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 22))), 22)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 22))), 22), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 22)]),
+      22,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 22)]),
+        22,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 23))), 23)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 23))), 23), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 23)]),
+      23,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 23)]),
+        23,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 24))), 24)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 24))), 24), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 24)]),
+      24,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 24)]),
+        24,
+      ),
+      var.env_default_value,
+    )
   }
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
-    name      = "${element(concat(keys(var.env_vars), list(format(var.env_default_key, 25))), 25)}"
-    value     = "${lookup(var.env_vars, element(concat(keys(var.env_vars), list(format(var.env_default_key, 25))), 25), var.env_default_value)}"
+    name = element(
+      concat(keys(var.env_vars), [format(var.env_default_key, 25)]),
+      25,
+    )
+    value = lookup(
+      var.env_vars,
+      element(
+        concat(keys(var.env_vars), [format(var.env_default_key, 25)]),
+        25,
+      ),
+      var.env_default_value,
+    )
   }
+
   ###===================== Application Load Balancer Health check settings =====================================================###
   # The Application Load Balancer health check does not take into account the Elastic Beanstalk health check path
   # http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/environments-cfg-applicationloadbalancer.html
@@ -373,7 +635,7 @@ resource "aws_elastic_beanstalk_environment" "worker" {
   setting {
     namespace = "aws:elasticbeanstalk:environment:process:default"
     name      = "HealthCheckPath"
-    value     = "${var.healthcheck_url}"
+    value     = var.healthcheck_url
   }
   setting {
     namespace = "aws:elasticbeanstalk:environment:process:default"
@@ -391,47 +653,47 @@ resource "aws_elastic_beanstalk_environment" "worker" {
   setting {
     namespace = "aws:elasticbeanstalk:sqsd"
     name      = "ConnectTimeout"
-    value     = "${var.sqsd_connect_timeout}"
+    value     = var.sqsd_connect_timeout
   }
   setting {
     namespace = "aws:elasticbeanstalk:sqsd"
     name      = "HttpConnections"
-    value     = "${var.sqsd_http_connections}"
+    value     = var.sqsd_http_connections
   }
   setting {
     namespace = "aws:elasticbeanstalk:sqsd"
     name      = "HttpPath"
-    value     = "${var.sqsd_http_path}"
+    value     = var.sqsd_http_path
   }
   setting {
     namespace = "aws:elasticbeanstalk:sqsd"
     name      = "InactivityTimeout"
-    value     = "${var.sqsd_inactivity_timeout}"
+    value     = var.sqsd_inactivity_timeout
   }
   setting {
     namespace = "aws:elasticbeanstalk:sqsd"
     name      = "MaxRetries"
-    value     = "${var.sqsd_max_retries}"
+    value     = var.sqsd_max_retries
   }
   setting {
     namespace = "aws:elasticbeanstalk:sqsd"
     name      = "MimeType"
-    value     = "${var.sqsd_mime_type}"
+    value     = var.sqsd_mime_type
   }
   setting {
     namespace = "aws:elasticbeanstalk:sqsd"
     name      = "RetentionPeriod"
-    value     = "${var.sqsd_retention_period}"
+    value     = var.sqsd_retention_period
   }
   setting {
     namespace = "aws:elasticbeanstalk:sqsd"
     name      = "VisibilityTimeout"
-    value     = "${var.sqsd_visibility_timeout}"
+    value     = var.sqsd_visibility_timeout
   }
   setting {
     namespace = "aws:elasticbeanstalk:sqsd"
     name      = "WorkerQueueURL"
-    value     = "${var.sqsd_worker_queue_url}"
+    value     = var.sqsd_worker_queue_url
   }
 
   ###===================== Notification =====================================================###
@@ -439,22 +701,23 @@ resource "aws_elastic_beanstalk_environment" "worker" {
   setting {
     namespace = "aws:elasticbeanstalk:sns:topics"
     name      = "Notification Endpoint"
-    value     = "${var.notification_endpoint}"
+    value     = var.notification_endpoint
   }
   setting {
     namespace = "aws:elasticbeanstalk:sns:topics"
     name      = "Notification Protocol"
-    value     = "${var.notification_protocol}"
+    value     = var.notification_protocol
   }
   setting {
     namespace = "aws:elasticbeanstalk:sns:topics"
     name      = "Notification Topic ARN"
-    value     = "${var.notification_topic_arn}"
+    value     = var.notification_topic_arn
   }
   setting {
     namespace = "aws:elasticbeanstalk:sns:topics"
     name      = "Notification Topic Name"
-    value     = "${var.notification_topic_name}"
+    value     = var.notification_topic_name
   }
-  depends_on = ["aws_security_group.default"]
+  depends_on = [aws_security_group.default]
 }
+

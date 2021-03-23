@@ -15,9 +15,9 @@ data "aws_iam_policy_document" "cloudwatch_metrics_lambda_access" {
 resource "aws_lambda_permission" "solr_metrics_invoke_permission" {
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
-  function_name = "${module.solr_metrics_function.function_name}"
+  function_name = module.solr_metrics_function.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = "${aws_cloudwatch_event_rule.solr_metrics_event.arn}"
+  source_arn    = aws_cloudwatch_event_rule.solr_metrics_event.arn
 }
 
 module "solr_metrics_function" {
@@ -30,20 +30,20 @@ module "solr_metrics_function" {
   timeout       = 300
 
   attach_policy = true
-  policy        = "${data.aws_iam_policy_document.cloudwatch_metrics_lambda_access.json}"
+  policy        = data.aws_iam_policy_document.cloudwatch_metrics_lambda_access.json
 
   source_path                    = "${path.module}/lambdas/solr-metrics"
   reserved_concurrent_executions = "-1"
 
   attach_vpc_config = true
 
-  vpc_config {
-    subnet_ids         = ["${module.vpc.private_subnets}"]
-    security_group_ids = ["${module.vpc.default_security_group_id}"]
+  vpc_config = {
+    subnet_ids         = [module.vpc.private_subnets]
+    security_group_ids = [module.vpc.default_security_group_id]
   }
 
-  environment {
-    variables {
+  environment = {
+    variables = {
       SolrUrl = "http://${aws_route53_record.solr.name}/solr"
     }
   }
@@ -56,16 +56,16 @@ resource "aws_cloudwatch_event_rule" "solr_metrics_event" {
 }
 
 resource "aws_cloudwatch_event_target" "solr_metrics_lambda" {
-  rule = "${aws_cloudwatch_event_rule.solr_metrics_event.name}"
-  arn  = "${module.solr_metrics_function.function_arn}"
+  rule = aws_cloudwatch_event_rule.solr_metrics_event.name
+  arn  = module.solr_metrics_function.function_arn
 }
 
 resource "aws_lambda_permission" "aggregate_metrics_invoke_permission" {
   statement_id  = "AllowExecutionFromCloudWatch"
   action        = "lambda:InvokeFunction"
-  function_name = "${module.aggregate_metrics_function.function_name}"
+  function_name = module.aggregate_metrics_function.function_name
   principal     = "events.amazonaws.com"
-  source_arn    = "${aws_cloudwatch_event_rule.aggregate_metrics_event.arn}"
+  source_arn    = aws_cloudwatch_event_rule.aggregate_metrics_event.arn
 }
 
 module "aggregate_metrics_function" {
@@ -78,7 +78,7 @@ module "aggregate_metrics_function" {
   timeout       = 300
 
   attach_policy = true
-  policy        = "${data.aws_iam_policy_document.cloudwatch_metrics_lambda_access.json}"
+  policy        = data.aws_iam_policy_document.cloudwatch_metrics_lambda_access.json
 
   source_path = "${path.module}/lambdas/aggregate-metrics"
 }
@@ -100,6 +100,7 @@ resource "aws_cloudwatch_event_rule" "aggregate_metrics_event" {
 }
 
 resource "aws_cloudwatch_event_target" "aggregate_metrics_lambda" {
-  rule = "${aws_cloudwatch_event_rule.aggregate_metrics_event.name}"
-  arn  = "${module.aggregate_metrics_function.function_arn}"
+  rule = aws_cloudwatch_event_rule.aggregate_metrics_event.name
+  arn  = module.aggregate_metrics_function.function_arn
 }
+

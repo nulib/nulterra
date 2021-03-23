@@ -1,25 +1,25 @@
 variable "schema" {
-  type = "string"
+  type = string
 }
 
 variable "host" {
-  type = "string"
+  type = string
 }
 
 variable "port" {
-  type = "string"
+  type = string
 }
 
 variable "master_username" {
-  type = "string"
+  type = string
 }
 
 variable "master_password" {
-  type = "string"
+  type = string
 }
 
 variable "connection" {
-  type = "map"
+  type = map(string)
 }
 
 variable "dependency_id" {
@@ -52,6 +52,7 @@ END
 CREATE DATABASE ${var.schema} OWNER ${var.schema};
 EOF
 
+
   destroy_script = <<EOF
 DO
 $do$
@@ -62,26 +63,35 @@ END
 $do$;
 EOF
 
+
   psql            = "PGPASSWORD='${var.master_password}' psql -U ${var.master_username} -h ${var.host} -p ${var.port} postgres"
   create_command  = "echo \"${local.create_script}\" | ${local.psql}"
   destroy_command = "echo \"${local.destroy_script}\" | ${local.psql}"
 }
 
 resource "null_resource" "this_database" {
-  triggers {
-    value = "${var.host}"
+  triggers = {
+    value = var.host
   }
 
   connection {
-    user        = "${var.connection["user"]}"
-    host        = "${var.connection["host"]}"
-    private_key = "${var.connection["private_key"]}"
+    user        = var.connection["user"]
+    host        = var.connection["host"]
+    private_key = var.connection["private_key"]
     agent       = true
     timeout     = "3m"
   }
 
   provisioner "remote-exec" {
-    inline = ["${local.create_command}"]
+    # TF-UPGRADE-TODO: In Terraform v0.10 and earlier, it was sometimes necessary to
+    # force an interpolation expression to be interpreted as a list by wrapping it
+    # in an extra set of list brackets. That form was supported for compatibility in
+    # v0.11, but is no longer supported in Terraform v0.12.
+    #
+    # If the expression in the following list itself returns a list, remove the
+    # brackets to avoid interpretation as a list of lists. If the expression
+    # returns a single list item then leave it as-is and remove this TODO comment.
+    inline = [local.create_command]
   }
 
   #  provisioner "remote-exec" {
@@ -99,3 +109,4 @@ resource "null_resource" "this_database" {
 output "password" {
   value = "${module.role_password.result}${null_resource.this_database.id == "" ? "" : ""}"
 }
+

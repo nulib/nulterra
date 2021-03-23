@@ -1,10 +1,10 @@
 variable "allow_iiif_from" {
-  type = "string"
+  type    = string
   default = ""
 }
 
 variable "api_token_secret" {
-  type = "string"
+  type = string
 }
 
 variable "aws_region" {
@@ -12,7 +12,7 @@ variable "aws_region" {
 }
 
 variable "azs" {
-  type    = "list"
+  type    = list(string)
   default = ["us-east-1a", "us-east-1b", "us-east-1c"]
 }
 
@@ -25,11 +25,11 @@ variable "db_master_username" {
 }
 
 variable "ec2_keyname" {
-  type = "string"
+  type = string
 }
 
 variable "ec2_private_keyfile" {
-  type = "string"
+  type = string
 }
 
 variable "enable_alarms" {
@@ -41,7 +41,7 @@ variable "enable_iiif_cloudfront" {
 }
 
 variable "environment" {
-  type = "string"
+  type = string
 }
 
 variable "fcrepo_image" {
@@ -49,12 +49,12 @@ variable "fcrepo_image" {
 }
 
 variable "frontend_dns_names" {
-  type    = "list"
+  type    = list(string)
   default = []
 }
 
 variable "hosted_zone_name" {
-  type = "string"
+  type = string
 }
 
 variable "iiif_ssl_certificate_arn" {
@@ -74,11 +74,11 @@ variable "stack_name" {
 }
 
 variable "pager_alert" {
-  type = "list"
+  type = list(string)
 }
 
 variable "tags" {
-  type    = "map"
+  type    = map(string)
   default = {}
 }
 
@@ -87,27 +87,27 @@ variable "vpc_cidr_block" {
 }
 
 variable "vpc_public_subnets" {
-  type    = "list"
+  type    = list(string)
   default = ["10.1.2.0/24", "10.1.4.0/24", "10.1.6.0/24"]
 }
 
 variable "vpc_private_subnets" {
-  type    = "list"
+  type    = list(string)
   default = ["10.1.1.0/24", "10.1.3.0/24", "10.1.5.0/24"]
 }
 
 variable "ip_whitelist" {
-  type    = "string"
+  type    = string
   default = "false"
 }
 
 variable "ua_blacklist" {
-  type    = "string"
+  type    = string
   default = "false"
 }
 
 variable "url_blacklist" {
-  type    = "string"
+  type    = string
   default = "false"
 }
 
@@ -116,12 +116,13 @@ locals {
   public_zone_name  = "${var.stack_name}.${var.hosted_zone_name}"
   private_zone_name = "${var.stack_name}.vpc.${var.hosted_zone_name}"
 
-  common_tags = "${merge(
+  common_tags = merge(
     var.tags,
-    map(
-      "Terraform", "true",
-      "Environment", "${local.namespace}",
-      "Project", "Infrastructure"
-    )
-  )}"
+    {
+      "Terraform"   = "true"
+      "Environment" = local.namespace
+      "Project"     = "Infrastructure"
+    },
+  )
 }
+

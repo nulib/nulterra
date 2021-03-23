@@ -2,7 +2,8 @@ locals {
   environment_label = "${var.namespace}-${var.stage}-${var.name}"
 }
 
-data "aws_region" "default" {}
+data "aws_region" "default" {
+}
 
 #
 # Service
@@ -26,16 +27,16 @@ data "aws_iam_policy_document" "service" {
 
 resource "aws_iam_role" "service" {
   name               = "${local.environment_label}-service"
-  assume_role_policy = "${data.aws_iam_policy_document.service.json}"
+  assume_role_policy = data.aws_iam_policy_document.service.json
 }
 
 resource "aws_iam_role_policy_attachment" "enhanced-health" {
-  role       = "${aws_iam_role.service.name}"
+  role       = aws_iam_role.service.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth"
 }
 
 resource "aws_iam_role_policy_attachment" "service" {
-  role       = "${aws_iam_role.service.name}"
+  role       = aws_iam_role.service.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkService"
 }
 
@@ -76,27 +77,27 @@ data "aws_iam_policy_document" "ec2" {
 
 resource "aws_iam_role" "ec2" {
   name               = "${local.environment_label}-ec2"
-  assume_role_policy = "${data.aws_iam_policy_document.ec2.json}"
+  assume_role_policy = data.aws_iam_policy_document.ec2.json
 }
 
 resource "aws_iam_role_policy" "default" {
   name   = "${local.environment_label}-default"
-  role   = "${aws_iam_role.ec2.id}"
-  policy = "${data.aws_iam_policy_document.default.json}"
+  role   = aws_iam_role.ec2.id
+  policy = data.aws_iam_policy_document.default.json
 }
 
 resource "aws_iam_role_policy_attachment" "web-tier" {
-  role       = "${aws_iam_role.ec2.name}"
+  role       = aws_iam_role.ec2.name
   policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier"
 }
 
 resource "aws_iam_role_policy_attachment" "worker-tier" {
-  role       = "${aws_iam_role.ec2.name}"
+  role       = aws_iam_role.ec2.name
   policy_arn = "arn:aws:iam::aws:policy/AWSElasticBeanstalkWorkerTier"
 }
 
 resource "aws_iam_role_policy_attachment" "ssm-ec2" {
-  role       = "${aws_iam_role.ec2.name}"
+  role       = aws_iam_role.ec2.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM"
 
   lifecycle {
@@ -105,7 +106,7 @@ resource "aws_iam_role_policy_attachment" "ssm-ec2" {
 }
 
 resource "aws_iam_role_policy_attachment" "ssm-automation" {
-  role       = "${aws_iam_role.ec2.name}"
+  role       = aws_iam_role.ec2.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonSSMAutomationRole"
 
   lifecycle {
@@ -116,7 +117,7 @@ resource "aws_iam_role_policy_attachment" "ssm-automation" {
 # http://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create_deploy_docker.container.console.html
 # http://docs.aws.amazon.com/AmazonECR/latest/userguide/ecr_managed_policies.html#AmazonEC2ContainerRegistryReadOnly
 resource "aws_iam_role_policy_attachment" "ecr-readonly" {
-  role       = "${aws_iam_role.ec2.name}"
+  role       = aws_iam_role.ec2.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
@@ -290,18 +291,18 @@ data "aws_iam_policy_document" "default" {
 
 resource "aws_iam_instance_profile" "ec2" {
   name = "${local.environment_label}-ec2"
-  role = "${aws_iam_role.ec2.name}"
+  role = aws_iam_role.ec2.name
 }
 
 resource "aws_security_group" "default" {
-  name        = "${local.environment_label}"
+  name        = local.environment_label
   description = "Allow inbound traffic from provided Security Groups"
-  vpc_id      = "${var.vpc_id}"
-  tags        = "${var.tags}"
+  vpc_id      = var.vpc_id
+  tags        = var.tags
 }
 
 resource "aws_security_group_rule" "egress_rule" {
-  security_group_id = "${aws_security_group.default.id}"
+  security_group_id = aws_security_group.default.id
   type              = "egress"
   from_port         = "0"
   to_port           = "0"
@@ -309,7 +310,8 @@ resource "aws_security_group_rule" "egress_rule" {
   cidr_blocks       = ["0.0.0.0/0"]
 }
 
-data "aws_elb_service_account" "main" {}
+data "aws_elb_service_account" "main" {
+}
 
 data "aws_iam_policy_document" "elb_logs" {
   statement {
@@ -325,7 +327,7 @@ data "aws_iam_policy_document" "elb_logs" {
 
     principals {
       type        = "AWS"
-      identifiers = ["${data.aws_elb_service_account.main.arn}"]
+      identifiers = [data.aws_elb_service_account.main.arn]
     }
 
     effect = "Allow"
@@ -333,9 +335,10 @@ data "aws_iam_policy_document" "elb_logs" {
 }
 
 resource "aws_s3_bucket" "elb_logs" {
-  count  = "${var.loadbalancer_log_bucket == "" ? 1 : 0}"
+  count  = var.loadbalancer_log_bucket == "" ? 1 : 0
   bucket = "${local.environment_label}-logs"
   acl    = "private"
 
-  policy = "${data.aws_iam_policy_document.elb_logs.json}"
+  policy = data.aws_iam_policy_document.elb_logs.json
 }
+

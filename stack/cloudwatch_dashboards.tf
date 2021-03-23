@@ -554,5 +554,8 @@ resource "aws_cloudwatch_dashboard" "nul_metrics" {
     }
   ]
 }
-  __EOF__
+  
+__EOF__
+
 }
+

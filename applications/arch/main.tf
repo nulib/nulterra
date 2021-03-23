@@ -2,17 +2,17 @@ locals {
   app_name = "arch"
 
   default_host_parts = [
-    "${local.app_name}",
-    "${data.terraform_remote_state.stack.stack_name}",
-    "${data.terraform_remote_state.stack.hosted_zone_name}",
+    local.app_name,
+    data.terraform_remote_state.stack.outputs.stack_name,
+    data.terraform_remote_state.stack.outputs.hosted_zone_name,
   ]
 
-  domain_host = "${coalesce(var.public_hostname, join(".", local.default_host_parts))}"
+  domain_host = coalesce(var.public_hostname, join(".", local.default_host_parts))
 }
 
 resource "random_pet" "app_version_name" {
   keepers = {
-    source = "${data.archive_file.this_source.output_md5}"
+    source = data.archive_file.this_source.output_md5
   }
 }
 
@@ -24,75 +24,75 @@ module "this_derivative_volume" {
   source  = "cloudposse/efs/aws"
   version = "0.3.6"
 
-  namespace          = "${data.terraform_remote_state.stack.stack_name}"
-  stage              = "${local.app_name}"
+  namespace          = data.terraform_remote_state.stack.outputs.stack_name
+  stage              = local.app_name
   name               = "derivatives"
-  aws_region         = "${data.terraform_remote_state.stack.aws_region}"
-  vpc_id             = "${data.terraform_remote_state.stack.vpc_id}"
-  subnets            = "${data.terraform_remote_state.stack.private_subnets}"
-  availability_zones = ["${data.terraform_remote_state.stack.azs}"]
+  aws_region         = data.terraform_remote_state.stack.outputs.aws_region
+  vpc_id             = data.terraform_remote_state.stack.outputs.vpc_id
+  subnets            = data.terraform_remote_state.stack.outputs.private_subnets
+  availability_zones = [data.terraform_remote_state.stack.outputs.azs]
 
   security_groups = [
-    "${module.webapp.security_group_id}",
-    "${module.worker.security_group_id}",
-    "${data.terraform_remote_state.stack.security_groups.bastion}",
+    module.webapp.security_group_id,
+    module.worker.security_group_id,
+    data.terraform_remote_state.stack.outputs.security_groups.bastion,
   ]
 
-  zone_id = "${data.terraform_remote_state.stack.private_zone_id}"
+  zone_id = data.terraform_remote_state.stack.outputs.private_zone_id
 
-  tags = "${local.common_tags}"
+  tags = local.common_tags
 }
 
 module "this_working_volume" {
   source  = "cloudposse/efs/aws"
   version = "0.3.6"
 
-  namespace          = "${data.terraform_remote_state.stack.stack_name}"
-  stage              = "${local.app_name}"
+  namespace          = data.terraform_remote_state.stack.outputs.stack_name
+  stage              = local.app_name
   name               = "working"
-  aws_region         = "${data.terraform_remote_state.stack.aws_region}"
-  vpc_id             = "${data.terraform_remote_state.stack.vpc_id}"
-  subnets            = "${data.terraform_remote_state.stack.private_subnets}"
-  availability_zones = ["${data.terraform_remote_state.stack.azs}"]
+  aws_region         = data.terraform_remote_state.stack.outputs.aws_region
+  vpc_id             = data.terraform_remote_state.stack.outputs.vpc_id
+  subnets            = data.terraform_remote_state.stack.outputs.private_subnets
+  availability_zones = [data.terraform_remote_state.stack.outputs.azs]
 
   security_groups = [
-    "${module.webapp.security_group_id}",
-    "${module.worker.security_group_id}",
-    "${data.terraform_remote_state.stack.security_groups.bastion}",
+    module.webapp.security_group_id,
+    module.worker.security_group_id,
+    data.terraform_remote_state.stack.outputs.security_groups.bastion,
   ]
 
-  zone_id = "${data.terraform_remote_state.stack.private_zone_id}"
+  zone_id = data.terraform_remote_state.stack.outputs.private_zone_id
 
-  tags = "${local.common_tags}"
+  tags = local.common_tags
 }
 
 data "template_file" "dockerrun_aws_json" {
-  template = "${file("./templates/Dockerrun.aws.json.tpl")}"
+  template = file("./templates/Dockerrun.aws.json.tpl")
 
-  vars {
-    app_image  = "${var.app_image}"
-    aws_region = "${var.stack_region}"
-    stack_name = "${local.namespace}"
+  vars = {
+    app_image  = var.app_image
+    aws_region = var.stack_region
+    stack_name = local.namespace
   }
 }
 
 resource "local_file" "dockerrun_aws_json" {
-  content  = "${data.template_file.dockerrun_aws_json.rendered}"
+  content  = data.template_file.dockerrun_aws_json.rendered
   filename = "./application/Dockerrun.aws.json"
 }
 
 data "archive_file" "this_source" {
-  depends_on  = ["local_file.dockerrun_aws_json"]
+  depends_on  = [local_file.dockerrun_aws_json]
   type        = "zip"
   source_dir  = "${path.module}/application"
   output_path = "${path.module}/build/${local.app_name}-${terraform.workspace}.zip"
 }
 
 resource "aws_s3_bucket_object" "this_source" {
-  bucket = "${data.terraform_remote_state.stack.application_source_bucket}"
+  bucket = data.terraform_remote_state.stack.outputs.application_source_bucket
   key    = "${local.app_name}-${random_pet.app_version_name.id}.zip"
-  source = "${data.archive_file.this_source.output_path}"
-  etag   = "${data.archive_file.this_source.output_md5}"
+  source = data.archive_file.this_source.output_path
+  etag   = data.archive_file.this_source.output_md5
 }
 
 resource "aws_elastic_beanstalk_application" "this" {
@@ -101,9 +101,9 @@ resource "aws_elastic_beanstalk_application" "this" {
 
 resource "aws_elastic_beanstalk_application_version" "this" {
   depends_on = [
-    "aws_elastic_beanstalk_application.this",
-    "module.this_derivative_volume",
-    "module.this_working_volume",
+    aws_elastic_beanstalk_application.this,
+    module.this_derivative_volume,
+    module.this_working_volume,
   ]
 
   lifecycle {
@@ -111,48 +111,48 @@ resource "aws_elastic_beanstalk_application_version" "this" {
   }
 
   description = "application version created by terraform"
-  bucket      = "${data.terraform_remote_state.stack.application_source_bucket}"
+  bucket      = data.terraform_remote_state.stack.outputs.application_source_bucket
   application = "${local.namespace}-${local.app_name}"
-  key         = "${aws_s3_bucket_object.this_source.id}"
-  name        = "${random_pet.app_version_name.id}"
+  key         = aws_s3_bucket_object.this_source.id
+  name        = random_pet.app_version_name.id
 }
 
 module "this_db" {
   source          = "../../modules/database"
-  schema          = "${local.app_name}"
-  host            = "${data.terraform_remote_state.stack.db_address}"
-  port            = "${data.terraform_remote_state.stack.db_port}"
-  master_username = "${data.terraform_remote_state.stack.db_master_username}"
-  master_password = "${data.terraform_remote_state.stack.db_master_password}"
+  schema          = local.app_name
+  host            = data.terraform_remote_state.stack.outputs.db_address
+  port            = data.terraform_remote_state.stack.outputs.db_port
+  master_username = data.terraform_remote_state.stack.outputs.db_master_username
+  master_password = data.terraform_remote_state.stack.outputs.db_master_password
 
   connection = {
     user        = "ec2-user"
-    host        = "${data.terraform_remote_state.stack.bastion_address}"
-    private_key = "${file(var.ec2_private_keyfile)}"
+    host        = data.terraform_remote_state.stack.outputs.bastion_address
+    private_key = file(var.ec2_private_keyfile)
   }
 }
 
 resource "aws_sqs_queue" "this_ui_fifo_deadletter_queue" {
-  name                        = "${data.terraform_remote_state.stack.stack_name}-arch-ui-dead-letter-queue.fifo"
+  name                        = "${data.terraform_remote_state.stack.outputs.stack_name}-arch-ui-dead-letter-queue.fifo"
   fifo_queue                  = true
   content_based_deduplication = false
-  tags                        = "${local.common_tags}"
+  tags                        = local.common_tags
 }
 
 resource "aws_sqs_queue" "this_ui_fifo_queue" {
-  name                        = "${data.terraform_remote_state.stack.stack_name}-arch-ui-queue.fifo"
+  name                        = "${data.terraform_remote_state.stack.outputs.stack_name}-arch-ui-queue.fifo"
   fifo_queue                  = true
   content_based_deduplication = false
   delay_seconds               = 0
   visibility_timeout_seconds  = 3600
   redrive_policy              = "{\"deadLetterTargetArn\":\"${aws_sqs_queue.this_ui_fifo_deadletter_queue.arn}\",\"maxReceiveCount\":5}"
-  tags                        = "${local.common_tags}"
+  tags                        = local.common_tags
 }
 
 resource "aws_s3_bucket" "this_archives" {
   bucket = "${local.namespace}-${local.app_name}-archives"
   acl    = "private"
-  tags   = "${local.common_tags}"
+  tags   = local.common_tags
 
   lifecycle_rule {
     id                                     = "auto-delete-after-15-days"
@@ -168,7 +168,7 @@ resource "aws_s3_bucket" "this_archives" {
 resource "aws_s3_bucket" "this_dropbox" {
   bucket = "${local.namespace}-${local.app_name}-dropbox"
   acl    = "private"
-  tags   = "${local.common_tags}"
+  tags   = local.common_tags
 
   lifecycle_rule {
     id                                     = "auto-delete-after-15-days"
@@ -197,8 +197,8 @@ data "aws_iam_policy_document" "this_bucket_access" {
     ]
 
     resources = [
-      "${aws_s3_bucket.this_archives.arn}",
-      "${aws_s3_bucket.this_dropbox.arn}",
+      aws_s3_bucket.this_archives.arn,
+      aws_s3_bucket.this_dropbox.arn,
     ]
   }
 
@@ -233,32 +233,47 @@ data "aws_iam_policy_document" "this_bucket_access" {
     effect  = "Allow"
     actions = ["lambda:InvokeFunction"]
 
-    resources = ["${data.terraform_remote_state.stack.minter_arn}"]
+    # TF-UPGRADE-TODO: In Terraform v0.10 and earlier, it was sometimes necessary to
+    # force an interpolation expression to be interpreted as a list by wrapping it
+    # in an extra set of list brackets. That form was supported for compatibility in
+    # v0.11, but is no longer supported in Terraform v0.12.
+    #
+    # If the expression in the following list itself returns a list, remove the
+    # brackets to avoid interpretation as a list of lists. If the expression
+    # returns a single list item then leave it as-is and remove this TODO comment.
+    resources = [data.terraform_remote_state.stack.outputs.minter_arn]
   }
 }
 
 resource "aws_iam_policy" "this_bucket_policy" {
-  name   = "${data.terraform_remote_state.stack.stack_name}-${local.app_name}-bucket-access"
-  policy = "${data.aws_iam_policy_document.this_bucket_access.json}"
+  name   = "${data.terraform_remote_state.stack.outputs.stack_name}-${local.app_name}-bucket-access"
+  policy = data.aws_iam_policy_document.this_bucket_access.json
 }
 
 data "null_data_source" "ssm_parameters" {
-  inputs = "${map(
-    "arch/contact_email",               "digitalscholarship@northwestern.edu",
-    "aws/buckets/archives",             "${aws_s3_bucket.this_archives.id}",
-    "aws/buckets/dropbox",              "${aws_s3_bucket.this_dropbox.id}",
-    "aws/lambdas/noid",                 "${data.terraform_remote_state.stack.minter_arn}",
-    "domain/host",                      "${local.domain_host}",
-    "geonames_username",                "nul_rdc",
-    "solr/url",                         "${data.terraform_remote_state.stack.index_endpoint}arch",
-    "zookeeper/connection_str",         "${data.terraform_remote_state.stack.zookeeper_address}:2181/configs"
-  )}"
+  inputs = {
+    "arch/contact_email"       = "digitalscholarship@northwestern.edu"
+    "aws/buckets/archives"     = aws_s3_bucket.this_archives.id
+    "aws/buckets/dropbox"      = aws_s3_bucket.this_dropbox.id
+    "aws/lambdas/noid"         = data.terraform_remote_state.stack.outputs.minter_arn
+    "domain/host"              = local.domain_host
+    "geonames_username"        = "nul_rdc"
+    "solr/url"                 = "${data.terraform_remote_state.stack.outputs.index_endpoint}arch"
+    "zookeeper/connection_str" = "${data.terraform_remote_state.stack.outputs.zookeeper_address}:2181/configs"
+  }
 }
 
 resource "aws_ssm_parameter" "this_config_setting" {
-  count     = 8
-  name      = "/${data.terraform_remote_state.stack.stack_name}-${local.app_name}/Settings/${element(keys(data.null_data_source.ssm_parameters.outputs), count.index)}"
-  type      = "String"
-  value     = "${lookup(data.null_data_source.ssm_parameters.outputs, element(keys(data.null_data_source.ssm_parameters.outputs), count.index))}"
+  count = 8
+  name = "/${data.terraform_remote_state.stack.outputs.stack_name}-${local.app_name}/Settings/${element(
+    keys(data.null_data_source.ssm_parameters.outputs),
+    count.index,
+  )}"
+  type = "String"
+  value = data.null_data_source.ssm_parameters.outputs[element(
+    keys(data.null_data_source.ssm_parameters.outputs),
+    count.index,
+  )]
   overwrite = true
 }
+
