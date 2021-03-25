@@ -33,6 +33,9 @@ resource "aws_elasticsearch_domain" "elasticsearch" {
     volume_size = 10
   }
   access_policies = "${data.aws_iam_policy_document.elasticsearch_http_access.json}"
+  lifecycle {
+    ignore_changes = ["ebs_options"]
+  }
 }
 
 data "aws_caller_identity" "current_user" {}
