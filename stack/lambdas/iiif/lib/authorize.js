@@ -83,8 +83,8 @@ async function authorize(token, id, referer) {
     case 'open':          return true;
     case 'authenticated': return isObject(currentUser);
     case 'restricted':    return false;
+    default:              return true;
   }
-  return false;
 }
 
 async function getDoc(id) {
