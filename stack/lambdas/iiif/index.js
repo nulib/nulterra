@@ -77,7 +77,7 @@ function makeResource(event) {
   }
   let uri = `${scheme}://${host}${path}`;
   
-  let result = new IIIF.Processor(uri, s3Object, dimensions);
+  let result = new IIIF.Processor(uri, s3Object, dimensions, null, true);
   result.uri = uri;
   return result;
 }

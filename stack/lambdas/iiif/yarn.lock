@@ -376,10 +376,10 @@ ieee754@^1.1.4:
   version "1.1.12"
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.1.12.tgz#50bf24e5b9c8bb98af4964c941cdb0918da7b60b"
 
-iiif-processor@^0.3.5:
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/iiif-processor/-/iiif-processor-0.3.5.tgz#7459f274f8dd5c102b66434a8eb97b9ca330b3ce"
-  integrity sha512-Q6caRb0R8lwDaIzCboS2RLjo5HOCCMVJxQx9a2JFfUnYnpjB8dvlAAhJqNh0Dy2PsNWolQ+ogtZU84w7oY5o+w==
+iiif-processor@^0.3.6:
+  version "0.3.6"
+  resolved "https://registry.yarnpkg.com/iiif-processor/-/iiif-processor-0.3.6.tgz#feaf217105c6ad6744ea62d90e94d97d7e2ec4bb"
+  integrity sha512-ZIyjatog2iNk9jXoSg/mW7/IQ+tsvgFRyV+QeDAOdVanfM8jV4l2BjKcNsU/tOdr15P7ODycpZSybbQDf5HGtQ==
   dependencies:
     mime-types "^2.1.21"
     probe-image-size "^4.0.0"
