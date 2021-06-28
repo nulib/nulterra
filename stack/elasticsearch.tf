@@ -22,7 +22,7 @@ resource "aws_security_group_rule" "elasticsearch_ingress" {
 
 resource "aws_elasticsearch_domain" "elasticsearch" {
   domain_name           = "${local.namespace}-common-index"
-  elasticsearch_version = "6.2"
+  elasticsearch_version = "6.8"
   tags                  = "${local.common_tags}"
   cluster_config {
     instance_type  = "t2.medium.elasticsearch"
