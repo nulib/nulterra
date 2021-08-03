@@ -15,46 +15,6 @@ const cacheBucket          = process.env.cache_bucket;
 const tiffBucket           = process.env.tiff_bucket;
 const payloadLimit         = (6 * 1024 * 1024) / 1.4;
 
-async function s3Object(id, callback) {
-  let s3 = new AWS.S3();
-  let path = id.match(/.{1,2}/g).join('/');
-  let request = s3.getObject({ 
-    Bucket: tiffBucket, 
-    Key: `${path}-pyramid.tif`, 
-  })
-  let stream = request
-    .createReadStream()
-    .on('error', (err, _resp) => { 
-      console.log(
-        'SWALLOWING UNCATCHABLE S3 ERROR', 
-        `${err.statusCode} / ${err.code} / ${err.message}`
-      );
-    });
-
-  try {
-    return await callback(stream);
-  } finally {
-    stream.end().destroy();
-    request.abort();
-  }
-}
-
-async function dimensions (id) {
-  let s3 = new AWS.S3();
-  let path = id.match(/.{1,2}/g).join('/');
-  const obj = await s3.headObject({
-    Bucket: tiffBucket,
-    Key: `${path}-pyramid.tif`
-  }).promise()
-  if (obj.Metadata.width && obj.Metadata.height) {
-    return {
-      width: parseInt(obj.Metadata.width, 10),
-      height: parseInt(obj.Metadata.height, 10)
-    }
-  }
-  return null;
-}
-
 function getEventHeader(event, name) {
   if (event.headers && event.headers[name]) {
     return event.headers[name];
@@ -69,6 +29,47 @@ function makeResource(event) {
   let scheme = getEventHeader(event, 'x-forwarded-proto') || 'http';
   let host = getEventHeader(event, 'x-forwarded-host') || getEventHeader(event, 'host');
   let path = decodeURI(event.path.replace(/%2f/gi, ''));
+
+  let s3Object = async (id, callback) => {
+    let s3 = new AWS.S3();
+    let objectPath = id.match(/.{1,2}/g).join('/');
+    let request = s3.getObject({ 
+      Bucket: tiffBucket, 
+      Key: path.includes("/posters/") ? `posters/${objectPath}-poster.tif` : `${objectPath}-pyramid.tif`
+    });
+    let stream = request
+      .createReadStream()
+      .on('error', (err, _resp) => { 
+        console.log(
+          'SWALLOWING UNCATCHABLE S3 ERROR', 
+          `${err.statusCode} / ${err.code} / ${err.message}`
+        );
+      });
+  
+    try {
+      return await callback(stream);
+    } finally {
+      stream.end().destroy();
+      request.abort();
+    }
+  }
+  
+  let dimensions = async (id) => {
+    let s3 = new AWS.S3();
+    let objectPath = id.match(/.{1,2}/g).join('/');
+    const obj = await s3.headObject({
+      Bucket: tiffBucket,
+      Key: path.includes("/posters/") ? `posters/${objectPath}-poster.tif` : `${objectPath}-pyramid.tif`
+    }).promise()
+    if (obj.Metadata.width && obj.Metadata.height) {
+      return {
+        width: parseInt(obj.Metadata.width, 10),
+        height: parseInt(obj.Metadata.height, 10)
+      }
+    }
+    return null;
+  }
+
   if (!/\.(jpe?g|tiff?|gif|png|json)$/.test(path)) {
     path = path + '/info.json';
   }

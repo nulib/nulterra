@@ -76,6 +76,8 @@ async function authorize(token, id, referer) {
     if (allowedFrom[re].test(referer)) return true;
   }
 
+  id = id.split("/").slice(-1)[0]
+
   var currentUser = getCurrentUser(token);
   var doc = await getDoc(id);
 
